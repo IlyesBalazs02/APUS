@@ -1,0 +1,6 @@
+@APUS.Server_HostAddress = http://localhost:5084
+
+GET {{APUS.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
