@@ -1,0 +1,29 @@
+<p>activity-selector works!</p>
+
+<!-- In your component.html -->
+<label for="activity">Choose an activity:</label>
+<select [(ngModel)]="selectedActivity" name="activity" id="activity">
+    <option *ngFor="let activity of SportTypes" [ngValue]="activity">
+        {{ activity.DisplayName }}
+    </option>
+</select>
+
+<div style="flex-direction: column;">
+    <ng-container *ngIf="selectedActivity">
+        <input type="text" placeholder="Time" [(ngModel)]="selectedActivity.time" /> Time
+        <input type="number" placeholder="Heartrate" [(ngModel)]="selectedActivity.heartRate" /> Heartrate
+        <input type="date" placeholder="Date" [(ngModel)]="selectedActivity.date" /> Date
+    </ng-container>
+
+    <ng-container *ngIf="selectedActivity?.DisplayName === 'Running'">
+        <input type="number" [(ngModel)]="runningActivity.pace" placeholder="Pace" /> Pace
+        <input type="number" [(ngModel)]="runningActivity.distance" placeholder="Distance (km)" /> Distance
+    </ng-container>
+
+    <ng-container *ngIf="selectedActivity?.DisplayName === 'Bouldering'">
+        <input type="number" [(ngModel)]="boulderingActivity.difficulty" placeholder="Grade" /> Grade
+        <input type="checkbox" [(ngModel)]="boulderingActivity.redPoint" /> Redpoint
+    </ng-container>
+
+    <button type="submit" (click)="submit()">Send</button>
+</div>
