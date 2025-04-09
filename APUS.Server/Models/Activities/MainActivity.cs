@@ -13,17 +13,31 @@ namespace APUS.Server.Models.Activities
 		public int Time { get; set; }
 		public int HeartRate { get; set; }
 		public DateTime Date { get; set; }
+		public String DisplayName { get; set; }
+
+		public MainActivity()
+		{
+			DisplayName = "Activity";
+		}
 	}
 
 	public class Running : MainActivity
 	{
 		public int Pace { get; set; }
 		public int Distance { get; set; }
+		public Running()
+		{
+			DisplayName = "Running";
+		}
 	}
 
 	public class Bouldering : MainActivity
 	{
 		public int Difficulty { get; set; }
-		public int RedPoint { get; set; }
+		public Boolean RedPoint { get; set; }
+		public Bouldering()
+		{
+			DisplayName = "Bouldering";
+		}
 	}
 }

@@ -1,0 +1,13 @@
+header {
+    padding: 20px 40px;
+    min-height: 10px;
+    height: 40px;
+    text-align: center;
+    background-color: rgb(46, 184, 149);
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}

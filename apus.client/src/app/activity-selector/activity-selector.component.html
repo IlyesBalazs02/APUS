@@ -4,7 +4,7 @@
 <label for="activity">Choose an activity:</label>
 <select [(ngModel)]="selectedActivity" name="activity" id="activity">
     <option *ngFor="let activity of SportTypes" [ngValue]="activity">
-        {{ activity.DisplayName }}
+        {{ activity.displayName }}
     </option>
 </select>
 
@@ -15,12 +15,12 @@
         <input type="date" placeholder="Date" [(ngModel)]="selectedActivity.date" /> Date
     </ng-container>
 
-    <ng-container *ngIf="selectedActivity?.DisplayName === 'Running'">
+    <ng-container *ngIf="selectedActivity?.displayName === 'Running'">
         <input type="number" [(ngModel)]="runningActivity.pace" placeholder="Pace" /> Pace
         <input type="number" [(ngModel)]="runningActivity.distance" placeholder="Distance (km)" /> Distance
     </ng-container>
 
-    <ng-container *ngIf="selectedActivity?.DisplayName === 'Bouldering'">
+    <ng-container *ngIf="selectedActivity?.displayName === 'Bouldering'">
         <input type="number" [(ngModel)]="boulderingActivity.difficulty" placeholder="Grade" /> Grade
         <input type="checkbox" [(ngModel)]="boulderingActivity.redPoint" /> Redpoint
     </ng-container>

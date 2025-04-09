@@ -10,12 +10,18 @@ import { AppComponent } from './app.component';
 // COMPONENTS
 import { ActivitySelectorComponent } from './activity-selector/activity-selector.component';
 import { CreateActivityComponent } from './create-activity/create-activity.component';
+import { FooterComponent } from './footer/footer.component';
+import { NavigationComponent } from './navigation/navigation.component';
+import { ListActivitiesComponent } from './list-activities/list-activities.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ActivitySelectorComponent,
     CreateActivityComponent,
+    FooterComponent,
+    NavigationComponent,
+    ListActivitiesComponent,
   ],
   imports: [
     BrowserModule, HttpClientModule,
