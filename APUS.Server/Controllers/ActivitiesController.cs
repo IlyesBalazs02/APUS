@@ -1,4 +1,5 @@
-﻿using APUS.Server.Models.Activities;
+﻿using APUS.Server.Data;
+using APUS.Server.Models.Activities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -9,19 +10,19 @@ namespace APUS.Server.Controllers
 	public class ActivitiesController : ControllerBase
 	{
 		private readonly ILogger<ActivitiesController> _logger;
-		private readonly ActivityService _activityService;
+		private readonly IActivityRepository _activityRepository;
 
-		public ActivitiesController(ILogger<ActivitiesController> logger, ActivityService activityService)
+		public ActivitiesController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository)
 		{
 			_logger = logger;
-			_activityService = activityService;
+			_activityRepository = activityRepository;
 
 		}
 
 		[HttpPost]
 		public IActionResult CreateActivity([FromBody] MainActivity activity)
 		{
-			Console.WriteLine("=== Base Properties ===");
+			/*Console.WriteLine("=== Base Properties ===");
 			var baseProps = typeof(MainActivity).GetProperties();
 			foreach (var prop in baseProps)
 			{
@@ -37,18 +38,8 @@ namespace APUS.Server.Controllers
 				{
 					Console.WriteLine($"{prop.Name}: {prop.GetValue(activity)}");
 				}
-			}
-
-			var newActivity = Activator.CreateInstance(activity.GetType());
-			foreach (var prop in allProps)
-			{
-				var value = prop.GetValue(activity);
-				if (value != null)
-				{
-					prop.SetValue(newActivity, value);
-				}
-			}
-			_activityService.Activities.Add((MainActivity)newActivity);
+			}*/
+			_activityRepository.Create(activity);
 
 			return Ok();
 		}
@@ -56,8 +47,7 @@ namespace APUS.Server.Controllers
 		[HttpGet]
 		public IEnumerable<MainActivity> Get()
 		{
-			Console.WriteLine("asd!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			return _activityService.Activities.ToArray();
+			return _activityRepository.Read().ToArray();
 		}
 	}
 

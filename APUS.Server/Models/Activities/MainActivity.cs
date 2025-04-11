@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace APUS.Server.Models.Activities
@@ -11,14 +12,19 @@ namespace APUS.Server.Models.Activities
 	[JsonDerivedType(typeof(Running), "Bouldering")]*/
 	public class MainActivity
 	{
+		[Key]
+		public string Id { get; set; }
 		public int Time { get; set; }
 		public int HeartRate { get; set; }
 		public DateTime Date { get; set; }
 		public String DisplayName { get; set; }
 
-		public MainActivity()
+		public MainActivity() : this("Activity") { }
+
+		public MainActivity(string displayname)
 		{
-			DisplayName = "Activity";
+			DisplayName = displayname;
+			Id = Guid.NewGuid().ToString();
 		}
 	}
 
@@ -26,9 +32,8 @@ namespace APUS.Server.Models.Activities
 	{
 		public int Pace { get; set; }
 		public int Distance { get; set; }
-		public Running()
+		public Running() : base("Running")
 		{
-			DisplayName = "Running";
 		}
 	}
 
@@ -36,9 +41,9 @@ namespace APUS.Server.Models.Activities
 	{
 		public int Difficulty { get; set; }
 		public Boolean RedPoint { get; set; }
-		public Bouldering()
+		public Bouldering() : base("Bouldering")
 		{
-			DisplayName = "Bouldering";
 		}
+
 	}
 }

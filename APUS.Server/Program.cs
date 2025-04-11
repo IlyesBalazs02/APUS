@@ -5,6 +5,8 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
+using APUS.Server.Data;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace APUS.Server
@@ -35,15 +37,18 @@ namespace APUS.Server
 						  .AllowCredentials(); // optional, only if you're using cookies or authentication
 				});
 			});
-
-			//builder.Services.AddControllers(); // System.Text.Json is used by default
-
 			// end-region
+
+			builder.Services.AddDbContext<ActivityDbContext>(opt =>
+			{
+				//opt.UseInMemoryDatabase("ActivitiesDev");
+				opt.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=APUSActivityDbDev;Trusted_Connection=True;MultipleActiveResultSets=true");
+			});
 
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-			builder.Services.AddSingleton<ActivityService>();
+			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
 
 			var app = builder.Build();
 			app.UseCors("AllowAngularDev");
