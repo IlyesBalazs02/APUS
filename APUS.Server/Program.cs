@@ -25,6 +25,17 @@ namespace APUS.Server
 					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
 				});
 
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowAngularDev", policy =>
+				{
+					policy.WithOrigins("https://localhost:54954") // Angular dev server
+						  .AllowAnyHeader()
+						  .AllowAnyMethod()
+						  .AllowCredentials(); // optional, only if you're using cookies or authentication
+				});
+			});
+
 			//builder.Services.AddControllers(); // System.Text.Json is used by default
 
 			// end-region
@@ -32,8 +43,10 @@ namespace APUS.Server
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
+			builder.Services.AddSingleton<ActivityService>();
 
 			var app = builder.Build();
+			app.UseCors("AllowAngularDev");
 
 			app.UseDefaultFiles();
 			app.UseStaticFiles();

@@ -44,6 +44,11 @@ export class ListActivitiesComponent {
     return !this.baseKeys.includes(key) && key !== '$type'; // exclude $type too
   }
 
+  capitalizeFirstLetter(key: string): string {
+    if (!key) return '';
+    return key.charAt(0).toUpperCase() + key.slice(1);
+  }
+
   /*
   getForecasts() {
     this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(

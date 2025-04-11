@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace APUS.Server.Models.Activities
 {
+
 	[JsonObject]
 	[System.Text.Json.Serialization.JsonConverter(typeof(Newtonsoft.Json.Converters.CustomCreationConverter<MainActivity>))]
 	/*[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]

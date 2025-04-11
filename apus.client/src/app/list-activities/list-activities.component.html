@@ -7,7 +7,7 @@
     <p><strong>Unique Properties:</strong></p>
     <div *ngFor="let prop of activity | keyvalue">
         <div *ngIf="isUniqueProperty(prop.key)">
-            <p>{{ prop.key }}: {{ prop.value }}</p>
+            <p>{{ capitalizeFirstLetter(prop.key) }}: {{ prop.value }}</p>
         </div>
     </div>
 </div>

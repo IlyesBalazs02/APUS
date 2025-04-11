@@ -9,14 +9,13 @@ namespace APUS.Server.Controllers
 	public class ActivitiesController : ControllerBase
 	{
 		private readonly ILogger<ActivitiesController> _logger;
-		public List<MainActivity> Activities = new List<MainActivity>();
-		public ActivitiesController(ILogger<ActivitiesController> logger)
+		private readonly ActivityService _activityService;
+
+		public ActivitiesController(ILogger<ActivitiesController> logger, ActivityService activityService)
 		{
 			_logger = logger;
+			_activityService = activityService;
 
-			Activities.Add(new Running { Time = 30, HeartRate = 120, Date = DateTime.Now, Pace = 5, Distance = 1000 });
-			Activities.Add(new Bouldering { Time = 45, HeartRate = 130, Date = DateTime.Now, Difficulty = 5, RedPoint = false });
-			Activities.Add(new MainActivity { Time = 60, HeartRate = 140, Date = DateTime.Now });
 		}
 
 		[HttpPost]
@@ -49,7 +48,7 @@ namespace APUS.Server.Controllers
 					prop.SetValue(newActivity, value);
 				}
 			}
-			Activities.Add((MainActivity)newActivity);
+			_activityService.Activities.Add((MainActivity)newActivity);
 
 			return Ok();
 		}
@@ -58,7 +57,7 @@ namespace APUS.Server.Controllers
 		public IEnumerable<MainActivity> Get()
 		{
 			Console.WriteLine("asd!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			return Activities.ToArray();
+			return _activityService.Activities.ToArray();
 		}
 	}
 
