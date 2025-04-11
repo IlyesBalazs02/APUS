@@ -1,9 +1,11 @@
 export class MainActivity {
     $type!: string;
+    id: string = '';
     time: number = 0; // Updated to match API response
     heartRate: number = 0; // Updated to match API response
     date: string = new Date().toISOString(); // Updated to match API response
     displayName: string;
+    activityType: string = ''; // required for dynamic rendering
 
     constructor() {
         this.$type = 'APUS.Server.Models.Activities.MainActivity, APUS.Server';

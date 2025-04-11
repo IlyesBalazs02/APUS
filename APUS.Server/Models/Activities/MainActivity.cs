@@ -14,10 +14,18 @@ namespace APUS.Server.Models.Activities
 	{
 		[Key]
 		public string Id { get; set; }
+
 		public int Time { get; set; }
+
 		public int HeartRate { get; set; }
+
 		public DateTime Date { get; set; }
+
 		public String DisplayName { get; set; }
+
+		//Frontend getComponent
+		public string ActivityType { get; set; }
+
 
 		public MainActivity() : this("Activity") { }
 
@@ -25,6 +33,7 @@ namespace APUS.Server.Models.Activities
 		{
 			DisplayName = displayname;
 			Id = Guid.NewGuid().ToString();
+			ActivityType = GetType().Name;
 		}
 	}
 
