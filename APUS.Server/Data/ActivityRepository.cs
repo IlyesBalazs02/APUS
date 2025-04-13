@@ -17,16 +17,12 @@ namespace APUS.Server.Data
 			foreach (var prop in activity.GetType().GetProperties())
 			{
 				var value = prop.GetValue(activity);
-				if (value != null)
+				var baseValues = prop.GetValue(newActivity); // Keep values from constructor
+
+				if (baseValues == null && value != null)
 				{
 					prop.SetValue(newActivity, value);
 				}
-			}
-			// Ensure the Id is unique
-			var idProperty = activity.GetType().GetProperty("Id");
-			if (idProperty != null)
-			{
-				idProperty.SetValue(newActivity, Guid.NewGuid().ToString());
 			}
 
 			context.Activities.Add((MainActivity)newActivity);

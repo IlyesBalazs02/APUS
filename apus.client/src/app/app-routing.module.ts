@@ -9,6 +9,7 @@ const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
   { path: 'ListActivities', component: ListActivitiesComponent },
   { path: 'ListActivities2', component: ListActivitiesDifferentApproachComponent },
+  { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
 ];
 
 @NgModule({

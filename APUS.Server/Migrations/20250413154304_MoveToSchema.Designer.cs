@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250413154304_MoveToSchema")]
+    partial class MoveToSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,13 +34,13 @@ namespace APUS.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("AvgHeartRate")
+                    b.Property<int>("AvgHeartRate")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Calories")
+                    b.Property<int>("Calpories")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -47,14 +50,10 @@ namespace APUS.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("time");
-
-                    b.Property<int?>("MaxHeartRate")
+                    b.Property<int>("MaxHeartRate")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -68,10 +67,10 @@ namespace APUS.Server.Migrations
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Difficulty")
+                    b.Property<int>("Difficulty")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("RedPoint")
+                    b.Property<bool>("RedPoint")
                         .HasColumnType("bit");
 
                     b.ToTable("Bouldering", "Activities");
@@ -81,10 +80,10 @@ namespace APUS.Server.Migrations
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Distance")
+                    b.Property<int>("Distance")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Elevation")
+                    b.Property<int>("Elevation")
                         .HasColumnType("int");
 
                     b.ToTable("Hiking", "Activities");
@@ -94,10 +93,10 @@ namespace APUS.Server.Migrations
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Distance")
+                    b.Property<int>("Distance")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Pace")
+                    b.Property<int>("Pace")
                         .HasColumnType("int");
 
                     b.ToTable("Running", "Activities");

@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250413153847_DeleteTime")]
+    partial class DeleteTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,13 +34,13 @@ namespace APUS.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("AvgHeartRate")
+                    b.Property<int>("AvgHeartRate")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Calories")
+                    b.Property<int>("Calpories")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -47,19 +50,15 @@ namespace APUS.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("time");
-
-                    b.Property<int?>("MaxHeartRate")
+                    b.Property<int>("MaxHeartRate")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("MainActivities", "Activities");
+                    b.ToTable("MainActivities", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
@@ -68,39 +67,39 @@ namespace APUS.Server.Migrations
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Difficulty")
+                    b.Property<int>("Difficulty")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("RedPoint")
+                    b.Property<bool>("RedPoint")
                         .HasColumnType("bit");
 
-                    b.ToTable("Bouldering", "Activities");
+                    b.ToTable("Bouldering", (string)null);
                 });
 
             modelBuilder.Entity("APUS.Server.Models.Activities.Hiking", b =>
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Distance")
+                    b.Property<int>("Distance")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Elevation")
+                    b.Property<int>("Elevation")
                         .HasColumnType("int");
 
-                    b.ToTable("Hiking", "Activities");
+                    b.ToTable("Hiking", (string)null);
                 });
 
             modelBuilder.Entity("APUS.Server.Models.Activities.Running", b =>
                 {
                     b.HasBaseType("APUS.Server.Models.Activities.MainActivity");
 
-                    b.Property<int?>("Distance")
+                    b.Property<int>("Distance")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Pace")
+                    b.Property<int>("Pace")
                         .HasColumnType("int");
 
-                    b.ToTable("Running", "Activities");
+                    b.ToTable("Running", (string)null);
                 });
 
             modelBuilder.Entity("APUS.Server.Models.Activities.Bouldering", b =>

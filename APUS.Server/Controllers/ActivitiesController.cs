@@ -22,23 +22,12 @@ namespace APUS.Server.Controllers
 		[HttpPost]
 		public IActionResult CreateActivity([FromBody] MainActivity activity)
 		{
-			/*Console.WriteLine("=== Base Properties ===");
-			var baseProps = typeof(MainActivity).GetProperties();
-			foreach (var prop in baseProps)
+			if (!ModelState.IsValid)
 			{
-				Console.WriteLine($"{prop.Name}: {prop.GetValue(activity)}");
+				var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+				return BadRequest(new { errors });
 			}
 
-			Console.WriteLine("=== Unique Properties ===");
-			var allProps = activity.GetType().GetProperties();
-			foreach (var prop in allProps)
-			{
-				// Skip base class properties
-				if (!baseProps.Any(p => p.Name == prop.Name))
-				{
-					Console.WriteLine($"{prop.Name}: {prop.GetValue(activity)}");
-				}
-			}*/
 			_activityRepository.Create(activity);
 
 			return Ok();

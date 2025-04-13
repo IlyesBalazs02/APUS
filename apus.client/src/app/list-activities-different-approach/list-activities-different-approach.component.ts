@@ -48,7 +48,7 @@ export class ListActivitiesDifferentApproachComponent {
   }
 
   getComponent(type: string) {
-    console.log('activities', this.activities); // Check if activities are populated
+    console.log('activities', type); // Check if activities are populated
 
     switch (type) {
       case 'Running': return RunningActivityComponent;

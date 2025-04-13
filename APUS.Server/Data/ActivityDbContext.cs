@@ -13,11 +13,12 @@ namespace APUS.Server.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<MainActivity>()
-				.HasDiscriminator<string>("ActivityType")
-				.HasValue<MainActivity>("Activity")
-				.HasValue<Running>("Running")
-				.HasValue<Bouldering>("Bouldering");
+			modelBuilder.Entity<MainActivity>().ToTable("MainActivities", "Activities");
+
+			modelBuilder.Entity<Running>().ToTable("Running", "Activities");
+			modelBuilder.Entity<Hiking>().ToTable("Hiking", "Activities");
+			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
 		}
+
 	}
 }

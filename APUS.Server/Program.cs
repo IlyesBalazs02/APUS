@@ -31,10 +31,13 @@ namespace APUS.Server
 			{
 				options.AddPolicy("AllowAngularDev", policy =>
 				{
-					policy.WithOrigins("https://localhost:54954") // Angular dev server
+					policy.WithOrigins(
+							"https://0.0.0.0:54954",              // local dev
+							"http://192.168.1.174:54954",          // local network access
+							"http://localhost:54954")               // optional, just in case
 						  .AllowAnyHeader()
 						  .AllowAnyMethod()
-						  .AllowCredentials(); // optional, only if you're using cookies or authentication
+						  .AllowCredentials();
 				});
 			});
 			// end-region

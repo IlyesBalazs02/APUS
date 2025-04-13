@@ -10,8 +10,8 @@
 
 <div style="flex-direction: column;">
     <ng-container *ngIf="selectedActivity">
-        <input type="text" placeholder="Time" [(ngModel)]="selectedActivity.time" /> Time
-        <input type="number" placeholder="Heartrate" [(ngModel)]="selectedActivity.heartRate" /> Heartrate
+        <input type="text" placeholder="Duration" [(ngModel)]="selectedActivity.duration" /> Duration
+        <input type="number" placeholder="Heartrate" [(ngModel)]="selectedActivity.avgHeartRate" /> Heartrate
         <input type="date" placeholder="Date" [(ngModel)]="selectedActivity.date" /> Date
     </ng-container>
 

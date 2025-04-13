@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace APUS.Server.Models.Activities
@@ -15,42 +16,57 @@ namespace APUS.Server.Models.Activities
 		[Key]
 		public string Id { get; set; }
 
-		public int Time { get; set; }
+		public string Title { get; set; }
 
-		public int HeartRate { get; set; }
+		public string? Description { get; set; }
 
-		public DateTime Date { get; set; }
+		public DateTime? Date { get; set; }
 
-		public String DisplayName { get; set; }
+		public TimeSpan? Duration { get; set; }
+
+		public int? Calories { get; set; }
+
+		public int? AvgHeartRate { get; set; }
+
+		public int? MaxHeartRate { get; set; }
+
+
+		public string DisplayName { get; set; }
 
 		//Frontend getComponent
 		public string ActivityType { get; set; }
 
 
-		public MainActivity() : this("Activity") { }
 
-		public MainActivity(string displayname)
+		public MainActivity()
 		{
-			DisplayName = displayname;
-			Id = Guid.NewGuid().ToString();
 			ActivityType = GetType().Name;
+			Id = Guid.NewGuid().ToString();
 		}
 	}
 
 	public class Running : MainActivity
 	{
-		public int Pace { get; set; }
-		public int Distance { get; set; }
-		public Running() : base("Running")
+		public int? Pace { get; set; }
+		public int? Distance { get; set; }
+		public Running()
+		{
+		}
+	}
+	public class Hiking : MainActivity
+	{
+		public int? Distance { get; set; }
+		public int? Elevation { get; set; }
+		public Hiking()
 		{
 		}
 	}
 
 	public class Bouldering : MainActivity
 	{
-		public int Difficulty { get; set; }
-		public Boolean RedPoint { get; set; }
-		public Bouldering() : base("Bouldering")
+		public int? Difficulty { get; set; }
+		public Boolean? RedPoint { get; set; }
+		public Bouldering()
 		{
 		}
 
