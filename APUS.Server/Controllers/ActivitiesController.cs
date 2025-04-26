@@ -1,5 +1,5 @@
 ﻿using APUS.Server.Data;
-using APUS.Server.Models.Activities;
+using APUS.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -36,7 +36,8 @@ namespace APUS.Server.Controllers
 		[HttpGet]
 		public IEnumerable<MainActivity> Get()
 		{
-			return _activityRepository.Read().ToArray();
+			//return _activityRepository.Read().ToArray();
+			return null;
 		}
 	}
 

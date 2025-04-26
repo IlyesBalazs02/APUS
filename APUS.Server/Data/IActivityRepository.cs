@@ -1,4 +1,4 @@
-﻿using APUS.Server.Models.Activities;
+﻿using APUS.Server.Models;
 
 namespace APUS.Server.Data
 {

@@ -1,5 +1,5 @@
 
-using APUS.Server.Models.Activities;
+using APUS.Server.Models;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MainActivity, Running, Bouldering } from '../_models/ActivityClasses';
+import { MainActivity, Running, Bouldering } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
 
 

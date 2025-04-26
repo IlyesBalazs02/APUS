@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace APUS.Server.Models.Activities
+namespace APUS.Server.Models
 {
 
 	[JsonObject]
@@ -16,6 +16,7 @@ namespace APUS.Server.Models.Activities
 		[Key]
 		public string Id { get; set; }
 
+		[Required]
 		public string Title { get; set; }
 
 		public string? Description { get; set; }
@@ -30,13 +31,16 @@ namespace APUS.Server.Models.Activities
 
 		public int? MaxHeartRate { get; set; }
 
-
 		public string DisplayName { get; set; }
 
 		//Frontend getComponent
 		public string ActivityType { get; set; }
 
+		ICollection<ActivityImage> ActivityImages { get; set; } = new List<ActivityImage>();
 
+		ICollection<Coordinate> Coordinates { get; set; } = new List<Coordinate>();
+
+		public Boolean ShowCoordinates { get; set; } = false;
 
 		public MainActivity()
 		{
@@ -49,6 +53,7 @@ namespace APUS.Server.Models.Activities
 	{
 		public int? Pace { get; set; }
 		public int? Distance { get; set; }
+		public int? ElevationGain { get; set; }
 		public Running()
 		{
 		}
@@ -56,7 +61,7 @@ namespace APUS.Server.Models.Activities
 	public class Hiking : MainActivity
 	{
 		public int? Distance { get; set; }
-		public int? Elevation { get; set; }
+		public int? ElevationGain { get; set; }
 		public Hiking()
 		{
 		}
@@ -65,10 +70,19 @@ namespace APUS.Server.Models.Activities
 	public class Bouldering : MainActivity
 	{
 		public int? Difficulty { get; set; }
-		public Boolean? RedPoint { get; set; }
+		//public bool? RedPoint { get; set; }
 		public Bouldering()
 		{
 		}
+	}
 
+	public class RockClimbing : MainActivity
+	{
+		public int? Difficulty { get; set; }
+		public int? ElevationGain { get; set; }
+
+		public RockClimbing()
+		{
+		}
 	}
 }

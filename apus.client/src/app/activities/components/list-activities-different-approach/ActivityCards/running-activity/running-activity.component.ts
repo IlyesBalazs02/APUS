@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { MainActivity, Running } from '../../../_models/ActivityClasses';
-
+import { MainActivity, Running } from '../../../../_models/ActivityClasses';
 @Component({
   selector: 'app-running-activity',
   standalone: false,

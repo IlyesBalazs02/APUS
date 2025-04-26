@@ -1,4 +1,4 @@
-﻿using APUS.Server.Models.Activities;
+﻿using APUS.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace APUS.Server.Data

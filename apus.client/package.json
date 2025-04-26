@@ -20,6 +20,8 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@ngx-formly/bootstrap": "^6.3.12",
+    "@ngx-formly/core": "^6.3.12",
     "jest-editor-support": "*",
     "run-script-os": "*",
     "rxjs": "~7.8.0",

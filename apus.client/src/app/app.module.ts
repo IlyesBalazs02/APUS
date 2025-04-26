@@ -11,13 +11,18 @@ import { NgTemplateOutlet } from '@angular/common';
 import { NgComponentOutlet } from '@angular/common';
 
 // COMPONENTS
-import { ActivitySelectorComponent } from './activity-selector/activity-selector.component';
-import { CreateActivityComponent } from './create-activity/create-activity.component';
+import { ActivitySelectorComponent } from './activities/components/activity-selector/activity-selector.component';
+import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
 import { FooterComponent } from './footer/footer.component';
 import { NavigationComponent } from './navigation/navigation.component';
-import { ListActivitiesComponent } from './list-activities/list-activities.component';
-import { RunningActivityComponent } from './list-activities-different-approach/ActivityCards/running-activity/running-activity.component';
-import { ListActivitiesDifferentApproachComponent } from './list-activities-different-approach/list-activities-different-approach.component';
+import { ListActivitiesComponent } from './activities/components/list-activities/list-activities.component';
+import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
+import { RunningActivityComponent } from './activities/components/list-activities-different-approach/ActivityCards/running-activity/running-activity.component';
+
+// FORMS
+import { ReactiveFormsModule } from '@angular/forms';
+import { FormlyModule } from '@ngx-formly/core';
+import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 
 @NgModule({
   declarations: [
@@ -27,8 +32,8 @@ import { ListActivitiesDifferentApproachComponent } from './list-activities-diff
     FooterComponent,
     NavigationComponent,
     ListActivitiesComponent,
-    RunningActivityComponent,
-    ListActivitiesDifferentApproachComponent
+    ListActivitiesDifferentApproachComponent,
+    RunningActivityComponent
   ],
   imports: [
     BrowserModule, HttpClientModule,

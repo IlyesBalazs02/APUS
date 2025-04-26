@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Bouldering, MainActivity, Running } from '../_models/ActivityClasses';
+import { MainActivity, Running, Bouldering } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
 import { RunningActivityComponent } from './ActivityCards/running-activity/running-activity.component';
 import { CommonModule } from '@angular/common';
