@@ -41,7 +41,10 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
     FormsModule,
     CommonModule,
     NgTemplateOutlet,
-    NgComponentOutlet
+    NgComponentOutlet,
+    ReactiveFormsModule,
+    FormlyModule.forRoot(),
+    FormlyBootstrapModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
