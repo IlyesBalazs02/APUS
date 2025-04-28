@@ -31,16 +31,16 @@ namespace APUS.Server.Models
 
 		public int? MaxHeartRate { get; set; }
 
-		public string DisplayName { get; set; }
+		public string? DisplayName { get; set; }
 
 		//Frontend getComponent
-		public string ActivityType { get; set; }
+		public string? ActivityType { get; set; }
 
-		ICollection<ActivityImage> ActivityImages { get; set; } = new List<ActivityImage>();
+		ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
 
-		ICollection<Coordinate> Coordinates { get; set; } = new List<Coordinate>();
+		ICollection<Coordinate>? Coordinates { get; set; } = new List<Coordinate>();
 
-		public Boolean ShowCoordinates { get; set; } = false;
+		public Boolean? ShowCoordinates { get; set; } = false;
 
 		public MainActivity()
 		{
@@ -58,14 +58,7 @@ namespace APUS.Server.Models
 		{
 		}
 	}
-	public class Hiking : MainActivity
-	{
-		public int? Distance { get; set; }
-		public int? ElevationGain { get; set; }
-		public Hiking()
-		{
-		}
-	}
+	
 
 	public class Bouldering : MainActivity
 	{
@@ -84,5 +77,57 @@ namespace APUS.Server.Models
 		public RockClimbing()
 		{
 		}
+	}
+
+	public class Hiking : MainActivity
+	{
+		public int? Distance { get; set; }
+		public int? ElevationGain { get; set; }
+		public Hiking()
+		{
+		}
+	}
+
+	public class Yoga : MainActivity
+	{
+		public Yoga()
+		{
+
+		}
+	}
+
+	public class Football : MainActivity
+	{
+		public int? Distance { get; set; }
+
+		public Football()
+		{
+		}
+	}
+
+	public class Walk : MainActivity
+	{
+		public int? Distance { get; set; }
+	}
+
+	public class Ride : MainActivity
+	{
+		public int? Distance { get; set; }
+	}
+
+	public class Swimming : MainActivity
+	{
+		public int? Distance { get; set; }
+	}
+
+	public class Ski : MainActivity
+	{
+		public int? Distance { get; set; }
+		public int? Elevation { get; set; }
+	}
+
+	public class Tennis : MainActivity
+	{
+
 	}
 }

@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
-import { mainFields } from '../../formly/main.fields';
-import { selectActivityHelper } from './selectActivityHelper';
+import { mainFields } from './formly/formFieldConfigs';
+import { selectActivityHelper } from './formly/selectActivityHelper';
 import { MainActivity } from '../../_models/ActivityClasses';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-activity',
@@ -17,19 +18,23 @@ export class CreateActivityComponent implements OnInit {
   model: any = {};
   options: FormlyFormOptions = {};
   fields: FormlyFieldConfig[] = [];
-  selectActivity = new selectActivityHelper();
+  selectActivityHelper = new selectActivityHelper();
+  tmp?: MainActivity; //deletelater
 
+  constructor(private http: HttpClient) { }
   ngOnInit() {
-    this.updateFields(this.selectActivity.selectedActivity);
+    this.updateFields(this.selectActivityHelper.selectedActivity);
+    this.tmp = new MainActivity();
   }
 
   onActivityChange(activity: MainActivity) {
     this.updateFields(activity);
+    this.selectActivityHelper.selectedActivity = activity;
   }
 
   private updateFields(activity: MainActivity) {
-    const key = activity.displayName;   // “Running”, “Bouldering”, etc.
-    const extras = this.selectActivity.subtypeMap[key] || [];
+    const key = activity.activityType;
+    const extras = this.selectActivityHelper.subtypeMap[key] || [];
 
     // merge main + subtype, then reset form & model
     this.fields = [
@@ -38,5 +43,21 @@ export class CreateActivityComponent implements OnInit {
     ];
     this.model = {};
     this.form.reset();
+  }
+
+  submit() {
+    const formData = { ...this.model };
+
+    const payload = {
+      ...formData,
+      activityType: this.selectActivityHelper.selectedActivity.$type
+    };
+
+    console.log(JSON.stringify(payload));
+    console.log(JSON.stringify(this.tmp))
+
+    this.http.post('/api/activities', payload).subscribe(() => {
+      console.log('Submitted running activity!');
+    });
   }
 }

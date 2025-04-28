@@ -1,6 +1,7 @@
 import { ActivityImage } from "./ActivityImage";
 import { Coordinate } from "./Coordinate";
 
+// ../fromly/newFields
 export class MainActivity {
     $type!: string;
     id: string = '';
@@ -39,12 +40,14 @@ export class Running extends MainActivity {
 
 export class Bouldering extends MainActivity {
     difficulty: number | null = null;
-    redPoint: boolean | null = null;
+    //redPoint: boolean | null = null;
 
     constructor() {
         super();
         this.$type = 'APUS.Server.Models.Activities.Bouldering, APUS.Server';
         this.displayName = 'Bouldering';
+        this.activityType = 'Bouldering';
+
     }
 }
 
@@ -56,6 +59,8 @@ export class RockClimbing extends MainActivity {
         super();
         this.$type = 'APUS.Server.Models.Activities.RockClimbing, APUS.Server';
         this.displayName = 'Rock Climbing';
+        this.activityType = 'RockClimbing';
+
     }
 }
 
@@ -67,5 +72,88 @@ export class Hiking extends MainActivity {
         super();
         this.$type = 'APUS.Server.Models.Activities.Hiking, APUS.Server';
         this.displayName = 'Hiking';
+        this.activityType = 'Hiking';
+
+    }
+}
+
+export class Yoga extends MainActivity {
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Yoga, APUS.Server';
+        this.displayName = 'Yoga';
+        this.activityType = 'Yoga';
+
+    }
+}
+
+export class Football extends MainActivity {
+    distance: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Football, APUS.Server';
+        this.displayName = 'Football';
+        this.activityType = 'Football';
+
+    }
+}
+
+export class Walk extends MainActivity {
+    distance: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Walk, APUS.Server';
+        this.displayName = 'Walk';
+        this.activityType = 'Walk';
+
+    }
+}
+
+export class Ride extends MainActivity {
+    distance: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Ride, APUS.Server';
+        this.displayName = 'Ride';
+        this.activityType = 'Ride';
+
+    }
+}
+
+export class Swimming extends MainActivity {
+    distance: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Swimming, APUS.Server';
+        this.displayName = 'Swimming';
+        this.activityType = 'Swimming';
+
+    }
+}
+
+export class Ski extends MainActivity {
+    distance: number | null = null;
+    elevation: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Ski, APUS.Server';
+        this.displayName = 'Ski';
+        this.activityType = 'Ski';
+
+    }
+}
+
+export class Tennis extends MainActivity {
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.Activities.Tennis, APUS.Server';
+        this.displayName = 'Tennis';
+        this.activityType = 'Tennis';
+
     }
 }

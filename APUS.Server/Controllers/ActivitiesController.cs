@@ -27,8 +27,8 @@ namespace APUS.Server.Controllers
 				var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
 				return BadRequest(new { errors });
 			}
-
-			_activityRepository.Create(activity);
+			Console.WriteLine(activity);
+			//_activityRepository.Create(activity);
 
 			return Ok();
 		}

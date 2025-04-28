@@ -22,7 +22,6 @@
 
     <ng-container *ngIf="selectedActivity?.displayName === 'Bouldering'">
         <input type="number" [(ngModel)]="boulderingActivity.difficulty" placeholder="Grade" /> Grade
-        <input type="checkbox" [(ngModel)]="boulderingActivity.redPoint" /> Redpoint
     </ng-container>
 
     <button type="submit" (click)="submit()">Send</button>
