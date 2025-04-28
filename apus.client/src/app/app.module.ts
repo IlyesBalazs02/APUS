@@ -18,6 +18,7 @@ import { NavigationComponent } from './navigation/navigation.component';
 import { ListActivitiesComponent } from './activities/components/list-activities/list-activities.component';
 import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
 import { RunningActivityComponent } from './activities/components/list-activities-different-approach/ActivityCards/running-activity/running-activity.component';
+import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 
 // FORMS
 import { ReactiveFormsModule } from '@angular/forms';
@@ -26,6 +27,9 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+
+//SANDBOX
+import { MapSandBoxComponent } from './map-sand-box/map-sand-box.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +40,9 @@ import { MatInputModule } from '@angular/material/input';
     NavigationComponent,
     ListActivitiesComponent,
     ListActivitiesDifferentApproachComponent,
-    RunningActivityComponent
+    RunningActivityComponent,
+    MapSandBoxComponent,
+    ListActivitiesNewMethodComponent
   ],
   imports: [
     BrowserModule,

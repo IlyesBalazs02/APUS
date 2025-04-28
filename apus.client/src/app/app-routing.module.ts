@@ -5,12 +5,16 @@ import { ListActivitiesComponent } from './activities/components/list-activities
 import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
+import { MapSandBoxComponent } from './map-sand-box/map-sand-box.component';
+import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 
 const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
   { path: 'ListActivities', component: ListActivitiesComponent },
   { path: 'ListActivities2', component: ListActivitiesDifferentApproachComponent },
   { path: 'createactivity', component: CreateActivityComponent },
+  { path: 'map', component: MapSandBoxComponent },
+  { path: 'ListActivities3', component: ListActivitiesNewMethodComponent },
   { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
 ];
 
