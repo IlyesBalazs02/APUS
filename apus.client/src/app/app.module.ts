@@ -23,6 +23,9 @@ import { RunningActivityComponent } from './activities/components/list-activitie
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [
@@ -36,15 +39,18 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
     RunningActivityComponent
   ],
   imports: [
-    BrowserModule, HttpClientModule,
-    AppRoutingModule,
-    FormsModule,
-    CommonModule,
-    NgTemplateOutlet,
-    NgComponentOutlet,
+    BrowserModule,
+
     ReactiveFormsModule,
-    FormlyModule.forRoot(),
-    FormlyBootstrapModule,
+    FormlyModule.forRoot(),       // ← core first
+    FormlyBootstrapModule,        // ← then the Bootstrap UI
+    FormsModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+
+    AppRoutingModule,
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

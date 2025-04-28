@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
+import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { mainFields } from '../../formly/main.fields';
 import { selectActivityHelper } from './selectActivityHelper';
 import { MainActivity } from '../../_models/ActivityClasses';
@@ -9,12 +9,13 @@ import { MainActivity } from '../../_models/ActivityClasses';
   selector: 'app-create-activity',
   standalone: false,
   templateUrl: './create-activity.component.html',
-  styleUrl: './create-activity.component.css'
+  styleUrls: ['./create-activity.component.scss'],
 })
 
 export class CreateActivityComponent implements OnInit {
   form = new FormGroup({});
   model: any = {};
+  options: FormlyFormOptions = {};
   fields: FormlyFieldConfig[] = [];
   selectActivity = new selectActivityHelper();
 

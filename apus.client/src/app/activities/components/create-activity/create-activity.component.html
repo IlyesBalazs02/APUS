@@ -1,15 +1,18 @@
 <p>create-activity works!asdasdasd</p>
 <label for="activity">Choose an activity:</label>
-<select [(ngModel)]="selectActivity.selectedActivity" (ngModelChange)="onActivityChange($event)" name="activity"
-    id="activity">
-    <option *ngFor="let activity of selectActivity.SportTypes" [ngValue]="activity">
-        {{ activity.displayName }}
-    </option>
-</select>
 
-<form [formGroup]="form">
-    <div class="row">
-        <formly-form [model]="model" [fields]="fields" [form]="form"></formly-form>
-    </div>
-    <button type="submit">Save</button>
-</form>
+<mat-accordion>
+    <select [(ngModel)]="selectActivity.selectedActivity" (ngModelChange)="onActivityChange($event)" name="activity"
+        id="activity">
+        <option *ngFor="let activity of selectActivity.SportTypes" [ngValue]="activity">
+            {{ activity.displayName }}
+        </option>
+    </select>
+
+    <form [formGroup]="form">
+        <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
+        <button type="submit" class="btn btn-primary submit-button" [disabled]="!form.valid">
+            Submit
+        </button>
+    </form>
+</mat-accordion>
