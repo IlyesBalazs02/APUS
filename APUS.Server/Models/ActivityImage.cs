@@ -10,8 +10,8 @@ namespace APUS.Server.Models
 		public byte[]? Data { get; set; }
 		public DateTime? CreatedDate { get; set; }
 
-		[Required]
-		public string MainActivityId { get; set; }
+		/*[Required]
+		public string MainActivityId { get; set; }*/
 
 		/*[ForeignKey(nameof(MainActivityId))]
 		public MainActivity MainActivity { get; set; }*/

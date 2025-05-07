@@ -48,6 +48,10 @@ namespace APUS.Server.Migrations
                     b.Property<TimeSpan?>("Duration")
                         .HasColumnType("time");
 
+                    b.Property<string>("GPXPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MaxHeartRate")
                         .HasColumnType("int");
 

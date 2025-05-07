@@ -6,7 +6,7 @@ namespace APUS.Server.Data
 	public class ActivityDbContext : DbContext
 	{
 		public DbSet<MainActivity> Activities { get; set; }
-		//public DbSet<Coordinate> Coordinates { get; set; }   // optional, but recommended
+		//public DbSet<Coordinate> Coordinates { get; set; }
 		//public DbSet<ActivityImage> ActivityImages { get; set; }
 
 		public ActivityDbContext(DbContextOptions<ActivityDbContext> opt) :base(opt)
