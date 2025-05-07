@@ -27,8 +27,8 @@ namespace APUS.Server.Controllers
 				var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
 				return BadRequest(new { errors });
 			}
-			Console.WriteLine(activity);
-			//_activityRepository.Create(activity);
+
+			_activityRepository.Create(activity);
 
 			return Ok();
 		}
@@ -36,8 +36,10 @@ namespace APUS.Server.Controllers
 		[HttpGet]
 		public IEnumerable<MainActivity> Get()
 		{
-			//return _activityRepository.Read().ToArray();
-			return null;
+			Console.WriteLine("assasaassasasaassssssssssssssssssssssssssssssssssssss");
+			Console.WriteLine(typeof(Running)
+	.AssemblyQualifiedName);
+			return _activityRepository.Read().ToArray();
 		}
 	}
 

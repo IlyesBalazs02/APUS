@@ -3,8 +3,8 @@ import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { mainFields } from './formly/formFieldConfigs';
 import { selectActivityHelper } from './formly/selectActivityHelper';
-import { MainActivity } from '../../_models/ActivityClasses';
-import { HttpClient } from '@angular/common/http';
+import { MainActivity, Running } from '../../_models/ActivityClasses';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-create-activity',
@@ -24,12 +24,14 @@ export class CreateActivityComponent implements OnInit {
   constructor(private http: HttpClient) { }
   ngOnInit() {
     this.updateFields(this.selectActivityHelper.selectedActivity);
-    this.tmp = new MainActivity();
+    this.tmp = new Running();
+    //this.tmp.title = 'asd';
   }
 
   onActivityChange(activity: MainActivity) {
     this.updateFields(activity);
     this.selectActivityHelper.selectedActivity = activity;
+    console.log('selected activtiyasd:', this.selectActivityHelper.selectedActivity);
   }
 
   private updateFields(activity: MainActivity) {
@@ -49,12 +51,12 @@ export class CreateActivityComponent implements OnInit {
     const formData = { ...this.model };
 
     const payload = {
-      ...formData,
-      activityType: this.selectActivityHelper.selectedActivity.$type
+      $type: this.selectActivityHelper.selectedActivity.$type,
+      ...formData
     };
 
     console.log(JSON.stringify(payload));
-    console.log(JSON.stringify(this.tmp))
+    console.log(this.tmp);
 
     this.http.post('/api/activities', payload).subscribe(() => {
       console.log('Submitted running activity!');

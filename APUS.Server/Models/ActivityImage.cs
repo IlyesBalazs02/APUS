@@ -1,18 +1,25 @@
-﻿namespace APUS.Server.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace APUS.Server.Models
 {
 	public class ActivityImage
 	{
+		[Key]
 		public Guid Id { get; set; }
-		public string FilePath { get; set; }
-		public string FileName { get; set; }
-		public string ContentType { get; set; }
+		public byte[]? Data { get; set; }
+		public DateTime? CreatedDate { get; set; }
 
-		public ActivityImage(string Filepath, string Filename, string Contentype)
+		[Required]
+		public string MainActivityId { get; set; }
+
+		/*[ForeignKey(nameof(MainActivityId))]
+		public MainActivity MainActivity { get; set; }*/
+
+		public ActivityImage()
 		{
 			Id = Guid.NewGuid();
-			FileName = Filename;
-			FilePath = Filepath;
-			ContentType = Contentype;
 		}
+
 	}
 }

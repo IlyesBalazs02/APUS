@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.FileProviders;
 
 
 namespace APUS.Server
@@ -17,15 +19,14 @@ namespace APUS.Server
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			// Add services to the container.
-
-
 			// region HTTTP POST Json
 			builder.Services.AddControllers()
 				.AddNewtonsoftJson(options => // Ensure the required package is installed
 				{
 					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+
 				});
+			
 
 			builder.Services.AddCors(options =>
 			{
@@ -58,6 +59,15 @@ namespace APUS.Server
 
 			app.UseDefaultFiles();
 			app.UseStaticFiles();
+
+			// Optional: serve files from the uploads folder
+			//var uploadPath = "\"C:\\APUSGpxFiles\"";
+			//app.UseFileServer(new FileServerOptions
+			//{
+			//	FileProvider = new PhysicalFileProvider(uploadPath),
+			//	RequestPath = "/gpx-files",
+			//	EnableDirectoryBrowsing = false
+			//});
 
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())

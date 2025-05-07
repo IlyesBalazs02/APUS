@@ -1,0 +1,13 @@
+<p>upload-gpx-file works!</p>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- Existing formly-form fields... -->
+
+    <!-- GPX file input -->
+    <div class="form-group">
+        <label for="gpxFile">Upload GPX File</label>
+        <input type="file" id="gpxFile" accept=".gpx" (change)="onFileSelected($event)" />
+    </div>
+
+    <button type="submit" [disabled]="!form.valid">Submit</button>
+</form>

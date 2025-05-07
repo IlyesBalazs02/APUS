@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -8,9 +9,6 @@ namespace APUS.Server.Models
 
 	[JsonObject]
 	[System.Text.Json.Serialization.JsonConverter(typeof(Newtonsoft.Json.Converters.CustomCreationConverter<MainActivity>))]
-	/*[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-	[JsonDerivedType(typeof(Running), "Running")]
-	[JsonDerivedType(typeof(Running), "Bouldering")]*/
 	public class MainActivity
 	{
 		[Key]
@@ -36,11 +34,15 @@ namespace APUS.Server.Models
 		//Frontend getComponent
 		public string? ActivityType { get; set; }
 
-		ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
+		[System.Text.Json.Serialization.JsonIgnore]
+		public string GPXPath { get; set; }
 
-		ICollection<Coordinate>? Coordinates { get; set; } = new List<Coordinate>();
+		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
 
-		public Boolean? ShowCoordinates { get; set; } = false;
+		[System.Text.Json.Serialization.JsonIgnore]
+		public string StreamPath { get; set; }
+
+		public Boolean? ShowCoordinates { get; set; } = false;*/
 
 		public MainActivity()
 		{

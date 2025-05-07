@@ -6,6 +6,9 @@ namespace APUS.Server.Data
 	public class ActivityDbContext : DbContext
 	{
 		public DbSet<MainActivity> Activities { get; set; }
+		//public DbSet<Coordinate> Coordinates { get; set; }   // optional, but recommended
+		//public DbSet<ActivityImage> ActivityImages { get; set; }
+
 		public ActivityDbContext(DbContextOptions<ActivityDbContext> opt) :base(opt)
 		{
 
@@ -13,6 +16,12 @@ namespace APUS.Server.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			//activity and images
+			/*modelBuilder.Entity<ActivityImage>()
+			.HasOne(ai => ai.MainActivity)
+			.WithMany(ma => ma.ActivityImages)
+			.HasForeignKey(ai => ai.MainActivityId);*/
+
 			modelBuilder.Entity<MainActivity>().ToTable("MainActivities", "Activities");
 
 			modelBuilder.Entity<Running>().ToTable("Running", "Activities");

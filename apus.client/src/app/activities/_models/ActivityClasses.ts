@@ -12,15 +12,15 @@ export class MainActivity {
     calories: number | null = null;
     avgHeartRate: number | null = null;
     maxHeartRate: number | null = null;
-    displayName: string;
+    displayName: string | null = null;
     activityType: string = '';
-    activityImages: ActivityImage[] = [];
-    coordinates: Coordinate[] = [];
-    showCoordinates: boolean = false;
+    //activityImages: ActivityImage[] = [];
+    //coordinates: Coordinate[] = [];
+    //showCoordinates: boolean = false;
 
 
     constructor() {
-        this.$type = 'APUS.Server.Models.Activities.MainActivity, APUS.Server';
+        this.$type = 'APUS.Server.Models.MainActivity, APUS.Server';
         this.displayName = 'Activity';
     }
 }
@@ -32,7 +32,7 @@ export class Running extends MainActivity {
 
     constructor() {
         super();
-        this.$type = 'APUS.Server.Models.Activities.Running, APUS.Server';
+        this.$type = 'APUS.Server.Models.Running, APUS.Server';
         this.displayName = 'Running';
         this.activityType = 'Running';
     }
@@ -156,4 +156,28 @@ export class Tennis extends MainActivity {
         this.activityType = 'Tennis';
 
     }
+}
+
+const activityRegistry = new Map<string, new () => MainActivity>(
+    [
+        Running,
+        Bouldering,
+        RockClimbing,
+        Hiking,
+        Yoga,
+        Football,
+        Walk,
+        Ride,
+        Swimming,
+        Ski,
+        Tennis,
+    ].map(ctor => {
+        const tmp = new ctor();
+        return [tmp.$type, ctor] as [string, new () => MainActivity];
+    })
+);
+
+export function createActivity(dto: MainActivity): MainActivity {
+    const Ctor = activityRegistry.get(dto.$type) ?? MainActivity;
+    return Object.assign(new Ctor(), dto);
 }

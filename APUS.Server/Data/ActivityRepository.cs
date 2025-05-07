@@ -25,6 +25,8 @@ namespace APUS.Server.Data
 				}
 			}
 
+			
+
 			context.Activities.Add((MainActivity)newActivity);
 			context.SaveChanges();
 		}

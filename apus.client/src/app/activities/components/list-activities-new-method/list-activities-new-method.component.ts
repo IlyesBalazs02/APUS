@@ -19,21 +19,12 @@ export class ListActivitiesNewMethodComponent implements OnInit {
 
   getActivities() {
     this.http.get<asd.MainActivity[]>('/api/activities').subscribe(
-      (result) => {
-        this.activities = result.map(activity => {
-          switch (activity.$type) {
-            case 'APUS.Server.Models.Activities.Running, APUS.Server':
-              return Object.assign(new asd.Running(), activity);
-            case 'APUS.Server.Models.Activities.Bouldering, APUS.Server':
-              return Object.assign(new asd.Bouldering(), activity);
-            default:
-              return Object.assign(new asd.MainActivity(), activity);
-          }
-        });
+      result => {
+        this.activities = result.map(dto => asd.createActivity(dto));
+        console.log(this.activities);
       },
-      (error) => {
-        console.error(error);
-      }
+      error => console.error(error)
     );
+
   }
 }

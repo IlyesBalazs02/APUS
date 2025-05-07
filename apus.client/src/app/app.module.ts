@@ -29,7 +29,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 //SANDBOX
-import { MapSandBoxComponent } from './map-sand-box/map-sand-box.component';
+import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
+import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { MapSandBoxComponent } from './map-sand-box/map-sand-box.component';
     ListActivitiesDifferentApproachComponent,
     RunningActivityComponent,
     MapSandBoxComponent,
-    ListActivitiesNewMethodComponent
+    ListActivitiesNewMethodComponent,
+    UploadGpxFileComponent
   ],
   imports: [
     BrowserModule,

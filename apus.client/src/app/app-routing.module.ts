@@ -5,8 +5,9 @@ import { ListActivitiesComponent } from './activities/components/list-activities
 import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
-import { MapSandBoxComponent } from './map-sand-box/map-sand-box.component';
+import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
+import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
 
 const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'createactivity', component: CreateActivityComponent },
   { path: 'map', component: MapSandBoxComponent },
   { path: 'ListActivities3', component: ListActivitiesNewMethodComponent },
+  { path: 'uploadgpx', component: UploadGpxFileComponent },
   { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
 ];
 

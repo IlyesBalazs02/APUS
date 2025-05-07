@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250428160455_collections")]
+    partial class collections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,64 @@ namespace APUS.Server.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("APUS.Server.Models.ActivityImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("MainActivityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MainActivityId");
+
+                    b.ToTable("ActivityImages");
+                });
+
+            modelBuilder.Entity("APUS.Server.Models.Coordinate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("Altitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("MainActivityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MainActivityId1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("Time")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MainActivityId");
+
+                    b.HasIndex("MainActivityId1");
+
+                    b.ToTable("Coordinates");
+                });
 
             modelBuilder.Entity("APUS.Server.Models.MainActivity", b =>
                 {
@@ -50,6 +111,9 @@ namespace APUS.Server.Migrations
 
                     b.Property<int?>("MaxHeartRate")
                         .HasColumnType("int");
+
+                    b.Property<bool?>("ShowCoordinates")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -101,6 +165,34 @@ namespace APUS.Server.Migrations
                     b.ToTable("Running", "Activities");
                 });
 
+            modelBuilder.Entity("APUS.Server.Models.ActivityImage", b =>
+                {
+                    b.HasOne("APUS.Server.Models.MainActivity", "MainActivity")
+                        .WithMany("ActivityImages")
+                        .HasForeignKey("MainActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MainActivity");
+                });
+
+            modelBuilder.Entity("APUS.Server.Models.Coordinate", b =>
+                {
+                    b.HasOne("APUS.Server.Models.MainActivity", null)
+                        .WithMany("Coordinates")
+                        .HasForeignKey("MainActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("APUS.Server.Models.MainActivity", "MainActivity")
+                        .WithMany()
+                        .HasForeignKey("MainActivityId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MainActivity");
+                });
+
             modelBuilder.Entity("APUS.Server.Models.Bouldering", b =>
                 {
                     b.HasOne("APUS.Server.Models.MainActivity", null)
@@ -126,6 +218,13 @@ namespace APUS.Server.Migrations
                         .HasForeignKey("APUS.Server.Models.Running", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("APUS.Server.Models.MainActivity", b =>
+                {
+                    b.Navigation("ActivityImages");
+
+                    b.Navigation("Coordinates");
                 });
 #pragma warning restore 612, 618
         }
