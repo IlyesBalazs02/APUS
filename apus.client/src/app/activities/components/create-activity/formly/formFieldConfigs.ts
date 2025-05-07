@@ -90,7 +90,7 @@ export const mainFields: FormlyFieldConfig[] = [
                 },
             }
         ]
-    }
+    },
 ];
 
 export const runningFields: FormlyFieldConfig[] = [

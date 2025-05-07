@@ -31,6 +31,7 @@ import { MatInputModule } from '@angular/material/input';
 //SANDBOX
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
+import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-fil
     RunningActivityComponent,
     MapSandBoxComponent,
     ListActivitiesNewMethodComponent,
-    UploadGpxFileComponent
+    UploadGpxFileComponent,
+    UploadActivityComponent
   ],
   imports: [
     BrowserModule,

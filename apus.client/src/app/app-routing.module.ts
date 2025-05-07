@@ -8,6 +8,7 @@ import { CreateActivityComponent } from './activities/components/create-activity
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
+import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 
 const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
@@ -16,7 +17,7 @@ const routes: Routes = [
   { path: 'createactivity', component: CreateActivityComponent },
   { path: 'map', component: MapSandBoxComponent },
   { path: 'ListActivities3', component: ListActivitiesNewMethodComponent },
-  { path: 'uploadgpx', component: UploadGpxFileComponent },
+  { path: 'uploadgpx', component: UploadActivityComponent },
   { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
 ];
 

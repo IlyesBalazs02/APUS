@@ -3,12 +3,12 @@ import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 @Component({
-  selector: 'app-upload-gpx-file',
+  selector: 'app-upload-activity',
   standalone: false,
-  templateUrl: './upload-gpx-file.component.html',
-  styleUrl: './upload-gpx-file.component.css'
+  templateUrl: './upload-activity.component.html',
+  styleUrl: './upload-activity.component.css'
 })
-export class UploadGpxFileComponent {
+export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});
 
