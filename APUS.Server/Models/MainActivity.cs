@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,16 +35,6 @@ namespace APUS.Server.Models
 		//Frontend getComponent
 		public string? ActivityType { get; set; }
 
-		[System.Text.Json.Serialization.JsonIgnore]
-		public string GPXPath { get; set; }
-
-		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
-
-		[System.Text.Json.Serialization.JsonIgnore]
-		public string StreamPath { get; set; }
-
-		public Boolean? ShowCoordinates { get; set; } = false;*/
-
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;
@@ -51,7 +42,23 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class Running : MainActivity
+	public class GpsRelatedActivites : MainActivity
+	{
+		[System.Text.Json.Serialization.JsonIgnore]
+		public string FilePath { get; set; }
+		public double? TotalDistanceKm { get; set; }
+		public double? TotalAscentMeters { get; set; }
+		public double? TotalDescentMeters { get; set; }
+		public int? AvgPace { get; set; }
+		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
+
+		[System.Text.Json.Serialization.JsonIgnore]
+		public string StreamPath { get; set; }
+
+		public Boolean? ShowCoordinates { get; set; } = false;*/
+	}
+
+	public class Running : GpsRelatedActivites
 	{
 		public int? Pace { get; set; }
 		public int? Distance { get; set; }
@@ -81,7 +88,7 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class Hiking : MainActivity
+	public class Hiking : GpsRelatedActivites
 	{
 		public int? Distance { get; set; }
 		public int? ElevationGain { get; set; }
@@ -107,12 +114,12 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class Walk : MainActivity
+	public class Walk : GpsRelatedActivites
 	{
 		public int? Distance { get; set; }
 	}
 
-	public class Ride : MainActivity
+	public class Ride : GpsRelatedActivites
 	{
 		public int? Distance { get; set; }
 	}
@@ -122,7 +129,7 @@ namespace APUS.Server.Models
 		public int? Distance { get; set; }
 	}
 
-	public class Ski : MainActivity
+	public class Ski : GpsRelatedActivites
 	{
 		public int? Distance { get; set; }
 		public int? Elevation { get; set; }
