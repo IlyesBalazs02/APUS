@@ -6,7 +6,7 @@ namespace APUS.Server.Data
 	public class ActivityDbContext : DbContext
 	{
 		public DbSet<MainActivity> Activities { get; set; }
-		//public DbSet<Coordinate> Coordinates { get; set; }
+		public DbSet<GpsRelatedActivity> GpsRelatedActivities { get; set; }
 		//public DbSet<ActivityImage> ActivityImages { get; set; }
 
 		public ActivityDbContext(DbContextOptions<ActivityDbContext> opt) :base(opt)
@@ -23,6 +23,8 @@ namespace APUS.Server.Data
 			.HasForeignKey(ai => ai.MainActivityId);*/
 
 			modelBuilder.Entity<MainActivity>().ToTable("MainActivities", "Activities");
+
+			modelBuilder.Entity<GpsRelatedActivity>().ToTable("GpsRelatedActivities", "Activities");
 
 			modelBuilder.Entity<Running>().ToTable("Running", "Activities");
 			modelBuilder.Entity<Hiking>().ToTable("Hiking", "Activities");

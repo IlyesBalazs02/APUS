@@ -25,10 +25,19 @@ export class MainActivity {
     }
 }
 
-export class Running extends MainActivity {
-    pace: number | null = null;
-    distance: number | null = null;
-    elevationGain: number | null = null;
+export class GpsRelatedActivity extends MainActivity {
+    avgpace: number | null = null;
+    totaldistancekm: number | null = null;
+    totalascentmeters: number | null = null;
+    totaldescentmeters: number | null = null;
+
+    constructor() {
+        super();
+        this.$type = 'APUS.Server.Models.GpsRelatedActivity, APUS.Server';
+    }
+}
+
+export class Running extends GpsRelatedActivity {
 
     constructor() {
         super();
@@ -64,9 +73,7 @@ export class RockClimbing extends MainActivity {
     }
 }
 
-export class Hiking extends MainActivity {
-    distance: number | null = null;
-    elevationGain: number | null = null;
+export class Hiking extends GpsRelatedActivity {
 
     constructor() {
         super();
@@ -99,8 +106,7 @@ export class Football extends MainActivity {
     }
 }
 
-export class Walk extends MainActivity {
-    distance: number | null = null;
+export class Walk extends GpsRelatedActivity {
 
     constructor() {
         super();
@@ -111,8 +117,7 @@ export class Walk extends MainActivity {
     }
 }
 
-export class Ride extends MainActivity {
-    distance: number | null = null;
+export class Ride extends GpsRelatedActivity {
 
     constructor() {
         super();
@@ -135,9 +140,7 @@ export class Swimming extends MainActivity {
     }
 }
 
-export class Ski extends MainActivity {
-    distance: number | null = null;
-    elevation: number | null = null;
+export class Ski extends GpsRelatedActivity {
 
     constructor() {
         super();

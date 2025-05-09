@@ -42,10 +42,11 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class GpsRelatedActivites : MainActivity
+	//Private???????
+	public class GpsRelatedActivity : MainActivity
 	{
 		[System.Text.Json.Serialization.JsonIgnore]
-		public string FilePath { get; set; }
+		public string? FilePath { get; set; }
 		public double? TotalDistanceKm { get; set; }
 		public double? TotalAscentMeters { get; set; }
 		public double? TotalDescentMeters { get; set; }
@@ -58,11 +59,8 @@ namespace APUS.Server.Models
 		public Boolean? ShowCoordinates { get; set; } = false;*/
 	}
 
-	public class Running : GpsRelatedActivites
+	public class Running : GpsRelatedActivity
 	{
-		public int? Pace { get; set; }
-		public int? Distance { get; set; }
-		public int? ElevationGain { get; set; }
 		public Running()
 		{
 		}
@@ -88,10 +86,8 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class Hiking : GpsRelatedActivites
+	public class Hiking : GpsRelatedActivity
 	{
-		public int? Distance { get; set; }
-		public int? ElevationGain { get; set; }
 		public Hiking()
 		{
 		}
@@ -114,14 +110,12 @@ namespace APUS.Server.Models
 		}
 	}
 
-	public class Walk : GpsRelatedActivites
+	public class Walk : GpsRelatedActivity
 	{
-		public int? Distance { get; set; }
 	}
 
-	public class Ride : GpsRelatedActivites
+	public class Ride : GpsRelatedActivity
 	{
-		public int? Distance { get; set; }
 	}
 
 	public class Swimming : MainActivity
@@ -129,10 +123,9 @@ namespace APUS.Server.Models
 		public int? Distance { get; set; }
 	}
 
-	public class Ski : GpsRelatedActivites
+	public class Ski : GpsRelatedActivity
 	{
-		public int? Distance { get; set; }
-		public int? Elevation { get; set; }
+
 	}
 
 	public class Tennis : MainActivity

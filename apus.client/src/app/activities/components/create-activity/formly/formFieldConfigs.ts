@@ -98,7 +98,7 @@ export const runningFields: FormlyFieldConfig[] = [
         fieldGroupClassName: 'display-flex',
         fieldGroup: [
             {
-                key: 'pace',
+                key: 'AvgPace',
                 type: 'input',
                 templateOptions: {
                     type: 'time',
@@ -106,7 +106,7 @@ export const runningFields: FormlyFieldConfig[] = [
                 },
             },
             {
-                key: 'distance',
+                key: 'TotalDistanceKm',
                 type: 'input',
                 templateOptions: {
                     type: 'number',
@@ -115,7 +115,7 @@ export const runningFields: FormlyFieldConfig[] = [
                 },
             },
             {
-                key: 'elevationGain',
+                key: 'TotalAscentMeters',
                 type: 'input',
                 templateOptions: {
                     type: 'number',
