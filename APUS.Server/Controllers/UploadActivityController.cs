@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace APUS.Server.Controllers
 {
@@ -18,7 +19,7 @@ namespace APUS.Server.Controllers
 		private readonly IActivityRepository _activityRepository;
 
 
-		public UploadActivityController(IConfiguration config, ILogger<UploadActivityController> logger)
+		public UploadActivityController(IConfiguration config, ILogger<UploadActivityController> logger, IActivityRepository activityRepository)
 		{
 			_uploadFolder = config["GpxSettings:UploadFolder"]
 							 ?? Path.Combine("Uploads", "GpxFiles");
@@ -31,6 +32,7 @@ namespace APUS.Server.Controllers
 			}
 
 			_logger = logger;
+			_activityRepository = activityRepository;
 		}
 
 		[HttpPost("upload-activity")]
@@ -106,22 +108,38 @@ namespace APUS.Server.Controllers
 
 			if (importedActivity != null)
 			{
-				MainActivity newActivity = new MainActivity
+				MainActivity newActivity;
+				if (importedActivity.HasGpsTrack is true)
 				{
-					Title = "New Activity",
-					Date = importedActivity.StartTime,
-					Duration = importedActivity.Duration,
-					Calories = importedActivity.TotalCalories,
-					AvgHeartRate = importedActivity.AverageHeartRate,
-					MaxHeartRate = importedActivity.MaximumHeartRate,
+					newActivity = new GpsRelatedActivity
+					{
+						TotalAscentMeters = importedActivity.TotalAscentMeters,
+						TotalDescentMeters = importedActivity.TotalDescentMeters,
+						TotalDistanceKm = importedActivity.TotalDistanceKm
+					};	
+				}
+				else
+				{
+					newActivity = new MainActivity();
+				}
+				newActivity.Title = "New Activity";
+				newActivity.Date = importedActivity.StartTime;
+				newActivity.Duration = importedActivity.Duration;
+				newActivity.Calories = importedActivity.TotalCalories;
+				newActivity.AvgHeartRate = importedActivity.AverageHeartRate;
+				newActivity.MaxHeartRate = importedActivity.MaximumHeartRate;
 
-
-				};
+				_activityRepository.Create(newActivity);
+				return Ok(new
+				{
+					fileName,
+					relativePath = $"/{_uploadFolder}/{fileName}"
+				});
 			}
 
 
 			// Return whatever metadata/URL needed
-			return Ok(new
+			return BadRequest(new
 			{
 				fileName,
 				relativePath = $"/{_uploadFolder}/{fileName}"

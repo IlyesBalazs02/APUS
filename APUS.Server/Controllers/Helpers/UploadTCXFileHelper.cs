@@ -17,14 +17,19 @@ namespace APUS.Server.Controllers.Helpers
 
 		public ImportActivityModel ImportActivity()
 		{
-			Console.WriteLine("Asdasdasasdasdasdasddsasaddas69");
+			//parse trackpoints
 			Points = ParseTcxTrackpoints(_stream);
 
 			_stream.Seek(0, SeekOrigin.Begin);
 
+			//parse lap extensions
 			Laps = ParseLapSummaries(_stream);
 
+			//Compute additional information about the activity
 			ImportedActivity = ComputeAdditionalStats(Laps);
+
+			//Check if the uploaded activity contains coordinates or it's just a simple activity
+			ImportedActivity.HasGpsTrack = ContainsGPSTrack(Points);
 
 			return ImportedActivity;
 		}
@@ -38,7 +43,6 @@ namespace APUS.Server.Controllers.Helpers
 			// Garmin Activity Extension (for Speed, RunCadence, Watts):
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";
 
-			Console.WriteLine("Asdasdasasdasdasdasddsasaddas");
 			//parse trackpoints
 			return doc
 			  // find all <Trackpoint>
@@ -188,6 +192,11 @@ namespace APUS.Server.Controllers.Helpers
 			};
 
 			return stats;
+		}
+
+		private bool ContainsGPSTrack(List<TcxTrackPoint> points)
+		{
+			return points.Any(p => p.Latitude.HasValue && p.Longitude.HasValue);
 		}
 
 		private class TcxTrackPoint

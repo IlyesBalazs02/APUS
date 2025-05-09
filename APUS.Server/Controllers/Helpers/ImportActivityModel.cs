@@ -11,6 +11,8 @@
 		public double TotalTimeSeconds { get; set; }
 		public int? TotalCalories { get; set; }
 		public int? AverageHeartRate { get; set; }
-		public int MaximumHeartRate { get; set; }
+		public int? MaximumHeartRate { get; set; }
+		public bool HasGpsTrack { get; set; }
+
 	}
 }
