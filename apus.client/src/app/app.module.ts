@@ -19,6 +19,8 @@ import { ListActivitiesComponent } from './activities/components/list-activities
 import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
 import { RunningActivityComponent } from './activities/components/list-activities-different-approach/ActivityCards/running-activity/running-activity.component';
 import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
+import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
+import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 
 // FORMS
 import { ReactiveFormsModule } from '@angular/forms';
@@ -31,7 +33,6 @@ import { MatInputModule } from '@angular/material/input';
 //SANDBOX
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
-import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 
 @NgModule({
   declarations: [
@@ -43,24 +44,24 @@ import { UploadActivityComponent } from './activities/components/upload-activity
     ListActivitiesComponent,
     ListActivitiesDifferentApproachComponent,
     RunningActivityComponent,
-    MapSandBoxComponent,
     ListActivitiesNewMethodComponent,
     UploadGpxFileComponent,
-    UploadActivityComponent
+    UploadActivityComponent,
+    DisplayActivityComponent
   ],
   imports: [
     BrowserModule,
 
     ReactiveFormsModule,
-    FormlyModule.forRoot(),       // ← core first
-    FormlyBootstrapModule,        // ← then the Bootstrap UI
+    FormlyModule.forRoot(),
+    FormlyBootstrapModule,
     FormsModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
-
     AppRoutingModule,
     HttpClientModule,
+    MapSandBoxComponent
   ],
   providers: [],
   bootstrap: [AppComponent]
