@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Data;
+using APUS.Server.DTOs.GetActivitiesDto;
 using APUS.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -36,11 +37,53 @@ namespace APUS.Server.Controllers
 		[HttpGet]
 		public IEnumerable<MainActivity> Get()
 		{
-			Console.WriteLine("assasaassasasaassssssssssssssssssssssssssssssssssssss");
-			Console.WriteLine(typeof(Running)
-	.AssemblyQualifiedName);
+			
 			return _activityRepository.Read().ToArray();
 		}
+
+		[HttpGet("get-activities")]
+		public IEnumerable<ActivityDto> GetActivities()
+		{
+			var activities = _activityRepository.Read();
+			return activities.Select(MapToDto).ToArray();
+		}
+
+		private static TDto CopyBaseProps<TDto>(MainActivity activity)
+	where TDto : ActivityDto, new()
+		{
+			return new TDto
+			{
+				Id = activity.Id,
+				Title = activity.Title,
+				Description = activity.Description,
+				Duration = activity.Duration,
+				Date = activity.Date,
+				AvgHr = activity.AvgHeartRate,
+				TotalCalories = activity.Calories,
+				Type = activity.GetType().Name,
+			};
+		}
+
+		private ActivityDto MapToDto(MainActivity activity)
+		{
+			return activity switch
+			{
+				
+				Running running => CopyBaseProps<RunningActivityDto>(running) with //Running BEFORE the Gps
+				{
+					DistanceKm = running.TotalDistanceKm,
+					ElevationGain = running.TotalAscentMeters,
+					Pace = running.AvgPace,
+				},
+				GpsRelatedActivity Gps => CopyBaseProps<GpsActivityDto>(Gps) with
+				{
+					DistanceKm = Gps.TotalDistanceKm,
+					ElevationGain = Gps.TotalAscentMeters
+				},
+				_ => CopyBaseProps<ActivityDto>(activity)
+			};
+		}
+
 	}
 
 }

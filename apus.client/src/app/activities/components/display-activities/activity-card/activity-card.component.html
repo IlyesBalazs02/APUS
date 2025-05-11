@@ -1,0 +1,15 @@
+<article class="card">
+    <header>
+        <h3>{{ activity.title }}</h3>
+        <small>
+            {{ activity.date | date:'mediumDate' }}
+            • Duration: {{ activity.duration }}
+        </small>
+    </header>
+
+    <section class="props">
+        <span *ngFor="let p of displayProps" class="prop">
+            <strong>{{ p.label }}:</strong> {{ p.value }}
+        </span>
+    </section>
+</article>

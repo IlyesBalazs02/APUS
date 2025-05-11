@@ -5,6 +5,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace APUS.Server.Controllers.Helpers
 {
+	// NOT FINISHED
 	public class UploadGPXFileHelper
 	{
 		private readonly Stream _stream;

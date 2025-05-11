@@ -20,9 +20,9 @@ namespace APUS.Server.Models
 
 		public string? Description { get; set; }
 
-		public DateTime? Date { get; set; }
+		public DateTime Date { get; set; }
 
-		public TimeSpan? Duration { get; set; }
+		public TimeSpan Duration { get; set; }
 
 		public int? Calories { get; set; }
 

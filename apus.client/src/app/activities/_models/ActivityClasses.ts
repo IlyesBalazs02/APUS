@@ -11,7 +11,7 @@ export class MainActivity {
     title: string = '';
     description: string | null = null;
     date: string = new Date().toISOString();
-    duration: string | null = null;
+    duration: string = '';
     calories: number | null = null;
     avgHeartRate: number | null = null;
     maxHeartRate: number | null = null;

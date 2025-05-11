@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250511135635_AvgPaceTypeChanged")]
+    partial class AvgPaceTypeChanged
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,8 +79,8 @@ namespace APUS.Server.Migrations
                 {
                     b.HasBaseType("APUS.Server.Models.MainActivity");
 
-                    b.Property<double?>("AvgPace")
-                        .HasColumnType("float");
+                    b.Property<string>("AvgPace")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FilePath")
                         .HasColumnType("nvarchar(max)");

@@ -21,6 +21,8 @@ import { RunningActivityComponent } from './activities/components/list-activitie
 import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
+import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
+import { ActivityCardComponent } from './activities/components/display-activities/activity-card/activity-card.component';
 
 // FORMS
 import { ReactiveFormsModule } from '@angular/forms';
@@ -47,7 +49,9 @@ import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-fil
     ListActivitiesNewMethodComponent,
     UploadGpxFileComponent,
     UploadActivityComponent,
-    DisplayActivityComponent
+    DisplayActivityComponent,
+    DisplayActivitiesComponent,
+    ActivityCardComponent
   ],
   imports: [
     BrowserModule,

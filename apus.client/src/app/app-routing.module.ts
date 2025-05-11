@@ -9,6 +9,7 @@ import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.compone
 import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
 import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
+import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
 
 const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
@@ -18,6 +19,7 @@ const routes: Routes = [
   { path: 'map', component: MapSandBoxComponent },
   { path: 'ListActivities3', component: ListActivitiesNewMethodComponent },
   { path: 'uploadgpx', component: UploadActivityComponent },
+  { path: 'DisplayActivities', component: DisplayActivitiesComponent },
   { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
 ];
 
