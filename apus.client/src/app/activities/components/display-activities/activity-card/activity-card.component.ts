@@ -36,11 +36,8 @@ export class ActivityCardComponent implements OnChanges {
   }
 
   private buildDisplayProps(a: ActivityDto): DisplayProp[] {
-    // pick the right two keys (or default)
     const entries = this.propMap[a.type] || this.propMap['default'];
 
-    // filter out any whose value is null or undefined,
-    // then map to { label, value }
     return entries
       .filter(({ key }) => a[key] != null)
       .map(({ key, label }) => ({

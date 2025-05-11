@@ -1,8 +1,0 @@
-<p>list-activities-different-approach works!</p>
-
-<ng-container *ngFor="let activity of activities">
-    <ng-container *ngComponentOutlet="getComponent(activity.activityType); 
-                                  injector: createInjector(activity)">
-    </ng-container>
-
-</ng-container>

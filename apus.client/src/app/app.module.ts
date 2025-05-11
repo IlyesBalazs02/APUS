@@ -15,10 +15,6 @@ import { ActivitySelectorComponent } from './activities/components/activity-sele
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
 import { FooterComponent } from './footer/footer.component';
 import { NavigationComponent } from './navigation/navigation.component';
-import { ListActivitiesComponent } from './activities/components/list-activities/list-activities.component';
-import { ListActivitiesDifferentApproachComponent } from './activities/components/list-activities-different-approach/list-activities-different-approach.component';
-import { RunningActivityComponent } from './activities/components/list-activities-different-approach/ActivityCards/running-activity/running-activity.component';
-import { ListActivitiesNewMethodComponent } from './activities/components/list-activities-new-method/list-activities-new-method.component';
 import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
@@ -43,10 +39,6 @@ import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-fil
     CreateActivityComponent,
     FooterComponent,
     NavigationComponent,
-    ListActivitiesComponent,
-    ListActivitiesDifferentApproachComponent,
-    RunningActivityComponent,
-    ListActivitiesNewMethodComponent,
     UploadGpxFileComponent,
     UploadActivityComponent,
     DisplayActivityComponent,
