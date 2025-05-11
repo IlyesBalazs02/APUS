@@ -1,9 +1,12 @@
+import { Time } from "@angular/common";
 import { ActivityImage } from "./ActivityImage";
 import { Coordinate } from "./Coordinate";
+import { Timestamp } from "rxjs";
 
 // ../fromly/newFields
 export class MainActivity {
     $type!: string;
+    activityType: string = '';
     id: string = '';
     title: string = '';
     description: string | null = null;
@@ -13,7 +16,6 @@ export class MainActivity {
     avgHeartRate: number | null = null;
     maxHeartRate: number | null = null;
     displayName: string | null = null;
-    activityType: string = '';
     //activityImages: ActivityImage[] = [];
     //coordinates: Coordinate[] = [];
     //showCoordinates: boolean = false;
@@ -26,7 +28,7 @@ export class MainActivity {
 }
 
 export class GpsRelatedActivity extends MainActivity {
-    avgpace: number | null = null;
+    avgpace: string | null = null;
     totaldistancekm: number | null = null;
     totalascentmeters: number | null = null;
     totaldescentmeters: number | null = null;

@@ -175,20 +175,44 @@ namespace APUS.Server.Controllers.Helpers
 				.Select(l => l.AverageHeartRate.Value)
 				.Average();
 
+			double avgSpeedTmp = laps.Average(l => l.AvgSpeed ?? 0);
+
+
+
+			//Calc the totalAscent and TotalDescent
+			var elevationPoints = Points
+				   .Where(p => p.Altitude.HasValue)
+				   .Select(p => p.Altitude.Value)
+				   .ToList();
+
+			double ascentTmp = 0;
+			double descentTmp = 0;
+
+			for (int i = 1; i < elevationPoints.Count; i++)
+			{
+				var delta = elevationPoints[i] - elevationPoints[i - 1];
+				if (delta > 0)
+					ascentTmp += delta;
+				else
+					descentTmp += -delta;
+			}
 
 			var stats = new ImportActivityModel
 			{
 				StartTime = laps.First().StartTime,
 				TotalTimeSeconds = totalTime,
-				Duration  = TimeSpan.FromSeconds(totalTime),
+				Duration = TimeSpan.FromSeconds(totalTime),
 				TotalDistanceMeters = totalDistanceMeters,
 				TotalDistanceKm = totalDistanceKm,
+				AvgPace = avgSpeedTmp,
 				TotalCalories = laps.Sum(l => l.Calories ?? 0),
 				AverageHeartRate = (int)avgHrDouble,
 				MaximumHeartRate = laps
 					.Where(l => l.MaximumHeartRate.HasValue)
 					.Select(l => l.MaximumHeartRate.Value)
-					.Max()
+					.Max(),
+				TotalAscentMeters = ascentTmp,
+				TotalDescentMeters = descentTmp
 			};
 
 			return stats;

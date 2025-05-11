@@ -7,6 +7,7 @@
 		public double? TotalDistanceKm { get; set; }
 		public double? TotalAscentMeters { get; set; }
 		public double? TotalDescentMeters { get; set; }
+		public double? AvgPace { get; set; } // m/s
 		public TimeSpan Duration { get; set; }
 		public double TotalTimeSeconds { get; set; }
 		public int? TotalCalories { get; set; }

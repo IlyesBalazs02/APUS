@@ -42,7 +42,6 @@ namespace APUS.Server.Models
 		}
 	}
 
-	//Private???????
 	public class GpsRelatedActivity : MainActivity
 	{
 		[System.Text.Json.Serialization.JsonIgnore]
@@ -50,7 +49,27 @@ namespace APUS.Server.Models
 		public double? TotalDistanceKm { get; set; }
 		public double? TotalAscentMeters { get; set; }
 		public double? TotalDescentMeters { get; set; }
-		public int? AvgPace { get; set; }
+		public double? AvgPace { get; set; } // m/s
+			
+		[NotMapped]
+		public string GetPaceInTimeFormat
+		{
+			get
+			{
+				if (AvgPace == null || AvgPace == 0)
+					return "N/A";
+
+				// Calculate seconds to cover 1 kilometer
+				double secondsPerKilometer = 1000 / AvgPace.Value;
+
+				// Convert to minutes and seconds
+				int minutes = (int)(secondsPerKilometer / 60);
+				int seconds = (int)(secondsPerKilometer % 60);
+
+				// Return formatted string
+				return $"{minutes:D2}:{seconds:D2}";
+			}
+		}
 		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
 
 		[System.Text.Json.Serialization.JsonIgnore]
