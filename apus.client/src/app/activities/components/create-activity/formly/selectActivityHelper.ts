@@ -6,6 +6,7 @@ export class selectActivityHelper {
 
     SportTypes: activities.MainActivity[] = [
         new activities.MainActivity(),
+        new activities.GpsRelatedActivity(),
         new activities.Running(),
         new activities.Bouldering(),
         new activities.RockClimbing(),
@@ -22,6 +23,7 @@ export class selectActivityHelper {
 
     subtypeMap: Record<string, FormlyFieldConfig[]> = {
         MainActivity: Fields.mainActivityFields,
+        GpsRelatedActivity: Fields.gpsRelatedActivity,
         Running: Fields.runningFields,
         Bouldering: Fields.boulderingFields,
         RockClimbing: Fields.rockClimbingFields,

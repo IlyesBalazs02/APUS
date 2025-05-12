@@ -93,6 +93,40 @@ export const mainFields: FormlyFieldConfig[] = [
     },*/
 ];
 
+export const gpsRelatedActivity: FormlyFieldConfig[] = [
+    {
+        fieldGroupClassName: 'display-flex',
+        fieldGroup: [
+            /*{
+                key: 'AvgPace',
+                type: 'input',
+                templateOptions: {
+                    type: 'time',
+                    label: 'Pace (mm:ss)',
+                },
+            },*/
+            {
+                key: 'TotalDistanceKm',
+                type: 'input',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Distance (km)',
+                    min: 0,
+                },
+            },
+            /*{
+                key: 'TotalAscentMeters',
+                type: 'input',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Elevation Gain (m)',
+                    min: 0,
+                },
+            },*/
+        ]
+    }
+];
+
 export const runningFields: FormlyFieldConfig[] = [
     {
         fieldGroupClassName: 'display-flex',

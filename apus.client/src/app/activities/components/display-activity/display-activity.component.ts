@@ -51,7 +51,7 @@ export class DisplayActivityComponent implements OnInit {
   get fieldsToShow(): string[] {
     const mainFields = this.fieldConfig['MainActivity'];
     const activityFields = this.fieldConfig[this.activity.activityType] || [];
-    console.log(this.activity);
+    //console.log(this.activity);
     const allFields = Array.from(new Set([...mainFields, ...activityFields])).filter(f => this.activity[f] != null);
 
     // only keep fields where activity[field] is non-null/undefined (and you can add

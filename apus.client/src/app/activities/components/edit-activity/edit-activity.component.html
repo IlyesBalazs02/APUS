@@ -1,0 +1,25 @@
+<div class="activity-container">
+    <div class="pane pane--edit">
+        <mat-accordion>
+            <select [(ngModel)]="selectActivityHelper.selectedActivity" (ngModelChange)="onActivityChange($event)"
+                name="activity" id="activity">
+                <option *ngFor="let activity of selectActivityHelper.SportTypes" [ngValue]="activity">
+                    {{ activity.displayName }}
+                </option>
+            </select>
+
+            <form [formGroup]="form" (ngSubmit)="submit()">
+                <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
+                <button type="submit" class="btn btn-primary submit-button" [disabled]="!form.valid">
+                    Submit
+                </button>
+            </form>
+        </mat-accordion>
+    </div>
+
+    <!-- <div class="pane-divider"></div>
+
+    <div class="pane pane--display">
+        <app-display-activity [activity]="selectActivityHelper.selectedActivity"></app-display-activity>
+    </div> -->
+</div>

@@ -34,6 +34,7 @@ import { MatCardModule } from '@angular/material/card';
 //SANDBOX
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
+import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-fil
     UploadActivityComponent,
     DisplayActivityComponent,
     DisplayActivitiesComponent,
-    ActivityCardComponent
+    ActivityCardComponent,
+    EditActivityComponent
   ],
   imports: [
     BrowserModule,
