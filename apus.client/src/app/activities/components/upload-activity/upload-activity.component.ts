@@ -37,7 +37,7 @@ export class UploadActivityComponent {
     // Send to the upload endpoint
     this.http.post<UploadResponse>('/api/uploadactivity/upload-activity', formData)
       .subscribe(response => {
-        console.log('Upload success', response);
+        //('Upload success', response);
         this.router.navigate(['/DisplayActivity', response.id]);
 
       }, error => {

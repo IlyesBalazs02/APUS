@@ -22,7 +22,7 @@ export class DisplayActivitiesComponent implements OnInit {
       .getActivitiesDto()
       .subscribe((dtos: ActivityDto[]) => {
         this.activities = dtos;
-        console.log(this.activities);
+        //console.log(this.activities);
       });
 
   }

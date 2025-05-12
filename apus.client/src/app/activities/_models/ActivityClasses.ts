@@ -39,6 +39,7 @@ export class GpsRelatedActivity extends MainActivity {
         super();
         this.$type = 'APUS.Server.Models.GpsRelatedActivity, APUS.Server';
         this.displayName = 'Activity';
+        this.activityType = 'GpsRelatedActivity';
     }
 }
 
@@ -169,6 +170,7 @@ export class Tennis extends MainActivity {
 const activityRegistry = new Map<string, new () => MainActivity>(
     [
         Running,
+        GpsRelatedActivity,
         Bouldering,
         RockClimbing,
         Hiking,
@@ -181,11 +183,11 @@ const activityRegistry = new Map<string, new () => MainActivity>(
         Tennis,
     ].map(ctor => {
         const tmp = new ctor();
-        return [tmp.$type, ctor] as [string, new () => MainActivity];
+        return [tmp.activityType, ctor] as [string, new () => MainActivity];
     })
 );
 
 export function createActivity(dto: MainActivity): MainActivity {
-    const Ctor = activityRegistry.get(dto.$type) ?? MainActivity;
+    const Ctor = activityRegistry.get(dto.activityType) ?? MainActivity;
     return Object.assign(new Ctor(), dto);
 }

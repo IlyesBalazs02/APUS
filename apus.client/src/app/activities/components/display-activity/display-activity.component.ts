@@ -24,31 +24,37 @@ export class DisplayActivityComponent implements OnInit {
     this.http
       .get<MainActivity>(`/api/activities/${this.activityId}`)
       .subscribe(
-        dto => this.activity = createActivity(dto),
+        dto => { this.activity = createActivity(dto); /*console.log(this.activity)*/ },
         err => console.error(err)
       );
   }
 
   // map each activityType to the array of fields to show
   fieldConfig: Record<string, string[]> = {
-    MainActivity: ['title', 'description', 'date', 'duration'],
-    Running: ['title', 'date', 'duration', 'totaldistancekm', 'avgpace'],
+    MainActivity: ['duration'],
+    GpsRelatedActivity: ['totalDistanceKm', 'totalAscentMeters'],
+    Running: ['totalDistanceKm', 'avgpace'],
     // …etc
   };
 
   labels: Record<string, string> = {
     title: 'Title',
     date: 'Date',
-    duration: 'Duration',
-    totaldistancekm: 'Distance (km)',
+    duration: 'Time',
+    totalDistanceKm: 'Distance (km)',
     avgpace: 'Avg. Pace',
     difficulty: 'Difficulty',
+    totalAscentMeters: 'Elevation gain'
     // …
   };
 
   get fieldsToShow(): string[] {
-    // fall back to the base activity if no match
-    return this.fieldConfig[this.activity.activityType] ||
-      this.fieldConfig['MainActivity'];
+    const mainFields = this.fieldConfig['MainActivity'];
+    const activityFields = this.fieldConfig[this.activity.activityType] || [];
+    console.log(this.activity);
+    const allFields = Array.from(new Set([...mainFields, ...activityFields])).filter(f => this.activity[f] != null);
+
+    // only keep fields where activity[field] is non-null/undefined (and you can add
+    return allFields;
   }
 }

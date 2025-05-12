@@ -28,7 +28,6 @@ export class CreateActivityComponent implements OnInit {
   onActivityChange(activity: MainActivity) {
     this.updateFields(activity);
     this.selectActivityHelper.selectedActivity = activity;
-    console.log('selected activtiyasd:', this.selectActivityHelper.selectedActivity);
   }
 
   private updateFields(activity: MainActivity) {
@@ -52,10 +51,10 @@ export class CreateActivityComponent implements OnInit {
       ...formData
     };
 
-    console.log(JSON.stringify(payload));
+    //console.log(JSON.stringify(payload));
 
     this.http.post('/api/activities', payload).subscribe(() => {
-      console.log('Submitted running activity!');
+      //console.log('Submitted running activity!');
     });
   }
 }

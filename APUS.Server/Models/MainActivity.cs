@@ -39,7 +39,7 @@ namespace APUS.Server.Models
 		{
 			ActivityType = GetType().Name;
 			DisplayName = "Activity";
-			//Id = Guid.NewGuid().ToString();
+			Id = Guid.NewGuid().ToString();
 		}
 	}
 
