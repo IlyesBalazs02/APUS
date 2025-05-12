@@ -1,0 +1,14 @@
+/* display-activity.component.scss */
+.card {
+  margin: 1rem auto;         /* center it */
+  width: 100vw;              /* full width by default */
+  max-width: 100%;           /* never exceed the viewport */
+}
+
+/* when the viewport is wider than it is tall, cut it to half */
+@media (orientation: landscape) {
+  .card {
+    width: 50vw;             /* half the viewport width */
+    max-width: none;
+  }
+}
