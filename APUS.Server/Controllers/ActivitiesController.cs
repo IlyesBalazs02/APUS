@@ -3,6 +3,7 @@ using APUS.Server.DTOs.GetActivitiesDto;
 using APUS.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace APUS.Server.Controllers
 {
@@ -52,6 +53,36 @@ namespace APUS.Server.Controllers
 		{
 			var activities = _activityRepository.Read();
 			return activities.Select(MapToDto).ToArray();
+		}
+
+		[HttpPut("{id}")]
+		public IActionResult EditActivity(string id, [FromBody] MainActivity activity)
+		{
+			try
+			{
+				// … perform update (e.g. _db.Update(activity); _db.SaveChanges())
+				//_activityRepository.Update(id, activity);
+				if (!ModelState.IsValid)
+				{
+					var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+					return BadRequest(new { errors });
+				}
+
+				_activityRepository.Update(id, activity);
+
+				return NoContent();
+			}
+			catch (ValidationException vex)
+			{
+				// return 400 Bad Request with validation messages
+				return BadRequest(vex.ValidationResult);
+			}
+			catch (Exception ex)
+			{
+				// log the error, then return 500
+				_logger.LogError(ex, "Error updating activity {ActivityId}", id);
+				return StatusCode(500, "An unexpected error occurred.");
+			}
 		}
 
 		private TDto CopyBaseProps<TDto>(MainActivity activity)

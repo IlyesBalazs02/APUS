@@ -1,4 +1,6 @@
-﻿using APUS.Server.Models;
+﻿using APUS.Server.DTOs.GetActivitiesDto;
+using APUS.Server.Models;
+using System.Security.Cryptography;
 
 namespace APUS.Server.Data
 {
@@ -13,7 +15,7 @@ namespace APUS.Server.Data
 
 		public void Create(MainActivity activity)
 		{
-			activity.Id = Guid.NewGuid().ToString();
+			//activity.Id = Guid.NewGuid().ToString();
 			context.Activities.Add(activity);
 			context.SaveChanges();
 		}
@@ -38,19 +40,36 @@ namespace APUS.Server.Data
 				context.SaveChanges();
 			}
 		}
+
 		public void Update(string id, MainActivity activity)
 		{
-			var old = context.Activities.FirstOrDefault(a => a.Id == id);
+			// check if the new activity is the same type
+			var oldEntity = context.Activities.FirstOrDefault(a => a.Id == id);
+			if (oldEntity == null) throw new KeyNotFoundException(id);
 
-			foreach (var prop in activity.GetType().GetProperties())
+			var incomingType = activity.GetType().Name;                                         
+			var existingType = oldEntity.GetType().Name;
+
+			if (!string.Equals(existingType, incomingType, StringComparison.Ordinal))
 			{
-				var value = prop.GetValue(activity);
-				if (value != null)
+				context.Activities.Remove(oldEntity);
+
+				context.Activities.Add(activity);
+			}
+			else
+			{
+				foreach (var prop in activity.GetType().GetProperties())
 				{
-					prop.SetValue(old, value);
+					var value = prop.GetValue(activity);
+					if (value != null && prop.CanWrite)
+					{
+						prop.SetValue(oldEntity, value);
+					}
 				}
 			}
+
 			context.SaveChanges();
 		}
 	}
+	
 }
