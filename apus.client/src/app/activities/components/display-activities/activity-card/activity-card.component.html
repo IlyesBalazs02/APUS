@@ -37,25 +37,7 @@
     </div>
     <img src="..." class="card-img-top" alt="...">
 
+    <button type="map" class="btn btn-primary submit-button" [routerLink]="['/EditActivity',activity.id]">
+        Edit
+    </button>
 </div>
-
-
-
-
-<article class="card">
-    <header>
-        <h3 class="clickable-heading" [routerLink]="['/DisplayActivity',activity.id]">
-            {{ activity.title }}
-        </h3>
-        <small>
-            {{ activity.date | date:'mediumDate' }}
-            • Duration: {{ activity.duration }}
-        </small>
-    </header>
-
-    <section class="props">
-        <span *ngFor="let p of displayProps" class="prop">
-            <strong>{{ p.label }}:</strong> {{ p.value }}
-        </span>
-    </section>
-</article>

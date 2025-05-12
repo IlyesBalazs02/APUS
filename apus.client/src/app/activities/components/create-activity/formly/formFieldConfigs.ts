@@ -56,7 +56,7 @@ export const mainFields: FormlyFieldConfig[] = [
     {
         template: '<hr /><div><strong>Additional:</strong></div>',
     },
-    {
+    /*{
         fieldGroupClassName: 'display-flex',
         fieldGroup: [
             {
@@ -90,21 +90,21 @@ export const mainFields: FormlyFieldConfig[] = [
                 },
             }
         ]
-    },
+    },*/
 ];
 
 export const runningFields: FormlyFieldConfig[] = [
     {
         fieldGroupClassName: 'display-flex',
         fieldGroup: [
-            {
+            /*{
                 key: 'AvgPace',
                 type: 'input',
                 templateOptions: {
                     type: 'time',
                     label: 'Pace (mm:ss)',
                 },
-            },
+            },*/
             {
                 key: 'TotalDistanceKm',
                 type: 'input',
@@ -114,7 +114,7 @@ export const runningFields: FormlyFieldConfig[] = [
                     min: 0,
                 },
             },
-            {
+            /*{
                 key: 'TotalAscentMeters',
                 type: 'input',
                 templateOptions: {
@@ -122,7 +122,7 @@ export const runningFields: FormlyFieldConfig[] = [
                     label: 'Elevation Gain (m)',
                     min: 0,
                 },
-            },
+            },*/
         ]
     }
 ];

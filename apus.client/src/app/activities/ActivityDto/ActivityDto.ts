@@ -1,4 +1,3 @@
-// activity.model.ts
 export interface ActivityDto {
     id: string;
     title: string;
@@ -8,11 +7,12 @@ export interface ActivityDto {
     avgHr?: number;
     totalCalories?: number;
     type: string;            // e.g. "RunningActivityDto", "HikingActivityDto", etc.
+    displayname?: string;
+
     // gps fields (only present on some)
     distanceKm?: number;
     elevationGain?: number;
     pace?: number;           // only on running
-    displayname?: string;
 }
 
 export interface DisplayProp {

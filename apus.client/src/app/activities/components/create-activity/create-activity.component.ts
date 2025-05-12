@@ -19,13 +19,10 @@ export class CreateActivityComponent implements OnInit {
   options: FormlyFormOptions = {};
   fields: FormlyFieldConfig[] = [];
   selectActivityHelper = new selectActivityHelper();
-  tmp?: MainActivity; //deletelater
 
   constructor(private http: HttpClient) { }
   ngOnInit() {
     this.updateFields(this.selectActivityHelper.selectedActivity);
-    this.tmp = new Running();
-    //this.tmp.title = 'asd';
   }
 
   onActivityChange(activity: MainActivity) {
@@ -56,7 +53,6 @@ export class CreateActivityComponent implements OnInit {
     };
 
     console.log(JSON.stringify(payload));
-    console.log(this.tmp);
 
     this.http.post('/api/activities', payload).subscribe(() => {
       console.log('Submitted running activity!');
