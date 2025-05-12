@@ -9,6 +9,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
+using APUS.Server.Services;
 
 
 namespace APUS.Server
@@ -53,6 +54,7 @@ namespace APUS.Server
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
+			builder.Services.AddSingleton<IActivityStorageService, ActivityStorageService>();
 
 			var app = builder.Build();
 			app.UseCors("AllowAngularDev");

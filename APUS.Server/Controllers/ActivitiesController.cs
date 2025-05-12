@@ -1,9 +1,11 @@
 ﻿using APUS.Server.Data;
 using APUS.Server.DTOs.GetActivitiesDto;
 using APUS.Server.Models;
+using APUS.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace APUS.Server.Controllers
 {
@@ -13,12 +15,16 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
+		private readonly IWebHostEnvironment _env;
+		private readonly IActivityStorageService _storageService;
 
-		public ActivitiesController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository)
+
+		public ActivitiesController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository, IWebHostEnvironment env, IActivityStorageService storageService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
-
+			_env = env;
+			_storageService = storageService;
 		}
 
 		[HttpPost]
@@ -31,6 +37,8 @@ namespace APUS.Server.Controllers
 			}
 
 			_activityRepository.Create(activity);
+
+			_storageService.EnsureActivityFolder(activity.Id);
 
 			return Ok();
 		}
