@@ -53,6 +53,7 @@ namespace APUS.Server.Models
 		public double? AvgPace { get; set; } // m/s
 			
 		[NotMapped]
+		[System.Text.Json.Serialization.JsonIgnore]
 		public string GetPaceInTimeFormat
 		{
 			get

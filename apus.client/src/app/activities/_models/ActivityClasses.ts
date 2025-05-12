@@ -3,7 +3,6 @@ import { ActivityImage } from "./ActivityImage";
 import { Coordinate } from "./Coordinate";
 import { Timestamp } from "rxjs";
 
-// ../fromly/newFields
 export class MainActivity {
     [key: string]: any;
 
@@ -26,6 +25,7 @@ export class MainActivity {
     constructor() {
         this.$type = 'APUS.Server.Models.MainActivity, APUS.Server';
         this.displayName = 'Activity';
+        this.activityType = 'MainActivity';
     }
 }
 
