@@ -5,6 +5,8 @@ import { Timestamp } from "rxjs";
 
 // ../fromly/newFields
 export class MainActivity {
+    [key: string]: any;
+
     $type!: string;
     activityType: string = '';
     id: string = '';
@@ -36,6 +38,7 @@ export class GpsRelatedActivity extends MainActivity {
     constructor() {
         super();
         this.$type = 'APUS.Server.Models.GpsRelatedActivity, APUS.Server';
+        this.displayName = 'Activity';
     }
 }
 

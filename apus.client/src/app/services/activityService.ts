@@ -14,4 +14,6 @@ export class ActivityService {
         return this.http
             .get<ActivityDto[]>(`${this.apiUrl}/get-activities`);
     }
+
+
 }

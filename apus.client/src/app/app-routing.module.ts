@@ -7,6 +7,7 @@ import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.compone
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
 import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
 import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
+import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 
 const routes: Routes = [
   { path: 'ActivitySelector', component: ActivitySelectorComponent },
@@ -14,7 +15,9 @@ const routes: Routes = [
   { path: 'map', component: MapSandBoxComponent },
   { path: 'uploadgpx', component: UploadActivityComponent },
   { path: 'DisplayActivities', component: DisplayActivitiesComponent },
-  { path: '**', redirectTo: 'ListActivities', pathMatch: 'full' },
+  { path: 'DisplayActivity/:id', component: DisplayActivityComponent },
+  { path: 'test1', component: UploadGpxFileComponent },
+  { path: '**', redirectTo: 'DisplayActivities', pathMatch: 'full' },
 ];
 
 @NgModule({

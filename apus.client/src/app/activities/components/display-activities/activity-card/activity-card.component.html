@@ -1,6 +1,52 @@
+<div class="card" style="width: 40rem;">
+    <div class="card-body">
+        <h5 class="card-title clickable-heading" [routerLink]="['/DisplayActivity',activity.id]">
+            {{activity.title}}
+        </h5>
+        <small>{{ activity.displayname ?? 'Activity' }}</small>
+
+        <div *ngIf="activity.description" style="text-align:left; margin-bottom:1rem;">
+            <p class="mb-3">
+                {{ activity.description }}
+            </p>
+        </div>
+
+        <hr />
+
+        <div class="row text-center">
+            <ng-container *ngFor="let p of displayProps">
+                <div class="col mb-3"><!-- each gets 100%/N -->
+                    <div class="h5 mb-1">{{ p.value }}</div>
+                    <div class="small text-muted">{{ p.label }}</div>
+                </div>
+            </ng-container>
+
+            <!-- always display the Time -->
+            <div class="col mb-3">
+                <div class="h5 mb-1">{{ activity.duration }}</div>
+                <div class="small text-muted">Time</div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="card-body">
+        <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a>
+    </div>
+    <img src="..." class="card-img-top" alt="...">
+
+</div>
+
+
+
+
 <article class="card">
     <header>
-        <h3>{{ activity.title }}</h3>
+        <h3 class="clickable-heading" [routerLink]="['/DisplayActivity',activity.id]">
+            {{ activity.title }}
+        </h3>
         <small>
             {{ activity.date | date:'mediumDate' }}
             • Duration: {{ activity.duration }}

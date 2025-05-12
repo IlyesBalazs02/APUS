@@ -32,6 +32,7 @@ export class ActivityCardComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activity'] && this.activity) {
       this.displayProps = this.buildDisplayProps(this.activity);
+      this.displayProps.push()
     }
   }
 

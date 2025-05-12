@@ -38,7 +38,8 @@ namespace APUS.Server.Models
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;
-			Id = Guid.NewGuid().ToString();
+			DisplayName = "Activity";
+			//Id = Guid.NewGuid().ToString();
 		}
 	}
 
@@ -70,6 +71,11 @@ namespace APUS.Server.Models
 				return $"{minutes:D2}:{seconds:D2}";
 			}
 		}
+
+		public GpsRelatedActivity()
+		{
+			DisplayName = "Activity";
+		}
 		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
 
 		[System.Text.Json.Serialization.JsonIgnore]
@@ -82,6 +88,7 @@ namespace APUS.Server.Models
 	{
 		public Running()
 		{
+			DisplayName = "Running";
 		}
 	}
 	
@@ -92,6 +99,7 @@ namespace APUS.Server.Models
 		//public bool? RedPoint { get; set; }
 		public Bouldering()
 		{
+			DisplayName = "Bouldering";
 		}
 	}
 
@@ -102,6 +110,7 @@ namespace APUS.Server.Models
 
 		public RockClimbing()
 		{
+			DisplayName = "Rock Climbing";
 		}
 	}
 
@@ -109,6 +118,7 @@ namespace APUS.Server.Models
 	{
 		public Hiking()
 		{
+			DisplayName = "Hiking";
 		}
 	}
 
@@ -116,7 +126,7 @@ namespace APUS.Server.Models
 	{
 		public Yoga()
 		{
-
+			DisplayName = "Yoga";
 		}
 	}
 
@@ -126,29 +136,49 @@ namespace APUS.Server.Models
 
 		public Football()
 		{
+			DisplayName = "Football";
 		}
 	}
 
 	public class Walk : GpsRelatedActivity
 	{
+		public Walk()
+		{
+			DisplayName = "Walk";
+		}
 	}
 
 	public class Ride : GpsRelatedActivity
 	{
+		public Ride()
+		{
+			DisplayName = "Ride";
+		}
 	}
 
 	public class Swimming : MainActivity
 	{
 		public int? Distance { get; set; }
+
+		public Swimming()
+		{
+			DisplayName = "Swimming";
+		}
 	}
 
 	public class Ski : GpsRelatedActivity
 	{
-
+		public Ski()
+		{
+			DisplayName = "Ski";
+		}
 	}
 
 	public class Tennis : MainActivity
 	{
-
+		public Tennis()
+		{
+			DisplayName = "Tennis";
+		}
 	}
 }

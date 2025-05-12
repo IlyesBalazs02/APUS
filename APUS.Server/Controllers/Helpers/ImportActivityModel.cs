@@ -1,5 +1,7 @@
 ﻿namespace APUS.Server.Controllers.Helpers
+
 {
+	//The tcx and gpx files data is collected here and with this class will the new activity be created
 	public class ImportActivityModel
 	{
 		public DateTime StartTime { get; set; }

@@ -12,6 +12,7 @@ export interface ActivityDto {
     distanceKm?: number;
     elevationGain?: number;
     pace?: number;           // only on running
+    displayname?: string;
 }
 
 export interface DisplayProp {

@@ -13,21 +13,8 @@ namespace APUS.Server.Data
 
 		public void Create(MainActivity activity)
 		{
-			var newActivity = Activator.CreateInstance(activity.GetType());
-			foreach (var prop in activity.GetType().GetProperties())
-			{
-				var value = prop.GetValue(activity);
-				var baseValues = prop.GetValue(newActivity); // Keep values from constructor
-
-				if (baseValues == null && value != null)
-				{
-					prop.SetValue(newActivity, value);
-				}
-			}
-
-			
-
-			context.Activities.Add((MainActivity)newActivity);
+			activity.Id = Guid.NewGuid().ToString();
+			context.Activities.Add(activity);
 			context.SaveChanges();
 		}
 

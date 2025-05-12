@@ -28,6 +28,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
+// Card
+import { MatCardModule } from '@angular/material/card';
+
 //SANDBOX
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
@@ -57,7 +60,9 @@ import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-fil
     MatInputModule,
     AppRoutingModule,
     HttpClientModule,
-    MapSandBoxComponent
+    MapSandBoxComponent,
+
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

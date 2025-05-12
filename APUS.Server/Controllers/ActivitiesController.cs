@@ -41,6 +41,12 @@ namespace APUS.Server.Controllers
 			return _activityRepository.Read().ToArray();
 		}
 
+		[HttpGet("{id}")]
+		public MainActivity Get(string id)
+		{
+			return _activityRepository.Read().SingleOrDefault( t => t.Id == id );
+		}
+
 		[HttpGet("get-activities")]
 		public IEnumerable<ActivityDto> GetActivities()
 		{
@@ -48,7 +54,7 @@ namespace APUS.Server.Controllers
 			return activities.Select(MapToDto).ToArray();
 		}
 
-		private static TDto CopyBaseProps<TDto>(MainActivity activity)
+		private TDto CopyBaseProps<TDto>(MainActivity activity)
 	where TDto : ActivityDto, new()
 		{
 			return new TDto
@@ -61,6 +67,7 @@ namespace APUS.Server.Controllers
 				AvgHr = activity.AvgHeartRate,
 				TotalCalories = activity.Calories,
 				Type = activity.GetType().Name,
+				DisplayName = activity.DisplayName,
 			};
 		}
 

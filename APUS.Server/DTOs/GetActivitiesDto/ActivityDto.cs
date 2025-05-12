@@ -10,6 +10,7 @@
 		public int? AvgHr { get; set; }
 		public int? TotalCalories { get; set; }
 		public string Type { get; set; }
+		public string? DisplayName { get; set; }
 	}
 
 	public record GpsActivityDto : ActivityDto

@@ -133,6 +133,7 @@ namespace APUS.Server.Controllers
 				_activityRepository.Create(newActivity);
 				return Ok(new
 				{
+					id = newActivity.Id, //for redirect
 					fileName,
 					relativePath = $"/{_uploadFolder}/{fileName}"
 				});

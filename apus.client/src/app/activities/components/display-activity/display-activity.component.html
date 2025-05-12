@@ -1,17 +1,3 @@
-<p>display-activity works!</p>
-
-<div *ngIf="activity" class="card mb-3">
-    <div class="card-header">
-        <h5 class="card-title mb-0">{{ activity.title }}</h5>
-    </div>
-    <div class="card-body">
-        <div *ngFor="let field of fieldsToShow" class="mb-2">
-            <strong>{{ labels[field] || field }}:</strong>
-            {{ activity[field] }}
-        </div>
-    </div>
-</div>
-
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">{{ activity.title }}</h5>

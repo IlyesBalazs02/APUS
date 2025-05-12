@@ -201,7 +201,7 @@ namespace APUS.Server.Controllers.Helpers
 			{
 				StartTime = laps.First().StartTime,
 				TotalTimeSeconds = totalTime,
-				Duration = TimeSpan.FromSeconds(totalTime),
+				Duration = TimeSpan.FromSeconds(Math.Floor(totalTime)),
 				TotalDistanceMeters = totalDistanceMeters,
 				TotalDistanceKm = totalDistanceKm,
 				AvgPace = avgSpeedTmp,

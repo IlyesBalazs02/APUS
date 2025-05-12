@@ -1,18 +1,25 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+
+interface UploadResponse {
+  id: number;
+  fileName: string;
+  relativePath: string;
+}
 
 @Component({
   selector: 'app-upload-activity',
   standalone: false,
   templateUrl: './upload-activity.component.html',
-  styleUrl: './upload-activity.component.css'
+  styleUrls: ['./upload-activity.component.css'],
 })
 export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -22,20 +29,17 @@ export class UploadActivityComponent {
   }
 
   submit(): void {
-    // First, create FormData
     const formData = new FormData();
     if (this.selectedFile) {
       formData.append('trackFile', this.selectedFile, this.selectedFile.name);
     }
 
-    // Append any other activity metadata if needed
-    // formData.append('title', this.form.value.title);
-
     // Send to the upload endpoint
-    this.http.post('/api/uploadactivity/upload-activity', formData)
+    this.http.post<UploadResponse>('/api/uploadactivity/upload-activity', formData)
       .subscribe(response => {
         console.log('Upload success', response);
-        // Optionally proceed to create activity metadata
+        this.router.navigate(['/DisplayActivity', response.id]);
+
       }, error => {
         console.error('Upload error', error);
       });
