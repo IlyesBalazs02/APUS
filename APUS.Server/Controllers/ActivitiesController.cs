@@ -15,86 +15,115 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
-		private readonly IWebHostEnvironment _env;
 		private readonly IActivityStorageService _storageService;
 
-
-		public ActivitiesController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository, IWebHostEnvironment env, IActivityStorageService storageService)
+		public ActivitiesController(
+			ILogger<ActivitiesController> logger,
+			IActivityRepository activityRepository,
+			IActivityStorageService storageService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
-			_env = env;
 			_storageService = storageService;
 		}
 
 		[HttpPost]
-		public IActionResult CreateActivity([FromBody] MainActivity activity)
+		public async Task<ActionResult<MainActivity>> CreateActivity([FromBody] MainActivity activity)
 		{
 			if (!ModelState.IsValid)
 			{
-				var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+				var errors = ModelState.Values
+									   .SelectMany(v => v.Errors)
+									   .Select(e => e.ErrorMessage);
 				return BadRequest(new { errors });
 			}
 
-			_activityRepository.Create(activity);
+			// Persist to database
+			await _activityRepository.CreateAsync(activity);
 
+			// Ensure filesystem folder exists
 			_storageService.EnsureActivityFolder(activity.Id);
 
-			return Ok();
+			// Return 201 with location header
+			return CreatedAtAction(
+				nameof(GetById),
+				new { id = activity.Id },
+				activity);
 		}
 
 		[HttpGet]
-		public IEnumerable<MainActivity> Get()
+		public async Task<ActionResult<IEnumerable<MainActivity>>> GetAll()
 		{
-			
-			return _activityRepository.Read().ToArray();
+			var list = await _activityRepository.ReadAllAsync();
+			return Ok(list);
 		}
 
-		[HttpGet("{id}")]
-		public MainActivity Get(string id)
+		[HttpGet("{id}", Name = nameof(GetById))]
+		public async Task<ActionResult<MainActivity>> GetById(string id)
 		{
-			return _activityRepository.Read().SingleOrDefault( t => t.Id == id );
+			var act = await _activityRepository.ReadByIdAsync(id);
+			if (act == null) return NotFound();
+			return Ok(act);
 		}
 
 		[HttpGet("get-activities")]
-		public IEnumerable<ActivityDto> GetActivities()
+		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetActivities()
 		{
-			var activities = _activityRepository.Read();
-			return activities.Select(MapToDto).ToArray();
+			var entities = await _activityRepository.ReadAllAsync();
+			var dtos = entities.Select(MapToDto);
+			return Ok(dtos);
 		}
 
 		[HttpPut("{id}")]
-		public IActionResult EditActivity(string id, [FromBody] MainActivity activity)
+		public async Task<IActionResult> EditActivity(string id, [FromBody] MainActivity activity)
 		{
+			if (id != activity.Id)
+				return BadRequest("Mismatched activity ID.");
+
+			if (!ModelState.IsValid)
+			{
+				var errors = ModelState.Values
+									   .SelectMany(v => v.Errors)
+									   .Select(e => e.ErrorMessage);
+				return BadRequest(new { errors });
+			}
+
 			try
 			{
-				// … perform update (e.g. _db.Update(activity); _db.SaveChanges())
-				//_activityRepository.Update(id, activity);
-				if (!ModelState.IsValid)
-				{
-					var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-					return BadRequest(new { errors });
-				}
-
-				_activityRepository.Update(id, activity);
-
+				await _activityRepository.UpdateAsync(id, activity);
 				return NoContent();
 			}
 			catch (ValidationException vex)
 			{
-				// return 400 Bad Request with validation messages
 				return BadRequest(vex.ValidationResult);
+			}
+			catch (KeyNotFoundException)
+			{
+				return NotFound();
 			}
 			catch (Exception ex)
 			{
-				// log the error, then return 500
 				_logger.LogError(ex, "Error updating activity {ActivityId}", id);
 				return StatusCode(500, "An unexpected error occurred.");
 			}
 		}
 
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteActivity(string id)
+		{
+			try
+			{
+				await _activityRepository.DeleteAsync(id);
+				return NoContent();
+			}
+			catch (KeyNotFoundException)
+			{
+				return NotFound();
+			}
+		}
+
 		private TDto CopyBaseProps<TDto>(MainActivity activity)
-	where TDto : ActivityDto, new()
+			where TDto : ActivityDto, new()
 		{
 			return new TDto
 			{
@@ -114,22 +143,20 @@ namespace APUS.Server.Controllers
 		{
 			return activity switch
 			{
-				
-				Running running => CopyBaseProps<RunningActivityDto>(running) with //Running BEFORE the Gps
+				Running running => CopyBaseProps<RunningActivityDto>(running) with
 				{
 					DistanceKm = running.TotalDistanceKm,
 					ElevationGain = running.TotalAscentMeters,
 					Pace = running.AvgPace,
 				},
-				GpsRelatedActivity Gps => CopyBaseProps<GpsActivityDto>(Gps) with
+				GpsRelatedActivity gps => CopyBaseProps<GpsActivityDto>(gps) with
 				{
-					DistanceKm = Gps.TotalDistanceKm,
-					ElevationGain = Gps.TotalAscentMeters
+					DistanceKm = gps.TotalDistanceKm,
+					ElevationGain = gps.TotalAscentMeters
 				},
 				_ => CopyBaseProps<ActivityDto>(activity)
 			};
 		}
-
 	}
 
 }

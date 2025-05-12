@@ -1,74 +1,65 @@
 ﻿using APUS.Server.DTOs.GetActivitiesDto;
 using APUS.Server.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
 namespace APUS.Server.Data
 {
 	public class ActivityRepository : IActivityRepository
 	{
-		ActivityDbContext context;
+		private readonly ActivityDbContext _context;
 
-		public ActivityRepository(ActivityDbContext _context)
+		public ActivityRepository(ActivityDbContext context)
+			=> _context = context;
+
+		public async Task CreateAsync(MainActivity activity)
 		{
-			context = _context;
+			_context.Activities.Add(activity);
+			await _context.SaveChangesAsync();
 		}
 
-		public void Create(MainActivity activity)
+		public async Task<IEnumerable<MainActivity>> ReadAllAsync()
 		{
-			//activity.Id = Guid.NewGuid().ToString();
-			context.Activities.Add(activity);
-			context.SaveChanges();
+			return await _context.Activities
+				.AsNoTracking()
+				.ToListAsync();
 		}
 
-		public IEnumerable<MainActivity> Read()
+		public async Task<MainActivity?> ReadByIdAsync(string id)
 		{
-			return context.Activities;
+			return await _context.Activities
+				.AsNoTracking()
+				.FirstOrDefaultAsync(a => a.Id == id);
 		}
 
-		public MainActivity? Read(string id)
+		public async Task UpdateAsync(string id, MainActivity activity)
 		{
-			return context.Activities.FirstOrDefault(a => a.Id == id);
-		}
+			var oldEntity = await _context.Activities.FindAsync(id)
+							?? throw new KeyNotFoundException(id);
 
-		public void Delete(string id)
-		{
-			var Activity = context.Activities.FirstOrDefault(a => a.Id == id);
-
-			if (Activity != null)
+			if (oldEntity.GetType() == activity.GetType())
 			{
-				context.Activities.Remove(Activity);
-				context.SaveChanges();
-			}
-		}
-
-		public void Update(string id, MainActivity activity)
-		{
-			// check if the new activity is the same type
-			var oldEntity = context.Activities.FirstOrDefault(a => a.Id == id);
-			if (oldEntity == null) throw new KeyNotFoundException(id);
-
-			var incomingType = activity.GetType().Name;                                         
-			var existingType = oldEntity.GetType().Name;
-
-			if (!string.Equals(existingType, incomingType, StringComparison.Ordinal))
-			{
-				context.Activities.Remove(oldEntity);
-
-				context.Activities.Add(activity);
+				// Same subtype: update properties
+				_context.Entry(oldEntity).CurrentValues.SetValues(activity);
 			}
 			else
 			{
-				foreach (var prop in activity.GetType().GetProperties())
-				{
-					var value = prop.GetValue(activity);
-					if (value != null && prop.CanWrite)
-					{
-						prop.SetValue(oldEntity, value);
-					}
-				}
+				// Different subtype: remove and re-add
+				_context.Activities.Remove(oldEntity);
+				activity.Id = id;
+				_context.Activities.Add(activity);
 			}
 
-			context.SaveChanges();
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task DeleteAsync(string id)
+		{
+			var entity = await _context.Activities.FindAsync(id)
+						 ?? throw new KeyNotFoundException(id);
+
+			_context.Activities.Remove(entity);
+			await _context.SaveChangesAsync();
 		}
 	}
 	

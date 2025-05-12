@@ -4,10 +4,14 @@ namespace APUS.Server.Data
 {
 	public interface IActivityRepository
 	{
-		void Create(MainActivity activity);
-		void Delete(string id);
-		IEnumerable<MainActivity> Read();
-		MainActivity Read(string id);
-		void Update(string id, MainActivity activity);
+		Task CreateAsync(MainActivity activity);
+
+		Task<IEnumerable<MainActivity>> ReadAllAsync();
+
+		Task<MainActivity?> ReadByIdAsync(string id);
+
+		Task UpdateAsync(string id, MainActivity activity);
+
+		Task DeleteAsync(string id);
 	}
 }
