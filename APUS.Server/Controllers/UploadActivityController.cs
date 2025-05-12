@@ -1,6 +1,7 @@
 ﻿using APUS.Server.Controllers.Helpers;
 using APUS.Server.Data;
 using APUS.Server.Models;
+using APUS.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Xml;
@@ -17,9 +18,10 @@ namespace APUS.Server.Controllers
 		private readonly string _uploadRoot = @"C:\APUSActivityFiles";
 		private readonly ILogger<UploadActivityController> _logger;
 		private readonly IActivityRepository _activityRepository;
+		private readonly IActivityStorageService _storageService;
 
 
-		public UploadActivityController(IConfiguration config, ILogger<UploadActivityController> logger, IActivityRepository activityRepository)
+		public UploadActivityController(IConfiguration config, ILogger<UploadActivityController> logger, IActivityRepository activityRepository, IActivityStorageService storageService)
 		{
 			_uploadFolder = config["GpxSettings:UploadFolder"]
 							 ?? Path.Combine("Uploads", "GpxFiles");
@@ -33,6 +35,7 @@ namespace APUS.Server.Controllers
 
 			_logger = logger;
 			_activityRepository = activityRepository;
+			_storageService = storageService;
 		}
 
 		[HttpPost("upload-activity")]
@@ -131,6 +134,9 @@ namespace APUS.Server.Controllers
 				newActivity.MaxHeartRate = importedActivity.MaximumHeartRate;
 
 				_activityRepository.Create(newActivity);
+
+				_storageService.EnsureActivityFolder(newActivity.Id);
+
 				return Ok(new
 				{
 					id = newActivity.Id, //for redirect
