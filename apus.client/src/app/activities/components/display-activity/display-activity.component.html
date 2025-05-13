@@ -37,10 +37,19 @@
     </div>
 
     <div class="images-container" *ngIf="images.length">
-        <div class="thumb" *ngFor="let url of images; let i = index">
+        <div class="thumb" *ngFor="let url of images; let i = index" (click)="openViewer(i)">
             <img [src]="url" alt="image" />
 
         </div>
     </div>
 
+</div>
+
+<!-- LIGHTBOX OVERLAY -->
+<div class="lightbox-overlay" *ngIf="selectedIndex !== null" (click)="closeViewer()">
+    <button type="button" class="lightbox-btn prev" (click)="prevImage($event)">‹</button>
+
+    <img class="lightbox-img" [src]="images[selectedIndex!]" alt="full-size image" (click)="$event.stopPropagation()" />
+
+    <button type="button" class="lightbox-btn next" (click)="nextImage($event)">›</button>
 </div>

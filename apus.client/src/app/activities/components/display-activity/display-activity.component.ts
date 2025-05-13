@@ -16,7 +16,9 @@ import { forkJoin } from 'rxjs';
 export class DisplayActivityComponent implements OnInit {
   activityId: string;
   activity: MainActivity = new MainActivity();
+
   images: string[] = [];
+  selectedIndex: number | null = null;
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
@@ -63,5 +65,27 @@ export class DisplayActivityComponent implements OnInit {
 
     // only keep fields where activity[field] is non-null/undefined (and you can add
     return allFields;
+  }
+
+  openViewer(i: number) {
+    this.selectedIndex = i;
+  }
+
+  prevImage(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.selectedIndex === null) return;
+    const len = this.images.length;
+    this.selectedIndex = (this.selectedIndex + len - 1) % len;
+  }
+
+  nextImage(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.selectedIndex === null) return;
+    const len = this.images.length;
+    this.selectedIndex = (this.selectedIndex + 1) % len;
+  }
+
+  closeViewer() {
+    this.selectedIndex = null;
   }
 }
