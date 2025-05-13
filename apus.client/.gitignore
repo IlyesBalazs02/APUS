@@ -45,6 +45,3 @@ Thumbs.db
 /src/environments/environment.ts
 /src/environments/environment.prod.ts
 
-wwwroot
-/APUS.Server/wwwroot/
-**/wwwroot/Activities
