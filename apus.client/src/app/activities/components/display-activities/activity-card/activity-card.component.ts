@@ -1,5 +1,6 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivityDto, DisplayProp } from '../../../ActivityDto/ActivityDto';
+import { HttpClient } from '@angular/common/http';
 
 type PropMap = Record<string, { key: keyof ActivityDto, label: string }[]>;
 
@@ -7,12 +8,17 @@ type PropMap = Record<string, { key: keyof ActivityDto, label: string }[]>;
   selector: 'app-activity-card',
   standalone: false,
   templateUrl: './activity-card.component.html',
-  styleUrls: ['./activity-card.component.css']
+  styleUrls: ['./activity-card.component.scss']
 })
-export class ActivityCardComponent implements OnChanges {
+export class ActivityCardComponent implements OnChanges, OnInit {
   @Input() activity!: ActivityDto;
 
   public displayProps: DisplayProp[] = [];
+
+  images: string[] = [];
+  selectedIndex: number | null = null;
+
+  constructor(private http: HttpClient) { }
 
   private readonly propMap: PropMap = {
     Running: [
@@ -28,6 +34,13 @@ export class ActivityCardComponent implements OnChanges {
       { key: 'totalCalories', label: 'Calories' },
     ],
   };
+
+  ngOnInit(): void {
+    this.http.get<string[]>(`/api/images/${this.activity.id}`)
+      .subscribe(urls => {
+        this.images = urls;
+      }, err => console.error(err));
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['activity'] && this.activity) {
@@ -45,5 +58,27 @@ export class ActivityCardComponent implements OnChanges {
         label,
         value: a[key] as string | number
       }));
+  }
+
+  openViewer(i: number) {
+    this.selectedIndex = i;
+  }
+
+  prevImage(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.selectedIndex === null) return;
+    const len = this.images.length;
+    this.selectedIndex = (this.selectedIndex + len - 1) % len;
+  }
+
+  nextImage(event: MouseEvent) {
+    event.stopPropagation();
+    if (this.selectedIndex === null) return;
+    const len = this.images.length;
+    this.selectedIndex = (this.selectedIndex + 1) % len;
+  }
+
+  closeViewer() {
+    this.selectedIndex = null;
   }
 }

@@ -1,7 +1,19 @@
+.clickable-heading { /*mkae the title clickable*/
+  cursor: pointer;
+}
+
 .card {
   margin: 1rem auto;         /* center it */
-  width: 100%;              /* full width by default */
-  max-width: 800px;           /* never exceed the viewport */
+  width: 100vw;              /* full width by default */
+  max-width: 100%;           /* never exceed the viewport */
+}
+
+/* when the viewport is wider than it is tall, cut it to half */
+@media (orientation: landscape) {
+  .card {
+    width: 50vw;             /* half the viewport width */
+    max-width: none;
+  }
 }
 
 .images-container {
@@ -73,4 +85,3 @@
 
 .lightbox-btn.prev { left: 2%; }
 .lightbox-btn.next { right: 2%; }
-
