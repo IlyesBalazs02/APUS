@@ -47,6 +47,7 @@
     <Folder Include="Helpers\" />
     <Folder Include="Repositories\" />
     <Folder Include="wwwroot\Activities\" />
+    <Folder Include="wwwroot\asd\" />
   </ItemGroup>
 
 </Project>
