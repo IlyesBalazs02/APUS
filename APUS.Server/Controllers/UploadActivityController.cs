@@ -3,6 +3,7 @@ using APUS.Server.Data;
 using APUS.Server.Models;
 using APUS.Server.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
@@ -55,12 +56,10 @@ namespace APUS.Server.Controllers
 					await trackFile.CopyToAsync(stream);
 				}
 
-				// Parse file
 				var importedActivity = ext == ".gpx"
 					? new UploadGPXFileHelper(trackFile).ImportActivity()
 					: new UploadTCXFileHelper(trackFile).ImportActivity();
 
-				// Map to domain model
 				MainActivity newActivity = importedActivity.HasGpsTrack == true
 					? new GpsRelatedActivity
 					{
@@ -71,7 +70,6 @@ namespace APUS.Server.Controllers
 					}
 					: new MainActivity();
 
-				// Common fields
 				newActivity.Title = "Imported Activity";
 				newActivity.Date = importedActivity.StartTime;
 				newActivity.Duration = importedActivity.Duration;
@@ -79,19 +77,16 @@ namespace APUS.Server.Controllers
 				newActivity.AvgHeartRate = importedActivity.AverageHeartRate;
 				newActivity.MaxHeartRate = importedActivity.MaximumHeartRate;
 
-				// Persist entity
 				await _activityRepository.CreateAsync(newActivity);
 
-				// Ensure image folder exists
 				_storageService.CreateActivityFolder(newActivity.Id);
 
-				// Return result
-				return Ok(new
-				{
-					Id = newActivity.Id,
-					FileName = fileName,
-					FilePath = $"/Uploads/GpxFiles/{fileName}"
-				});
+				return CreatedAtRoute(
+					routeName: nameof(ActivitiesController.GetById),
+					routeValues: new { id = newActivity.Id },
+					value: newActivity
+				);
+
 			}
 			catch (XmlException xmlEx)
 			{

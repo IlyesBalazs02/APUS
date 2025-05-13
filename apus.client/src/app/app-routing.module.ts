@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ActivitySelectorComponent } from './activities/components/activity-selector/activity-selector.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
@@ -11,7 +10,6 @@ import { DisplayActivityComponent } from './activities/components/display-activi
 import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
 
 const routes: Routes = [
-  { path: 'ActivitySelector', component: ActivitySelectorComponent },
   { path: 'createactivity', component: CreateActivityComponent },
   { path: 'map', component: MapSandBoxComponent },
   { path: 'uploadgpx', component: UploadActivityComponent },

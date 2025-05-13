@@ -48,16 +48,6 @@ namespace APUS.Server.Controllers
 				activity);
 		}
 
-		[HttpPost("{id}/images")]
-		public async Task<IActionResult> UploadImages(string id,[FromForm] IFormFileCollection images)
-		{
-			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
-
-			await _storageService.SaveImages(id, images);
-
-			return Ok();
-		}
-
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<MainActivity>>> GetAll()
 		{

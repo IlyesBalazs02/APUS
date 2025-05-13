@@ -11,7 +11,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import { NgComponentOutlet } from '@angular/common';
 
 // COMPONENTS
-import { ActivitySelectorComponent } from './activities/components/activity-selector/activity-selector.component';
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
 import { FooterComponent } from './footer/footer.component';
 import { NavigationComponent } from './navigation/navigation.component';
@@ -39,7 +38,6 @@ import { EditActivityComponent } from './activities/components/edit-activity/edi
 @NgModule({
   declarations: [
     AppComponent,
-    ActivitySelectorComponent,
     CreateActivityComponent,
     FooterComponent,
     NavigationComponent,

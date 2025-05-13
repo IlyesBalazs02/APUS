@@ -84,12 +84,13 @@ export class CreateActivityComponent implements OnInit {
       };
       reader.readAsDataURL(file);
     });
-    // attach files to form model if needed
-    this.model.images = this.files;
+
   }
 
   removeImage(i: number) {
     this.previewUrls.splice(i, 1);
+
+    this.files.splice(i, 1);
   }
 
   submit() {
@@ -112,7 +113,7 @@ export class CreateActivityComponent implements OnInit {
         const formData = new FormData();
         this.files.forEach(f => formData.append('images', f));
 
-        this.http.post(`/api/activities/${createdActivity.id}/images`, formData)
+        this.http.post(`/api/images/${createdActivity.id}/images`, formData)
           .subscribe(() => {
             console.log('Pictures uploaded!');
           }, err => {

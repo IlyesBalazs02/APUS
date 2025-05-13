@@ -5,8 +5,25 @@
 
     <!-- GPX file input -->
     <div class="form-group">
-        <label for="gpxFile">Upload GPX File</label>
+        <label for="gpxFile">Upload the activity file</label>
         <input type="file" id="gpxFile" accept=".gpx,.tcx" (change)="onFileSelected($event)" />
+    </div>
+
+    <!-- Drag & Drop Zone -->
+    <div class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+        [class.dragover]="isDragOver">
+        <p>Drag & drop images here, or click to browse</p>
+        <input #fileInput type="file" multiple accept="image/*" (change)="onImageFileSelected($event)" hidden />
+        <button type="button" (click)="fileInput.click()">Browse Images</button>
+    </div>
+
+    <!-- Preview Thumbnails -->
+    <div class="preview-container" *ngIf="previewUrls.length">
+        <div class="thumb" *ngFor="let url of previewUrls; let i = index">
+            <button type="button" class="remove-btn" (click)="removeImage(i)">×</button>
+            <img [src]="url" alt="Preview" />
+
+        </div>
     </div>
 
     <button type="submit" [disabled]="!form.valid">Submit</button>
