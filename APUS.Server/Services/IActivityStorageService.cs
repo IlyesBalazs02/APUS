@@ -2,6 +2,7 @@
 {
 	public interface IActivityStorageService
 	{
-		void EnsureActivityFolder(string activityId);
+		void CreateActivityFolder(string activityId);
+		Task SaveImages(string activityId, IFormFileCollection images);
 	}
 }

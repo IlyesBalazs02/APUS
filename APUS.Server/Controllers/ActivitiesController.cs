@@ -38,17 +38,24 @@ namespace APUS.Server.Controllers
 				return BadRequest(new { errors });
 			}
 
-			// Persist to database
 			await _activityRepository.CreateAsync(activity);
 
-			// Ensure filesystem folder exists
-			_storageService.EnsureActivityFolder(activity.Id);
+			_storageService.CreateActivityFolder(activity.Id);
 
-			// Return 201 with location header
 			return CreatedAtAction(
 				nameof(GetById),
 				new { id = activity.Id },
 				activity);
+		}
+
+		[HttpPost("{id}/images")]
+		public async Task<IActionResult> UploadImages(string id,[FromForm] IFormFileCollection images)
+		{
+			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
+
+			await _storageService.SaveImages(id, images);
+
+			return Ok();
 		}
 
 		[HttpGet]

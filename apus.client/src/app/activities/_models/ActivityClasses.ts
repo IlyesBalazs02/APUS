@@ -38,7 +38,7 @@ export class GpsRelatedActivity extends MainActivity {
     constructor() {
         super();
         this.$type = 'APUS.Server.Models.GpsRelatedActivity, APUS.Server';
-        this.displayName = 'Activity';
+        this.displayName = 'GpsActivity';
         this.activityType = 'GpsRelatedActivity';
     }
 }

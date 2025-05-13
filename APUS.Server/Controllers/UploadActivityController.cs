@@ -83,7 +83,7 @@ namespace APUS.Server.Controllers
 				await _activityRepository.CreateAsync(newActivity);
 
 				// Ensure image folder exists
-				_storageService.EnsureActivityFolder(newActivity.Id);
+				_storageService.CreateActivityFolder(newActivity.Id);
 
 				// Return result
 				return Ok(new

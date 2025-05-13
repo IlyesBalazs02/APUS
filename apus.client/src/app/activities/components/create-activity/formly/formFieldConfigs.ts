@@ -53,10 +53,10 @@ export const mainFields: FormlyFieldConfig[] = [
             }
         ]
     },
-    {
+    /*{
         template: '<hr /><div><strong>Additional:</strong></div>',
     },
-    /*{
+    {
         fieldGroupClassName: 'display-flex',
         fieldGroup: [
             {

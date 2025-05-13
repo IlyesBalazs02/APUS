@@ -25,6 +25,7 @@
             <div class="thumb" *ngFor="let url of previewUrls; let i = index">
                 <button class="remove-btn" (click)="removeImage(i)">×</button>
                 <img [src]="url" alt="Preview" />
+
             </div>
         </div>
 

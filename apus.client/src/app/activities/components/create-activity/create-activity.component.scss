@@ -45,9 +45,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;              // space between thumbnails
-  width: 100%;           // or a fixed width: e.g. 600px
+  width: 100%;
   max-width: 800px;      
-  min-height: 150px;     // set a minimum height
+  min-height: 150px;     // minimum height
   border: 2px solid #ccc;  // rectangle border
   border-radius: 4px;      // slightly rounded corners
   padding: 12px;           // inner spacing
@@ -59,18 +59,18 @@
 
 
 .preview-container .thumb {
-    position: relative;         /* <-- ADD THIS LINE */
-  display: inline-block;      /* shrink-wrap to the img */
+  position: relative;        
+  display: inline-block;      // shrink-wrap to the img
   border-radius: 4px;
-  overflow: hidden;           /* just in case an img slightly overflows */
+  overflow: hidden;           // if an img slightly overflows
 }
 
 .preview-container .thumb img {
-  display: block;             /* remove inline descender space */
-  width: auto;                /* don’t force to 100% of container */
-  height: auto;               /* keep aspect ratio */
-  max-width: 150px;           /* if you still want a cap */
-  max-height: 150px;          /* on how big thumbs can grow */
+  display: block;             
+  width: auto;                // dont force to 100% of container
+  height: auto;               // keep aspect ratio 
+  max-width: 150px;           
+  max-height: 150px;          
 }
 
 .preview-container .thumb .remove-btn {
@@ -88,7 +88,6 @@
   cursor: pointer;
 }
 
-/* optional: make the button more visible on hover */
 .preview-container .thumb .remove-btn:hover {
   background: rgba(255,0,0,0.8);
   color: #fff;

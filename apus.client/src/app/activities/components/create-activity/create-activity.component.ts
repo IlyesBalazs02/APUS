@@ -100,10 +100,28 @@ export class CreateActivityComponent implements OnInit {
       ...formData
     };
 
-    //console.log(JSON.stringify(payload));
+    console.log(JSON.stringify(payload));
 
-    this.http.post('/api/activities', payload).subscribe(() => {
-      //console.log('Submitted running activity!');
-    });
+    this.http.post<MainActivity>('/api/activities', payload)
+      .subscribe(createdActivity => {
+
+        if (this.files.length === 0) return;
+
+        const activityId = createdActivity.id;
+
+        const formData = new FormData();
+        this.files.forEach(f => formData.append('images', f));
+
+        this.http.post(`/api/activities/${createdActivity.id}/images`, formData)
+          .subscribe(() => {
+            console.log('Pictures uploaded!');
+          }, err => {
+            console.log('Error uploading pictures', err);
+          });
+
+      }, err => {
+        console.log('Error creating activity', err);
+      });
   }
 }
+
