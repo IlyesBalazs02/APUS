@@ -43,6 +43,10 @@
         </div>
     </div>
 
+    <div *ngIf="{hasCoordinates}">
+        <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
+    </div>
+
 </div>
 
 <!-- LIGHTBOX OVERLAY -->

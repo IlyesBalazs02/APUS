@@ -22,7 +22,7 @@ export class DisplayActivityComponent implements OnInit {
   selectedIndex: number | null = null;
 
   trackpoints: Trackpoint[] = [];
-
+  hasCoordinates: boolean = false;
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
@@ -42,6 +42,9 @@ export class DisplayActivityComponent implements OnInit {
           this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
             .subscribe(resp => {
               this.trackpoints = resp;
+
+              this.hasCoordinates = this.trackpoints.some(tp => tp.lon != null);
+
               console.log(this.trackpoints);
             });
 
