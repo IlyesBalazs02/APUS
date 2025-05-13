@@ -13,9 +13,13 @@
 
   <ItemGroup>
     <Compile Remove="NewFolder1\**" />
+    <Compile Remove="wwwroot\asd\**" />
     <Content Remove="NewFolder1\**" />
+    <Content Remove="wwwroot\asd\**" />
     <EmbeddedResource Remove="NewFolder1\**" />
+    <EmbeddedResource Remove="wwwroot\asd\**" />
     <None Remove="NewFolder1\**" />
+    <None Remove="wwwroot\asd\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,7 +51,6 @@
     <Folder Include="Helpers\" />
     <Folder Include="Repositories\" />
     <Folder Include="wwwroot\Activities\" />
-    <Folder Include="wwwroot\asd\" />
   </ItemGroup>
 
 </Project>

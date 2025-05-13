@@ -44,4 +44,3 @@ Thumbs.db
 # Angular environment overrides
 /src/environments/environment.ts
 /src/environments/environment.prod.ts
-
