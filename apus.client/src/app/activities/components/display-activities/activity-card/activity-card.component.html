@@ -37,9 +37,12 @@
     </div>
 
     <div class="images-container" *ngIf="images.length">
-        <div class="thumb" *ngFor="let url of images; let i = index" (click)="openViewer(i)">
+        <div class="thumb" *ngFor="let url of images | slice:0:3; let i = index" (click)="openViewer(i)">
             <img [src]="url" alt="image" />
 
+            <div class="overlay" *ngIf="i === 2 && images.length > 3">
+                +{{ images.length - 3 }}
+            </div>
         </div>
     </div>
 
