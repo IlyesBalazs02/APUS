@@ -35,5 +35,12 @@
             This content is a little bit longer.</p>
         <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
     </div>
-    <img src="..." class="card-img-bottom" alt="...">
+
+    <div class="images-container" *ngIf="images.length">
+        <div class="thumb" *ngFor="let url of images; let i = index">
+            <img [src]="url" alt="image" />
+
+        </div>
+    </div>
+
 </div>

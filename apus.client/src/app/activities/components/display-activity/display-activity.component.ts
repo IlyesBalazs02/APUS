@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-display-activity',
   standalone: false,
   templateUrl: './display-activity.component.html',
-  styleUrl: './display-activity.component.css'
+  styleUrls: ['./display-activity.component.scss']
 })
 
 
@@ -15,18 +16,24 @@ import { HttpClient } from '@angular/common/http';
 export class DisplayActivityComponent implements OnInit {
   activityId: string;
   activity: MainActivity = new MainActivity();
+  images: string[] = [];
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
   }
 
   ngOnInit() {
-    this.http
-      .get<MainActivity>(`/api/activities/${this.activityId}`)
-      .subscribe(
-        dto => { this.activity = createActivity(dto); /*console.log(this.activity)*/ },
-        err => console.error(err)
-      );
+    const activity$ = this.http.get<MainActivity>(`/api/activities/${this.activityId}`);
+    const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
+
+    forkJoin({ activity: activity$, images: images$ })
+      .subscribe({
+        next: ({ activity: dto, images }) => {
+          this.activity = createActivity(dto);
+          this.images = images;
+        },
+        error: err => console.error(err)
+      });
   }
 
   // map each activityType to the array of fields to show

@@ -1,4 +1,7 @@
-﻿namespace APUS.Server.Services
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
+
+namespace APUS.Server.Services
 {
 	public class ActivityStorageService : IActivityStorageService
 	{
@@ -9,6 +12,7 @@
 
 		public void CreateActivityFolder(string activityId)
 		{
+			
 			var path = Path.Combine(_uploadsRoot, activityId);
 			Directory.CreateDirectory(path);
 			path = Path.Combine(_uploadsRoot, activityId, "Images");
@@ -31,5 +35,17 @@
 				await image.CopyToAsync(new FileStream(fullPath, FileMode.Create));
 			}
 		}
+
+		public IEnumerable<string> GetImageFileNames(string activityId)
+		{
+			var folder = Path.Combine(_uploadsRoot, activityId, "Images");
+			if (!Directory.Exists(folder))
+				return Array.Empty<string>();
+
+			return Directory
+			  .GetFiles(folder)
+			  .Select(Path.GetFileName);
+		}
+
 	}
 }

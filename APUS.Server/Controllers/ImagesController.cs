@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Data;
+using APUS.Server.Models;
 using APUS.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,5 +33,18 @@ namespace APUS.Server.Controllers
 
 			return NoContent();
 		}
+
+		[HttpGet("{id}")]
+		public async Task<ActionResult<IEnumerable<string>>> GetPictures(string id)
+		{
+			var names = _storageService.GetImageFileNames(id);
+			if (!names.Any()) return NotFound();
+
+			var baseUrl = $"{Request.Scheme}://{Request.Host}";
+			var urls = names.Select(fn => $"{baseUrl}/Activities/{id}/Images/{fn}");
+			return Ok(urls);
+
+		}
 	}
+
 }

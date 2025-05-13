@@ -22,7 +22,7 @@ namespace APUS.Server.Controllers
 			}
 		}
 
-		[HttpPost("upload-gpx")]
+		/*[HttpPost("upload-gpx")]
 		public async Task<IActionResult> UploadGpx([FromForm] IFormFile gpxFile)
 		{
 			if (gpxFile == null || gpxFile.Length == 0)
@@ -36,7 +36,7 @@ namespace APUS.Server.Controllers
 			await gpxFile.CopyToAsync(stream);
 
 			return Ok(new { fileName, relativePath = $"/{_uploadFolder}/{fileName}" });
-		}
+		}*/
 	}
 }
 
