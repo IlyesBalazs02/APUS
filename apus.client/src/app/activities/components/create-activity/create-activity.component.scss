@@ -40,3 +40,56 @@
     padding-right: 0;
   }
 }
+
+.preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;              // space between thumbnails
+  width: 100%;           // or a fixed width: e.g. 600px
+  max-width: 800px;      
+  min-height: 150px;     // set a minimum height
+  border: 2px solid #ccc;  // rectangle border
+  border-radius: 4px;      // slightly rounded corners
+  padding: 12px;           // inner spacing
+  box-sizing: border-box;  // include padding in width/height
+
+  margin-left: auto;        //center div
+  margin-right: auto;
+}
+
+
+.preview-container .thumb {
+    position: relative;         /* <-- ADD THIS LINE */
+  display: inline-block;      /* shrink-wrap to the img */
+  border-radius: 4px;
+  overflow: hidden;           /* just in case an img slightly overflows */
+}
+
+.preview-container .thumb img {
+  display: block;             /* remove inline descender space */
+  width: auto;                /* don’t force to 100% of container */
+  height: auto;               /* keep aspect ratio */
+  max-width: 150px;           /* if you still want a cap */
+  max-height: 150px;          /* on how big thumbs can grow */
+}
+
+.preview-container .thumb .remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* optional: make the button more visible on hover */
+.preview-container .thumb .remove-btn:hover {
+  background: rgba(255,0,0,0.8);
+  color: #fff;
+}

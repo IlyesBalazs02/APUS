@@ -11,6 +11,26 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()">
         <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
+
+        <!-- Drag & Drop Zone -->
+        <div class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+            [class.dragover]="isDragOver">
+            <p>Drag & drop images here, or click to browse</p>
+            <input #fileInput type="file" multiple accept="image/*" (change)="onFileSelected($event)" hidden />
+            <button type="button" (click)="fileInput.click()">Browse Images</button>
+        </div>
+
+        <!-- Preview Thumbnails -->
+        <div class="preview-container" *ngIf="previewUrls.length">
+            <div class="thumb" *ngFor="let url of previewUrls; let i = index">
+                <button class="remove-btn" (click)="removeImage(i)">×</button>
+                <img [src]="url" alt="Preview" />
+            </div>
+        </div>
+
+        <ng-container>
+
+        </ng-container>
         <button type="submit" class="btn btn-primary submit-button" [disabled]="!form.valid">
             Submit
         </button>

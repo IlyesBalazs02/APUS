@@ -20,6 +20,11 @@ export class CreateActivityComponent implements OnInit {
   fields: FormlyFieldConfig[] = [];
   selectActivityHelper = new selectActivityHelper();
 
+  // Drag & Drop state
+  isDragOver = false;
+  files: File[] = [];
+  previewUrls: string[] = [];
+
   constructor(private http: HttpClient) { }
   ngOnInit() {
     this.updateFields(this.selectActivityHelper.selectedActivity);
@@ -41,6 +46,50 @@ export class CreateActivityComponent implements OnInit {
     ];
     this.model = {};
     this.form.reset();
+  }
+
+  // Drag & Drop handlers
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+    const droppedFiles = Array.from(event.dataTransfer?.files || []);
+    this.handleFiles(droppedFiles);
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const selected = Array.from(input.files || []);
+    this.handleFiles(selected);
+  }
+
+  private handleFiles(files: File[]) {
+    const images = files.filter(f => f.type.startsWith('image/'));
+    images.forEach(file => {
+      this.files.push(file);
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          this.previewUrls.push(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    // attach files to form model if needed
+    this.model.images = this.files;
+  }
+
+  removeImage(i: number) {
+    this.previewUrls.splice(i, 1);
   }
 
   submit() {
