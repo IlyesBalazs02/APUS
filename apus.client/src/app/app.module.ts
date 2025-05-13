@@ -18,6 +18,7 @@ import { UploadActivityComponent } from './activities/components/upload-activity
 import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
 import { ActivityCardComponent } from './activities/components/display-activities/activity-card/activity-card.component';
+import { ActivityMapComponent } from './activities/components/display-activity/activity-map/activity-map.component';
 
 // FORMS
 import { ReactiveFormsModule } from '@angular/forms';
@@ -46,7 +47,8 @@ import { EditActivityComponent } from './activities/components/edit-activity/edi
     DisplayActivityComponent,
     DisplayActivitiesComponent,
     ActivityCardComponent,
-    EditActivityComponent
+    EditActivityComponent,
+    ActivityMapComponent
   ],
   imports: [
     BrowserModule,

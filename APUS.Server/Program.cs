@@ -55,6 +55,7 @@ namespace APUS.Server
 			builder.Services.AddSwaggerGen();
 			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
 			builder.Services.AddSingleton<IActivityStorageService, ActivityStorageService>();
+			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
 
 			var app = builder.Build();
 			app.UseCors("AllowAngularDev");

@@ -8,6 +8,7 @@ import { UploadActivityComponent } from './activities/components/upload-activity
 import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
 import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
+import { ActivityMapComponent } from './activities/components/display-activity/activity-map/activity-map.component';
 
 const routes: Routes = [
   { path: 'createactivity', component: CreateActivityComponent },
@@ -17,6 +18,7 @@ const routes: Routes = [
   { path: 'DisplayActivity/:id', component: DisplayActivityComponent },
   { path: 'test1', component: UploadGpxFileComponent },
   { path: 'EditActivity/:id', component: EditActivityComponent },
+  { path: 'ActivityMap', component: ActivityMapComponent },
   { path: '**', redirectTo: 'DisplayActivities', pathMatch: 'full' },
 ];
 

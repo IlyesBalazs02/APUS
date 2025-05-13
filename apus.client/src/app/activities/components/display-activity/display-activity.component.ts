@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { Trackpoint } from '../../ActivityDto/TrackpointDto';
 
 @Component({
   selector: 'app-display-activity',
@@ -20,6 +21,9 @@ export class DisplayActivityComponent implements OnInit {
   images: string[] = [];
   selectedIndex: number | null = null;
 
+  trackpoints: Trackpoint[] = [];
+
+
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
   }
@@ -27,12 +31,20 @@ export class DisplayActivityComponent implements OnInit {
   ngOnInit() {
     const activity$ = this.http.get<MainActivity>(`/api/activities/${this.activityId}`);
     const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
+    //const trackpointdto$ = this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`);
 
     forkJoin({ activity: activity$, images: images$ })
       .subscribe({
         next: ({ activity: dto, images }) => {
           this.activity = createActivity(dto);
           this.images = images;
+
+          this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
+            .subscribe(resp => {
+              this.trackpoints = resp;
+              console.log(this.trackpoints);
+            });
+
         },
         error: err => console.error(err)
       });

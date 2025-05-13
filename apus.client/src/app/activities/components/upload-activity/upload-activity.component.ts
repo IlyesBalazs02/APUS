@@ -84,7 +84,7 @@ export class UploadActivityComponent {
       formData.append('trackFile', this.selectedFile, this.selectedFile.name);
     }
 
-    this.http.post<UploadResponse>('/api/uploadactivity/upload-activity', formData)
+    this.http.post<UploadResponse>('/api/activityfile/upload-activity', formData)
       .subscribe(response => {
 
         if (this.files.length === 0) return;

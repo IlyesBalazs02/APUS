@@ -1,5 +1,6 @@
 ﻿using APUS.Server.Controllers.Helpers;
 using APUS.Server.Data;
+using APUS.Server.DTOs;
 using APUS.Server.Models;
 using APUS.Server.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,32 +8,30 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace APUS.Server.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class UploadActivityController : ControllerBase
+	public class ActivityFileController : ControllerBase
 	{
-		private readonly ILogger<UploadActivityController> _logger;
+		private readonly ILogger<ActivityFileController> _logger;
 		private readonly IActivityRepository _activityRepository;
 		private readonly IActivityStorageService _storageService;
-		private readonly string _uploadRoot;
+		private readonly ITrackpointLoader _loader;
 
-		public UploadActivityController(
-			IConfiguration config,
-			ILogger<UploadActivityController> logger,
+		public ActivityFileController(
+			ILogger<ActivityFileController> logger,
 			IActivityRepository activityRepository,
-			IActivityStorageService storageService)
+			IActivityStorageService storageService,
+			ITrackpointLoader loader)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
-
-			_uploadRoot = config["GpxSettings:UploadFolder"]
-				?? Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "GpxFiles");
-			Directory.CreateDirectory(_uploadRoot);
+			_loader = loader;
 		}
 
 		[HttpPost("upload-activity")]
@@ -45,17 +44,8 @@ namespace APUS.Server.Controllers
 			if (ext != ".gpx" && ext != ".tcx")
 				return BadRequest("Only GPX or TCX files are allowed.");
 
-			var fileName = Path.GetRandomFileName() + ext;
-			var savePath = Path.Combine(_uploadRoot, fileName);
-
 			try
 			{
-				// Save file to disk
-				await using (var stream = new FileStream(savePath, FileMode.Create))
-				{
-					await trackFile.CopyToAsync(stream);
-				}
-
 				var importedActivity = ext == ".gpx"
 					? new UploadGPXFileHelper(trackFile).ImportActivity()
 					: new UploadTCXFileHelper(trackFile).ImportActivity();
@@ -81,6 +71,8 @@ namespace APUS.Server.Controllers
 
 				_storageService.CreateActivityFolder(newActivity.Id);
 
+				await _storageService.SaveTrack(newActivity.Id, trackFile);
+
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
 					routeValues: new { id = newActivity.Id },
@@ -104,5 +96,16 @@ namespace APUS.Server.Controllers
 				return StatusCode(500, "An unexpected error occurred while processing the file.");
 			}
 		}
+
+		[HttpGet("{id}")]
+		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id, CancellationToken ct)
+		{
+			var points = await _loader.LoadTrack(id, ct);
+			if (!points.Any())
+				return NotFound();
+
+			return Ok(points);
+		}
+
 	}
 }
