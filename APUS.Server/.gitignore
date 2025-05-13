@@ -6,4 +6,5 @@ logs/
 bin/
 obj/
 
-wwwroot/
+wwwroot
+./wwwroot
