@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 using APUS.Server.Services;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace APUS.Server
@@ -56,6 +57,10 @@ namespace APUS.Server
 			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
 			builder.Services.AddSingleton<IActivityStorageService, ActivityStorageService>();
 			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
+
+			builder.Services.AddIdentity<SiteUser, IdentityRole>()
+				.AddEntityFrameworkStores<ActivityDbContext>()
+				.AddDefaultTokenProviders();
 
 			var app = builder.Build();
 			app.UseCors("AllowAngularDev");

@@ -35,6 +35,15 @@ namespace APUS.Server.Models
 		//Frontend getComponent
 		public string? ActivityType { get; set; }
 
+
+		//User setup
+		[BindNever]
+		public string UserId { get; set; }
+
+		[BindNever]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public virtual SiteUser User { get; set; }
+
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;

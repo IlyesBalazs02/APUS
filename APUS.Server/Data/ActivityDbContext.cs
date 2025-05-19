@@ -1,9 +1,11 @@
 ﻿using APUS.Server.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace APUS.Server.Data
 {
-	public class ActivityDbContext : DbContext
+	public class ActivityDbContext : IdentityDbContext
 	{
 		public DbSet<MainActivity> Activities { get; set; }
 		public DbSet<GpsRelatedActivity> GpsRelatedActivities { get; set; }
@@ -16,11 +18,8 @@ namespace APUS.Server.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			//activity and images
-			/*modelBuilder.Entity<ActivityImage>()
-			.HasOne(ai => ai.MainActivity)
-			.WithMany(ma => ma.ActivityImages)
-			.HasForeignKey(ai => ai.MainActivityId);*/
+			base.OnModelCreating(modelBuilder); 
+
 
 			modelBuilder.Entity<MainActivity>().ToTable("MainActivities", "Activities");
 
@@ -29,6 +28,14 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<Running>().ToTable("Running", "Activities");
 			modelBuilder.Entity<Hiking>().ToTable("Hiking", "Activities");
 			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
+
+
+			//user
+			modelBuilder.Entity<MainActivity>()
+				.HasOne(a => a.User)
+				.WithMany(u => u.Activities)
+				.HasForeignKey(a => a.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
 		}
 
 	}
