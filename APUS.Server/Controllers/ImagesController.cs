@@ -12,12 +12,12 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ImagesController> _logger;
 		private readonly IActivityRepository _activityRepository;
-		private readonly IActivityStorageService _storageService;
+		private readonly IStorageService _storageService;
 
 		public ImagesController(
 			ILogger<ImagesController> logger,
 			IActivityRepository activityRepository,
-			IActivityStorageService storageService)
+			IStorageService storageService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
@@ -29,7 +29,11 @@ namespace APUS.Server.Controllers
 		{
 			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
 
-			await _storageService.SaveImages(id, images);
+			var activity = await _activityRepository.ReadByIdAsync(id);
+
+			if (activity == null) return NotFound();
+
+			await _storageService.SaveImages(id, images, activity.UserId);
 
 			return NoContent();
 		}
@@ -37,11 +41,16 @@ namespace APUS.Server.Controllers
 		[HttpGet("{id}")]
 		public async Task<ActionResult<IEnumerable<string>>> GetPictures(string id)
 		{
-			var names = _storageService.GetImageFileNames(id);
+			var activity = await _activityRepository.ReadByIdAsync(id);
+
+			if (activity == null) return NotFound();
+
+			var names = _storageService.GetImageFileNames(id, activity.UserId);
 			if (!names.Any()) return NotFound();
 
 			var baseUrl = $"{Request.Scheme}://{Request.Host}";
-			var urls = names.Select(fn => $"{baseUrl}/Activities/{id}/Images/{fn}");
+			//var baseUrl = $"https://localhost:7244";
+			var urls = names.Select(fn => $"{baseUrl}/Users/{activity.UserId}/Activities/{id}/Images/{fn}");
 			return Ok(urls);
 
 		}

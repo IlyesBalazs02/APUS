@@ -7,12 +7,12 @@ const { env } = require('process');
 const PROXY_CONFIG = [
   {
     context: [
-      "/weatherforecast",
       "/api",
       "/activities",
-      "/images",
-      "/Activities",
-      "/Images",
+      "/images/**",
+      "/Images/**",
+      "/Activities/**",
+      "/Users/**"
     ],
     target,
     secure: false

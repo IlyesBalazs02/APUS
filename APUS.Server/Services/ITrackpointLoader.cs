@@ -1,9 +1,10 @@
 ﻿using APUS.Server.DTOs;
+using APUS.Server.Models;
 
 namespace APUS.Server.Services
 {
 	public interface ITrackpointLoader
 	{
-		 Task<List<TrackpointDto>> LoadTrack(string activityId, CancellationToken ct = default);
+		 Task<List<TrackpointDto>> LoadTrack(MainActivity activity, CancellationToken ct = default);
 	}
 }

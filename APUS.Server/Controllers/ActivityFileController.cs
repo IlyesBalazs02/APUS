@@ -21,13 +21,13 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ActivityFileController> _logger;
 		private readonly IActivityRepository _activityRepository;
-		private readonly IActivityStorageService _storageService;
+		private readonly IStorageService _storageService;
 		private readonly ITrackpointLoader _loader;
 
 		public ActivityFileController(
 			ILogger<ActivityFileController> logger,
 			IActivityRepository activityRepository,
-			IActivityStorageService storageService,
+			IStorageService storageService,
 			ITrackpointLoader loader)
 		{
 			_logger = logger;
@@ -75,9 +75,9 @@ namespace APUS.Server.Controllers
 
 				await _activityRepository.CreateAsync(newActivity);
 
-				_storageService.CreateActivityFolder(newActivity.Id);
+				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
-				await _storageService.SaveTrack(newActivity.Id, trackFile);
+				await _storageService.SaveTrack(newActivity.Id,newActivity.UserId, trackFile);
 
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
@@ -107,7 +107,13 @@ namespace APUS.Server.Controllers
 		[Authorize]
 		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id, CancellationToken ct)
 		{
-			var points = await _loader.LoadTrack(id, ct);
+			var activity = await _activityRepository.ReadByIdAsync(id);
+
+			if (activity == null)
+				return NotFound();
+
+			var points = await _loader.LoadTrack(activity, ct);
+
 			if (!points.Any())
 				return NotFound();
 

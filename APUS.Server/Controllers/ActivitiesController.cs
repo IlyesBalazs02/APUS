@@ -17,12 +17,12 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
-		private readonly IActivityStorageService _storageService;
+		private readonly IStorageService _storageService;
 
 		public ActivitiesController(
 			ILogger<ActivitiesController> logger,
 			IActivityRepository activityRepository,
-			IActivityStorageService storageService)
+			IStorageService storageService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
@@ -45,7 +45,7 @@ namespace APUS.Server.Controllers
 
 			await _activityRepository.CreateAsync(activity);
 
-			_storageService.CreateActivityFolder(activity.Id);
+			_storageService.CreateActivityFolder(activity.Id, activity.UserId);
 
 			return CreatedAtAction(
 				nameof(GetById),

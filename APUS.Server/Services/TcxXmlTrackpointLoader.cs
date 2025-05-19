@@ -1,4 +1,5 @@
 ﻿using APUS.Server.DTOs;
+using APUS.Server.Models;
 using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
@@ -7,16 +8,16 @@ namespace APUS.Server.Services
 {
 	public class TcxXmlTrackpointLoader : ITrackpointLoader
 	{
-		private readonly IActivityStorageService _storageService;
+		private readonly IStorageService _storageService;
 
-		public TcxXmlTrackpointLoader(IActivityStorageService storage)
+		public TcxXmlTrackpointLoader(IStorageService storage)
 		{
 			_storageService = storage;
 		}
 
-		public async Task<List<TrackpointDto>> LoadTrack(string activityId, CancellationToken ct = default)
+		public async Task<List<TrackpointDto>> LoadTrack(MainActivity activity, CancellationToken ct = default)
 		{
-			string pathToTrackFile = _storageService.ReturnFilePath(activityId);
+			string pathToTrackFile = _storageService.ReturnFilePath(activity.Id, activity.UserId);
 
 			XNamespace tcx = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2";
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";

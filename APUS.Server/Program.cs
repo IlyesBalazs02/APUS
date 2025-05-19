@@ -65,7 +65,7 @@ namespace APUS.Server
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
-			builder.Services.AddSingleton<IActivityStorageService, ActivityStorageService>();
+			builder.Services.AddSingleton<IStorageService, StorageService>();
 			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
 
 			builder.Services.AddIdentity<SiteUser, IdentityRole>(options =>
@@ -116,6 +116,7 @@ namespace APUS.Server
 
 			app.UseDefaultFiles();
 			app.UseStaticFiles();
+
 
 			// Optional: serve files from the uploads folder
 			//var uploadPath = "\"C:\\APUSGpxFiles\"";

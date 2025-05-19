@@ -1,5 +1,6 @@
 ﻿using APUS.Server.DTOs;
 using APUS.Server.Models;
+using APUS.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,14 @@ namespace APUS.Server.Controllers
 		private readonly IConfiguration _config;
 		private readonly UserManager<SiteUser> _userMgr;
 		private readonly SignInManager<SiteUser> _signInMgr;
+		private readonly IStorageService _storageService;
 
-		public AuthController(IConfiguration config, UserManager<SiteUser> userMgr, SignInManager<SiteUser> signInMgr)
+		public AuthController(IConfiguration config, UserManager<SiteUser> userMgr, SignInManager<SiteUser> signInMgr, IStorageService storageService)
 		{
 			_config = config;
 			_userMgr = userMgr;
 			_signInMgr = signInMgr;
+			_storageService = storageService;
 		}
 
 		[HttpPost("register")]
@@ -38,6 +41,8 @@ namespace APUS.Server.Controllers
 
 			if (!result.Succeeded)
 				return BadRequest(result.Errors);
+
+			_storageService.CreateUserFolder(user.Id);
 
 			return Ok();
 		}
@@ -59,18 +64,15 @@ namespace APUS.Server.Controllers
 
 		private async Task<string> GenerateJwtTokenAsync(string email)
 		{
-			// 1) Look up the full user so you can grab its Id
 			var user = await _userMgr.FindByEmailAsync(email);
 
-			// 2) Build your claims, including the NameIdentifier (user.Id) and email
 			var claims = new List<Claim>
 	{
-		new Claim(ClaimTypes.NameIdentifier, user.Id),              // ← now the real ID
-        new Claim(JwtRegisteredClaimNames.Email, user.Email),       // ← keep email if you like
+		new Claim(ClaimTypes.NameIdentifier, user.Id),              
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),       
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
 	};
 
-			// 3) Sign the token exactly as before
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
