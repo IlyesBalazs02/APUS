@@ -3,9 +3,11 @@ using APUS.Server.Data;
 using APUS.Server.DTOs;
 using APUS.Server.Models;
 using APUS.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Claims;
 using System.Xml;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -35,7 +37,8 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpPost("upload-activity")]
-		public async Task<IActionResult> UploadGpx([FromForm] IFormFile trackFile)
+		[Authorize]
+		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile)
 		{
 			if (trackFile == null || trackFile.Length == 0)
 				return BadRequest("No file provided.");
@@ -66,6 +69,9 @@ namespace APUS.Server.Controllers
 				newActivity.Calories = importedActivity.TotalCalories;
 				newActivity.AvgHeartRate = importedActivity.AverageHeartRate;
 				newActivity.MaxHeartRate = importedActivity.MaximumHeartRate;
+
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+				newActivity.UserId = userId;
 
 				await _activityRepository.CreateAsync(newActivity);
 
@@ -98,6 +104,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpGet("{id}")]
+		[Authorize]
 		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id, CancellationToken ct)
 		{
 			var points = await _loader.LoadTrack(id, ct);

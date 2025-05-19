@@ -84,7 +84,7 @@ export class UploadActivityComponent {
       formData.append('trackFile', this.selectedFile, this.selectedFile.name);
     }
 
-    this.http.post<UploadResponse>('/api/activityfile/upload-activity', formData)
+    this.http.post<UploadResponse>('/api/activityfile/upload-activity', formData, { withCredentials: true })
       .subscribe(response => {
 
         if (this.files.length === 0) return;
@@ -94,7 +94,7 @@ export class UploadActivityComponent {
         const formData = new FormData();
         this.files.forEach(f => formData.append('images', f));
 
-        this.http.post(`/api/images/${response.id}/images`, formData)
+        this.http.post(`/api/images/${response.id}/images`, formData, { withCredentials: true })
           .subscribe(() => {
             console.log('Pictures uploaded!');
             this.router.navigate(['/DisplayActivity', response.id]);

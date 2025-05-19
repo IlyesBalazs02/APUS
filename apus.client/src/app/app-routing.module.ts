@@ -19,14 +19,14 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'createactivity', component: CreateActivityComponent, canActivate: [AuthGuard] },
-  { path: 'map', component: MapSandBoxComponent },
-  { path: 'uploadgpx', component: UploadActivityComponent },
-  { path: 'DisplayActivities', component: DisplayActivitiesComponent },
-  { path: 'DisplayActivity/:id', component: DisplayActivityComponent },
+  { path: 'map', component: MapSandBoxComponent, canActivate: [AuthGuard] },
+  { path: 'uploadgpx', component: UploadActivityComponent, canActivate: [AuthGuard] },
+  { path: 'DisplayActivities', component: DisplayActivitiesComponent, canActivate: [AuthGuard] },
+  { path: 'DisplayActivity/:id', component: DisplayActivityComponent, canActivate: [AuthGuard] },
   { path: 'test1', component: UploadGpxFileComponent },
-  { path: 'EditActivity/:id', component: EditActivityComponent },
-  { path: 'ActivityMap', component: ActivityMapComponent },
-  { path: '**', redirectTo: 'DisplayActivities', pathMatch: 'full' },
+  { path: 'EditActivity/:id', component: EditActivityComponent, canActivate: [AuthGuard] },
+  { path: 'ActivityMap', component: ActivityMapComponent, canActivate: [AuthGuard] },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

@@ -1,15 +1,23 @@
 <header>
-    <p>navigation works!</p>
-    <button type="submit" class="btn btn-primary submit-button" routerLink="/createactivity">
+    <button class="btn btn-primary submit-button" routerLink="/createactivity" *ngIf="(loggedIn$ | async)">
         createactivity
     </button>
-    <button type="upload gpx" class="btn btn-primary submit-button" routerLink="/uploadgpx">
+    <button class="btn btn-primary submit-button" routerLink="/uploadgpx" *ngIf="(loggedIn$ | async)">
         upload
     </button>
-    <button type="map" class="btn btn-primary submit-button" routerLink="/map">
+    <button class="btn btn-primary submit-button" routerLink="/map" *ngIf="(loggedIn$ | async)">
         map
     </button>
-    <button type="map" class="btn btn-primary submit-button" routerLink="/DisplayActivities">
+    <button class="btn btn-primary submit-button" routerLink="/DisplayActivities" *ngIf="(loggedIn$ | async)">
         Activities
+    </button>
+    <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
+        Register
+    </button>
+    <button class="btn btn-primary submit-button" routerLink="/login" *ngIf="!(loggedIn$ | async)">
+        Login
+    </button>
+    <button class="btn btn-primary submit-button" *ngIf="loggedIn$ | async" (click)="logout()">
+        Log Out
     </button>
 </header>
