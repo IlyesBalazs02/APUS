@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
@@ -38,9 +39,11 @@ namespace APUS.Server.Models
 
 		//User setup
 		[BindNever]
+		[ValidateNever]
 		public string UserId { get; set; }
 
 		[BindNever]
+		[ValidateNever]
 		[System.Text.Json.Serialization.JsonIgnore]
 		public virtual SiteUser User { get; set; }
 

@@ -103,7 +103,7 @@ export class CreateActivityComponent implements OnInit {
 
     console.log(JSON.stringify(payload));
 
-    this.http.post<MainActivity>('/api/activities', payload)
+    this.http.post<MainActivity>('/api/activities', payload, { withCredentials: true })
       .subscribe(createdActivity => {
 
         if (this.files.length === 0) return;
@@ -113,7 +113,7 @@ export class CreateActivityComponent implements OnInit {
         const formData = new FormData();
         this.files.forEach(f => formData.append('images', f));
 
-        this.http.post(`/api/images/${createdActivity.id}/images`, formData)
+        this.http.post(`/api/images/${createdActivity.id}/images`, formData, { withCredentials: true })
           .subscribe(() => {
             console.log('Pictures uploaded!');
           }, err => {

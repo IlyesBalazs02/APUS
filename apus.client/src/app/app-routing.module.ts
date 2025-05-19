@@ -18,7 +18,7 @@ const routes: Routes = [
   { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'createactivity', component: CreateActivityComponent },
+  { path: 'createactivity', component: CreateActivityComponent, canActivate: [AuthGuard] },
   { path: 'map', component: MapSandBoxComponent },
   { path: 'uploadgpx', component: UploadActivityComponent },
   { path: 'DisplayActivities', component: DisplayActivitiesComponent },

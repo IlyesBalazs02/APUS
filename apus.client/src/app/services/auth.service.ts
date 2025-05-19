@@ -6,7 +6,7 @@ import { JwtResponse, LoginDto, RegisterDto } from '../auth/Dto/AuthDtos';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private baseUrl = 'https://localhost:7244/api/auth';
+  private baseUrl = 'https://localhost:54954/api/auth';
 
   constructor(private http: HttpClient) { }
 

@@ -11,6 +11,9 @@ using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 using APUS.Server.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 namespace APUS.Server
@@ -77,6 +80,37 @@ namespace APUS.Server
 				.AddEntityFrameworkStores<ActivityDbContext>()
 				.AddDefaultTokenProviders();
 
+
+			//JWT AUTH
+			var jwtSection = builder.Configuration.GetSection("Jwt");
+			var keyBytes = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
+
+			builder.Services
+				.AddAuthentication(options =>
+				{
+					options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+					options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				})
+				.AddJwtBearer(opts =>
+				{
+					opts.RequireHttpsMetadata = true;
+					opts.SaveToken = true;
+					opts.TokenValidationParameters = new TokenValidationParameters
+					{
+						ValidateIssuerSigningKey = true,
+						IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+						ValidateIssuer = true,
+						ValidIssuer = jwtSection["Issuer"],
+						ValidateAudience = true,
+						ValidAudience = jwtSection["Audience"],
+						ValidateLifetime = true,
+						ClockSkew = TimeSpan.Zero
+					};
+				});
+
+
+
+
 			var app = builder.Build();
 			app.UseCors("AllowAngularDev");
 
@@ -100,7 +134,11 @@ namespace APUS.Server
 			}
 			app.UseHttpsRedirection();
 
+
+			app.UseAuthentication();
+
 			app.UseAuthorization();
+
 
 			app.MapControllers();
 

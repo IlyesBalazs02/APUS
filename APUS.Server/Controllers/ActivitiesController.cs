@@ -2,10 +2,12 @@
 using APUS.Server.DTOs.GetActivitiesDto;
 using APUS.Server.Models;
 using APUS.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace APUS.Server.Controllers
 {
@@ -28,6 +30,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpPost]
+		[Authorize]
 		public async Task<ActionResult<MainActivity>> CreateActivity([FromBody] MainActivity activity)
 		{
 			if (!ModelState.IsValid)
@@ -37,6 +40,8 @@ namespace APUS.Server.Controllers
 									   .Select(e => e.ErrorMessage);
 				return BadRequest(new { errors });
 			}
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+			activity.UserId = userId;
 
 			await _activityRepository.CreateAsync(activity);
 
@@ -49,6 +54,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpGet]
+		[Authorize]
 		public async Task<ActionResult<IEnumerable<MainActivity>>> GetAll()
 		{
 			var list = await _activityRepository.ReadAllAsync();
@@ -56,6 +62,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpGet("{id}", Name = nameof(GetById))]
+		[Authorize]
 		public async Task<ActionResult<MainActivity>> GetById(string id)
 		{
 			var act = await _activityRepository.ReadByIdAsync(id);
@@ -64,6 +71,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpGet("get-activities")]
+		[Authorize]
 		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetActivities()
 		{
 			var entities = await _activityRepository.ReadAllAsync();
@@ -72,6 +80,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpPut("{id}")]
+		[Authorize]
 		public async Task<IActionResult> EditActivity(string id, [FromBody] MainActivity activity)
 		{
 			if (id != activity.Id)
@@ -106,6 +115,7 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpDelete("{id}")]
+		[Authorize]
 		public async Task<IActionResult> DeleteActivity(string id)
 		{
 			try

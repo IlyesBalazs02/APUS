@@ -39,7 +39,6 @@ namespace APUS.Server.Controllers
 			if (!result.Succeeded)
 				return BadRequest(result.Errors);
 
-			// Optionally sign in or return token...
 			return Ok();
 		}
 
@@ -53,30 +52,33 @@ namespace APUS.Server.Controllers
 			if (!result.Succeeded)
 				return Unauthorized("Invalid login");
 
-			var token = GenerateJwtToken(dto.Email);
+			var token = await GenerateJwtTokenAsync(dto.Email);
 			return Ok(new { token });
 		}
 
-		private string GenerateJwtToken(string email)
-		{
-			var jwtKey = _config["Jwt:Key"];
-			var jwtIssuer = _config["Jwt:Issuer"];
-			var jwtAudience = _config["Jwt:Audience"];
 
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+		private async Task<string> GenerateJwtTokenAsync(string email)
+		{
+			// 1) Look up the full user so you can grab its Id
+			var user = await _userMgr.FindByEmailAsync(email);
+
+			// 2) Build your claims, including the NameIdentifier (user.Id) and email
+			var claims = new List<Claim>
+	{
+		new Claim(ClaimTypes.NameIdentifier, user.Id),              // ← now the real ID
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),       // ← keep email if you like
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+	};
+
+			// 3) Sign the token exactly as before
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-			var claims = new[]
-			{
-		new Claim(JwtRegisteredClaimNames.Sub, email),
-		new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
-    };
-
 			var token = new JwtSecurityToken(
-				issuer: jwtIssuer,
-				audience: jwtAudience,
+				issuer: _config["Jwt:Issuer"],
+				audience: _config["Jwt:Audience"],
 				claims: claims,
-				expires: DateTime.UtcNow.AddHours(2),   
+				expires: DateTime.UtcNow.AddHours(2),
 				signingCredentials: creds
 			);
 
