@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { BrowserModule } from '@angular/platform-browser';
 import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
@@ -9,8 +9,15 @@ import { DisplayActivitiesComponent } from './activities/components/display-acti
 import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
 import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
 import { ActivityMapComponent } from './activities/components/display-activity/activity-map/activity-map.component';
+import { HomeComponentComponent } from './home-component/home-component.component';
+import { AuthGuard } from './guards/auth.guard';
+import { LoginComponent } from './auth/login/login.component';
+import { RegisterComponent } from './auth/register/register.component';
 
 const routes: Routes = [
+  { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
   { path: 'createactivity', component: CreateActivityComponent },
   { path: 'map', component: MapSandBoxComponent },
   { path: 'uploadgpx', component: UploadActivityComponent },

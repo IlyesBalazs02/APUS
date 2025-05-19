@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -35,6 +35,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
 import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
 import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
+import { RegisterComponent } from './auth/register/register.component';
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { LoginComponent } from './auth/login/login.component';
+import { HomeComponentComponent } from './home-component/home-component.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +52,10 @@ import { EditActivityComponent } from './activities/components/edit-activity/edi
     DisplayActivitiesComponent,
     ActivityCardComponent,
     EditActivityComponent,
-    ActivityMapComponent
+    ActivityMapComponent,
+    RegisterComponent,
+    LoginComponent,
+    HomeComponentComponent
   ],
   imports: [
     BrowserModule,
@@ -66,7 +73,8 @@ import { EditActivityComponent } from './activities/components/edit-activity/edi
 
     MatCardModule
   ],
-  providers: [],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

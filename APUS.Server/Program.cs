@@ -41,6 +41,13 @@ namespace APUS.Server
 						  .AllowAnyHeader()
 						  .AllowAnyMethod()
 						  .AllowCredentials();
+					policy.WithOrigins(
+							"https://0.0.0.0:54954",              // local dev
+							"https://192.168.1.174:54954",          // local network access
+							"https://localhost:54954")               // optional, just in case
+						  .AllowAnyHeader()
+						  .AllowAnyMethod()
+						  .AllowCredentials();
 				});
 			});
 			// end-region
@@ -58,7 +65,15 @@ namespace APUS.Server
 			builder.Services.AddSingleton<IActivityStorageService, ActivityStorageService>();
 			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
 
-			builder.Services.AddIdentity<SiteUser, IdentityRole>()
+			builder.Services.AddIdentity<SiteUser, IdentityRole>(options =>
+			{
+				// Password settings
+				options.Password.RequireDigit = true;   // must have at least one number
+				options.Password.RequireLowercase = false;  // no lowercase requirement
+				options.Password.RequireUppercase = false;  // no uppercase requirement
+				options.Password.RequireNonAlphanumeric = false;  // no symbol requirement
+				options.Password.RequiredLength = 1;      // minimum length
+			})
 				.AddEntityFrameworkStores<ActivityDbContext>()
 				.AddDefaultTokenProviders();
 
