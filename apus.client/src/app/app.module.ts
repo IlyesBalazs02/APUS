@@ -42,6 +42,7 @@ import { HomeComponentComponent } from './home-component/home-component.componen
 
 //DisplayActivity
 import { NgChartsModule } from 'ng2-charts';
+import { CreateRouteComponent } from './create-route/create-route.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +59,8 @@ import { NgChartsModule } from 'ng2-charts';
     ActivityMapComponent,
     RegisterComponent,
     LoginComponent,
-    HomeComponentComponent
+    HomeComponentComponent,
+    CreateRouteComponent
   ],
   imports: [
     BrowserModule,

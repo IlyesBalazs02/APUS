@@ -11,7 +11,6 @@ namespace APUS.Server.Controllers.Helpers
 		private List<LapSummary> Laps { get; set; }
 		private ImportActivityModel ImportedActivity { get; set; }
 
-		//?????????
 		public UploadTCXFileHelper(IFormFile formFile)
 		=> _stream = formFile.OpenReadStream();
 

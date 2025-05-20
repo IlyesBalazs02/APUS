@@ -8,6 +8,8 @@ const PROXY_CONFIG = [
   {
     context: [
       "/api",
+      "/routing",
+      "/routing/**",
       "/activities",
       "/images/**",
       "/Images/**",

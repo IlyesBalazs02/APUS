@@ -18,7 +18,7 @@ namespace OSMRouting
 			double minLat, double minLon,
 			double maxLat, double maxLon)
 		{
-			var tempFile = Path.Combine(@"D:\tmp", "asdasd.osm");
+			var tempFile = Path.Combine(@"D:\tmp", "asdasd2.osm");
 
 			int minTileLon = (int)Math.Floor(minLon);
 			int maxTileLon = (int)Math.Floor(maxLon);
@@ -26,26 +26,24 @@ namespace OSMRouting
 			int maxTileLat = (int)Math.Floor(maxLat);
 
 			var sb = new StringBuilder();
-			bool first = true;
+
 			for (int lon = minTileLon; lon <= maxTileLon; lon++)
 			{
 				for (int lat = minTileLat; lat <= maxTileLat; lat++)
 				{
 					var tileFile = Path.Combine(pbfPath, $"{lon}_{lat}.osm.pbf");
-					if (!File.Exists(tileFile)) continue;
+					if (!File.Exists(tileFile))
+						continue;
 
+					// just read each tile, no merging
 					sb.Append("--read-pbf file=\"")
 					  .Append(tileFile)
 					  .Append("\" ");
-
-					if (!first)
-						sb.Append("--merge ");
-
-					first = false;
 				}
 			}
-			if (first)
-				throw new FileNotFoundException("No tile found covering the given bbox.", pbfPath);
+
+			/*if (first)
+				throw new FileNotFoundException("No tile found covering the given bbox.", pbfPath);*/
 
 			// add bbox and filters
 			sb.Append($"--bounding-box left={minLon} right={maxLon} top={maxLat} bottom={minLat} completeWays=yes clip=false ");

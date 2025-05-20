@@ -13,6 +13,7 @@ import { HomeComponentComponent } from './home-component/home-component.componen
 import { AuthGuard } from './guards/auth.guard';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
+import { CreateRouteComponent } from './create-route/create-route.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
@@ -26,6 +27,7 @@ const routes: Routes = [
   { path: 'test1', component: UploadGpxFileComponent },
   { path: 'EditActivity/:id', component: EditActivityComponent, canActivate: [AuthGuard] },
   { path: 'ActivityMap', component: ActivityMapComponent, canActivate: [AuthGuard] },
+  { path: 'createRoute', component: CreateRouteComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
 ];
 

@@ -1,4 +1,3 @@
-// src/environments/environment.example.ts
 export const environment = {
     production: false,
     mapbox: {
