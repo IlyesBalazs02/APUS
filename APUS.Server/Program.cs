@@ -9,11 +9,12 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
-using APUS.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using APUS.Server.Services.Interfaces;
+using APUS.Server.Services.Implementations;
 
 
 namespace APUS.Server
@@ -67,6 +68,7 @@ namespace APUS.Server
 			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
 			builder.Services.AddSingleton<IStorageService, StorageService>();
 			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
+			builder.Services.AddScoped<ICreateOsmMapPng, CreateOsmMapPng>();
 
 			builder.Services.AddIdentity<SiteUser, IdentityRole>(options =>
 			{

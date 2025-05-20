@@ -2,7 +2,7 @@
 using APUS.Server.Data;
 using APUS.Server.DTOs;
 using APUS.Server.Models;
-using APUS.Server.Services;
+using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -23,17 +23,20 @@ namespace APUS.Server.Controllers
 		private readonly IActivityRepository _activityRepository;
 		private readonly IStorageService _storageService;
 		private readonly ITrackpointLoader _loader;
+		private readonly ICreateOsmMapPng _createOsmMapPng;
 
 		public ActivityFileController(
 			ILogger<ActivityFileController> logger,
 			IActivityRepository activityRepository,
 			IStorageService storageService,
-			ITrackpointLoader loader)
+			ITrackpointLoader loader,
+			ICreateOsmMapPng createOsmMapPng)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
 			_loader = loader;
+			_createOsmMapPng = createOsmMapPng;
 		}
 
 		[HttpPost("upload-activity")]
@@ -79,6 +82,9 @@ namespace APUS.Server.Controllers
 
 				await _storageService.SaveTrack(newActivity.Id,newActivity.UserId, trackFile);
 
+				if (importedActivity.HasGpsTrack) await _createOsmMapPng.GeneratePng(newActivity);
+
+
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
 					routeValues: new { id = newActivity.Id },
@@ -105,14 +111,14 @@ namespace APUS.Server.Controllers
 
 		[HttpGet("{id}")]
 		[Authorize]
-		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id, CancellationToken ct)
+		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id)
 		{
 			var activity = await _activityRepository.ReadByIdAsync(id);
 
 			if (activity == null)
 				return NotFound();
 
-			var points = await _loader.LoadTrack(activity, ct);
+			var points = await _loader.LoadTrack(activity);
 
 			if (!points.Any())
 				return NotFound();

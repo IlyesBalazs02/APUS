@@ -1,7 +1,8 @@
-﻿using Azure.Core;
+﻿using APUS.Server.Services.Interfaces;
+using Azure.Core;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace APUS.Server.Services
+namespace APUS.Server.Services.Implementations
 {
 	public class StorageService : IStorageService
 	{
@@ -35,9 +36,20 @@ namespace APUS.Server.Services
 				return;
 
 			var filename = Path.GetFileName(trackFile.FileName);
-			var fullpath = Path.Combine(_uploadsRoot, userId, "Activities" ,activityId, "Track", filename);
+			var fullpath = Path.Combine(_uploadsRoot, userId,
+										"Activities", activityId,
+										"Track", filename);
 
-			await trackFile.CopyToAsync(new FileStream(fullpath, FileMode.Create));
+			// ensure the FileStream is closed/disposed immediately
+			await using var fs = new FileStream(
+				fullpath,
+				FileMode.Create,
+				FileAccess.Write,
+				FileShare.None,
+				bufferSize: 81920,
+				useAsync: true);
+
+			await trackFile.CopyToAsync(fs);
 		}
 
 		public string ReturnFilePath(string activityId, string userId)

@@ -1,7 +1,7 @@
 ﻿using APUS.Server.Data;
 using APUS.Server.DTOs;
 using APUS.Server.Models;
-using APUS.Server.Services;
+using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;

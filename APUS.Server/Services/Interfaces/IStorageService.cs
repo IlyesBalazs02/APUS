@@ -1,5 +1,4 @@
-﻿
-namespace APUS.Server.Services
+﻿namespace APUS.Server.Services.Interfaces
 {
 	public interface IStorageService
 	{

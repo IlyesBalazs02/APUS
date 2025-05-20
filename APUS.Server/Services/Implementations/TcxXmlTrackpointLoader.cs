@@ -1,10 +1,11 @@
 ﻿using APUS.Server.DTOs;
 using APUS.Server.Models;
+using APUS.Server.Services.Interfaces;
 using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 
-namespace APUS.Server.Services
+namespace APUS.Server.Services.Implementations
 {
 	public class TcxXmlTrackpointLoader : ITrackpointLoader
 	{
@@ -40,20 +41,20 @@ namespace APUS.Server.Services
 				  var posEl = tp.Element(tcx + "Position");
 				  double? lat = posEl != null
 					  ? double.Parse(posEl.Element(tcx + "LatitudeDegrees").Value, CultureInfo.InvariantCulture)
-					  : (double?)null;
+					  : null;
 				  double? lon = posEl != null
 					  ? double.Parse(posEl.Element(tcx + "LongitudeDegrees").Value, CultureInfo.InvariantCulture)
-					  : (double?)null;
+					  : null;
 
 				  // Altitude, Distance, HeartRate
-				  double? alt = tp.Element(tcx + "AltitudeMeters") is XElement a ? double.Parse(a.Value, CultureInfo.InvariantCulture) : (double?)null;
+				  double? alt = tp.Element(tcx + "AltitudeMeters") is XElement a ? double.Parse(a.Value, CultureInfo.InvariantCulture) : null;
 				  int? hr = tp.Element(tcx + "HeartRateBpm")?
-								   .Element(tcx + "Value") is XElement h ? int.Parse(h.Value, CultureInfo.InvariantCulture) : (int?)null;
+								   .Element(tcx + "Value") is XElement h ? int.Parse(h.Value, CultureInfo.InvariantCulture) : null;
 
 				  // Extensions → <ns3:TPX>
 				  var tpx = tp.Element(tcx + "Extensions")?
 							  .Element(ext + "TPX");
-				  double? speed = tpx?.Element(ext + "Speed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : (double?)null;
+				  double? speed = tpx?.Element(ext + "Speed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : null;
 
 				  return new TrackpointDto
 				  {

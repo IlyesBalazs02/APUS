@@ -1,6 +1,6 @@
 ﻿using APUS.Server.Data;
 using APUS.Server.Models;
-using APUS.Server.Services;
+using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APUS.Server.Controllers
