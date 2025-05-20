@@ -1,5 +1,4 @@
-﻿using APUS.Server.DTOs.GetActivitiesDto;
-using APUS.Server.Models;
+﻿using APUS.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 

@@ -26,6 +26,7 @@
     "@ngx-formly/core": "^6.3.12",
     "@types/mapbox-gl": "^3.4.1",
     "bootstrap": "^5.3.5",
+    "bootstrap-icons": "^1.13.1",
     "jest-editor-support": "*",
     "mapbox-gl": "^3.12.0",
     "run-script-os": "*",

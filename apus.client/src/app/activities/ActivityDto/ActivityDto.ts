@@ -13,6 +13,8 @@ export interface ActivityDto {
     distanceKm?: number;
     elevationGain?: number;
     pace?: number;           // only on running
+
+    likescount?: number;
 }
 
 export interface DisplayProp {

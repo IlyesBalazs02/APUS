@@ -1,4 +1,4 @@
-﻿namespace APUS.Server.DTOs.GetActivitiesDto
+﻿namespace APUS.Server.DTOs
 {
 	public record ActivityDto
 	{
@@ -11,6 +11,7 @@
 		public int? TotalCalories { get; set; }
 		public string Type { get; set; }
 		public string? DisplayName { get; set; }
+		public int? LikesCount { get; set; }
 	}
 
 	public record GpsActivityDto : ActivityDto

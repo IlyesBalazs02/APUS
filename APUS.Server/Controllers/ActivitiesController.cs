@@ -1,5 +1,5 @@
 ﻿using APUS.Server.Data;
-using APUS.Server.DTOs.GetActivitiesDto;
+using APUS.Server.DTOs;
 using APUS.Server.Models;
 using APUS.Server.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -51,14 +51,6 @@ namespace APUS.Server.Controllers
 				nameof(GetById),
 				new { id = activity.Id },
 				activity);
-		}
-
-		[HttpGet]
-		[Authorize]
-		public async Task<ActionResult<IEnumerable<MainActivity>>> GetAll()
-		{
-			var list = await _activityRepository.ReadAllAsync();
-			return Ok(list);
 		}
 
 		[HttpGet("{id}", Name = nameof(GetById))]
@@ -129,6 +121,16 @@ namespace APUS.Server.Controllers
 			}
 		}
 
+		[HttpGet("{id}/likes")]
+		public async Task<ActionResult<int>> GetLikesNo(string id) 
+		{
+			var activity = await _activityRepository.ReadByIdAsync(id);
+
+			if (activity == null)return NotFound();
+
+			return activity.LikedBy.Count();
+		}
+
 		private TDto CopyBaseProps<TDto>(MainActivity activity)
 			where TDto : ActivityDto, new()
 		{
@@ -143,6 +145,8 @@ namespace APUS.Server.Controllers
 				TotalCalories = activity.Calories,
 				Type = activity.GetType().Name,
 				DisplayName = activity.DisplayName,
+				LikesCount = activity.LikedBy.Count()
+
 			};
 		}
 

@@ -46,9 +46,16 @@
         </div>
     </div>
 
-    <button type="map" class="btn btn-primary submit-button" [routerLink]="['/EditActivity',activity.id]">
+    <!-- <button type="map" class="btn btn-primary submit-button" [routerLink]="['/EditActivity',activity.id]">
         Edit
-    </button>
+    </button> -->
+
+    <!-- Like indicator -->
+    <div class="like-icon">
+        <i class="bi bi-hand-thumbs-up"></i>
+        <span>{{ activity.likescount }}</span>
+    </div>
+
 </div>
 
 <!-- LIGHTBOX OVERLAY -->

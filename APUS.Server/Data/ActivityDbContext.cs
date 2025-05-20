@@ -32,10 +32,33 @@ namespace APUS.Server.Data
 
 			//user
 			modelBuilder.Entity<MainActivity>()
-				.HasOne(a => a.User)
-				.WithMany(u => u.Activities)
-				.HasForeignKey(a => a.UserId)
-				.OnDelete(DeleteBehavior.Cascade);
+				.HasMany(a => a.LikedBy)
+				.WithMany(u => u.LikedPosts)
+				.UsingEntity<Dictionary<string, object>>(
+					"MainActivityLikes",
+					// 1) User → join : NO ACTION
+					j => j
+						.HasOne<SiteUser>()
+						.WithMany()
+						.HasForeignKey("UserId")
+						.HasConstraintName("FK_MainActivityLikes_Users_UserId")
+						.OnDelete(DeleteBehavior.Restrict),
+
+					// 2) Activity → join : CASCADE
+					j => j
+						.HasOne<MainActivity>()
+						.WithMany()
+						.HasForeignKey("MainActivityId")
+						.HasConstraintName("FK_MainActivityLikes_Activities_ActivityId")
+						.OnDelete(DeleteBehavior.Cascade),
+
+					j =>
+					{
+						j.ToTable("MainActivityLikes", "Activities");
+						j.HasKey("MainActivityId", "UserId")
+						.IsClustered(false);
+					});
+
 		}
 
 	}

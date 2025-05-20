@@ -47,11 +47,18 @@ namespace APUS.Server.Models
 		[System.Text.Json.Serialization.JsonIgnore]
 		public virtual SiteUser User { get; set; }
 
+		[BindNever]
+		[ValidateNever]
+		[NotMapped]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public virtual ICollection<SiteUser> LikedBy { get; set; }
+
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;
 			DisplayName = "Activity";
 			Id = Guid.NewGuid().ToString();
+			LikedBy = new List<SiteUser>();
 		}
 	}
 
