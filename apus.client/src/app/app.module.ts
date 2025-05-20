@@ -40,6 +40,9 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { LoginComponent } from './auth/login/login.component';
 import { HomeComponentComponent } from './home-component/home-component.component';
 
+//DisplayActivity
+import { NgChartsModule } from 'ng2-charts';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -71,7 +74,9 @@ import { HomeComponentComponent } from './home-component/home-component.componen
     HttpClientModule,
     MapSandBoxComponent,
 
-    MatCardModule
+    MatCardModule,
+
+    NgChartsModule
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],

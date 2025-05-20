@@ -47,6 +47,22 @@
         <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
     </div>
 
+
+    <div *ngIf="trackpoints.length > 1">
+        <h6>Elevation Profile</h6>
+        <div style="display: block; width: 100%;">
+            <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
+                [style.height.px]="300">
+            </canvas>
+        </div>
+    </div>
+
+    <div *ngIf="trackpoints.length < 2">
+        <p>No elevation data available.</p>
+    </div>
+
+
+
 </div>
 
 <!-- LIGHTBOX OVERLAY -->

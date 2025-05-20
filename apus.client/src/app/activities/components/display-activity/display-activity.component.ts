@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Trackpoint } from '../../ActivityDto/TrackpointDto';
+import { ChartData, ChartOptions, ChartType } from 'chart.js';
 
 @Component({
   selector: 'app-display-activity',
@@ -14,7 +15,7 @@ import { Trackpoint } from '../../ActivityDto/TrackpointDto';
 
 
 
-export class DisplayActivityComponent implements OnInit {
+export class DisplayActivityComponent implements OnInit, OnChanges {
   activityId: string;
   activity: MainActivity = new MainActivity();
 
@@ -42,15 +43,53 @@ export class DisplayActivityComponent implements OnInit {
           this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
             .subscribe(resp => {
               this.trackpoints = resp;
-
               this.hasCoordinates = this.trackpoints.some(tp => tp.lon != null);
+              console.log('Loaded points:', this.trackpoints.length);
 
-              console.log(this.trackpoints);
+              this.buildChart();
             });
 
         },
         error: err => console.error(err)
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['trackpoints']) {
+      this.buildChart();
+    }
+  }
+
+  private buildChart(): void {
+    // Filter & map alt to elevation
+    const pts = this.trackpoints
+      .filter(p => p.lat != null && p.lon != null && p.alt != null)
+      .map(p => ({ lat: p.lat!, lon: p.lon!, elevation: p.alt! }));
+
+    if (pts.length < 2) {
+      console.log('DisplayActivityComponent: filtered points', pts);
+      this.elevationChartData = { labels: [], datasets: [] };
+      return;
+    }
+
+    // Compute cumulative distance
+    const distances: number[] = [0];
+    for (let i = 1; i < pts.length; i++) {
+      distances.push(distances[i - 1] + this.haversine(pts[i - 1], pts[i]));
+    }
+
+    // Build chart data
+    this.elevationChartData = {
+      labels: distances.map(d => d.toFixed(2)),
+      datasets: [{
+        data: pts.map(p => p.elevation),
+        label: 'Elevation (m)',
+        fill: false,
+        tension: 0.1,
+        borderColor: 'rgb(201, 198, 37)',
+        borderWidth: 3
+      }]
+    };
   }
 
   // map each activityType to the array of fields to show
@@ -103,4 +142,53 @@ export class DisplayActivityComponent implements OnInit {
   closeViewer() {
     this.selectedIndex = null;
   }
+
+
+  public elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
+  public elevationChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    elements: {
+      line: {
+        borderWidth: 3,
+        borderColor: 'rgb(75, 192, 192)'
+      },
+      point: {
+        radius: 0
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Distance (km)' } },
+      y: { title: { display: true, text: 'Elevation (m)' } }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'rect'
+        }
+      }
+    }
+  };
+  public elevationChartType: 'line' = 'line';
+
+  private toRad(deg: number): number {
+    return deg * Math.PI / 180;
+  }
+
+  private haversine(
+    a: { lat: number; lon: number },
+    b: { lat: number; lon: number }
+  ): number {
+    const R = 6371; // km
+    const dLat = this.toRad(b.lat - a.lat);
+    const dLon = this.toRad(b.lon - a.lon);
+    const lat1 = this.toRad(a.lat);
+    const lat2 = this.toRad(b.lat);
+
+    const h =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
 }
