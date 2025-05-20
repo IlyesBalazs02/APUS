@@ -50,6 +50,10 @@
         Edit
     </button> -->
 
+    <div class="image-map-container" *ngIf="activity">
+        <img *ngIf="trackImage" [src]="trackImage" alt="Activity track map" />
+    </div>
+
     <!-- Like indicator -->
     <div class="like-icon">
         <i class="bi bi-hand-thumbs-up"></i>

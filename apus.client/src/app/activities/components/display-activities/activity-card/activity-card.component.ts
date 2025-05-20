@@ -16,6 +16,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   public displayProps: DisplayProp[] = [];
 
   images: string[] = [];
+  trackImage: string = '';
   selectedIndex: number | null = null;
 
   constructor(private http: HttpClient) { }
@@ -36,10 +37,24 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   };
 
   ngOnInit(): void {
-    this.http.get<string[]>(`/api/images/${this.activity.id}`)
-      .subscribe(urls => {
-        this.images = urls;
-      }, err => console.error(err));
+    // 1) Load the gallery of images
+    this.http
+      .get<string[]>(`/api/images/${this.activity.id}`)
+      .subscribe(
+        urls => this.images = urls,
+        err => console.error('gallery load failed', err)
+      );
+
+    // 2) Load the single track‐png URL
+    this.http
+      .get(`/api/images/${this.activity.id}/track`, { responseType: 'text' })
+      .subscribe(
+        url => {
+          this.trackImage = url;
+          console.log('trackImage URL is', url);
+        },
+        err => console.error('track‐png load failed', err)
+      );
   }
 
   ngOnChanges(changes: SimpleChanges) {

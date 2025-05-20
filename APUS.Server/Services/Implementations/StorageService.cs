@@ -66,6 +66,13 @@ namespace APUS.Server.Services.Implementations
 						);
 		}
 
+		public string ReturnTrackPngPath(string activityId, string userId)
+		{
+			string folderPath = Path.Combine(_uploadsRoot, "Users" ,userId, "Activities", activityId, "ActivityTrackImage.png");
+
+			return folderPath;
+		}
+
 		public async Task SaveImages(string activityId, IFormFileCollection images, string userId)
 		{
 			var imagesFolder = Path.Combine(_uploadsRoot, userId, "Activities", activityId, "Images");

@@ -54,6 +54,18 @@ namespace APUS.Server.Controllers
 			return Ok(urls);
 
 		}
+
+		[HttpGet("{id}/track")]
+		public async Task<ActionResult<IEnumerable<string>>> GetPicture(string id)
+		{
+			var activity = await _activityRepository.ReadByIdAsync(id);
+
+			if (activity == null) return NotFound();
+
+			var baseUrl = $"{Request.Scheme}://{Request.Host}";
+			var url = $"https://localhost:7244/Users/{activity.UserId}/Activities/{id}/ActivityTrackImage.png";
+			return Ok(url);
+		}
 	}
 
 }
