@@ -31,7 +31,7 @@ export class DisplayActivityComponent implements OnInit {
   ngOnInit() {
     const activity$ = this.http.get<MainActivity>(`/api/activities/${this.activityId}`);
     const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
-    //const trackpointdto$ = this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`);
+    const trackpointdto$ = this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`);
 
     forkJoin({ activity: activity$, images: images$ })
       .subscribe({
