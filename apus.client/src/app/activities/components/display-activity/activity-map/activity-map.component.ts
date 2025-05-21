@@ -29,11 +29,9 @@ export class ActivityMapComponent implements OnChanges {
     // find first valid point
     const firstValid = this.trackpoints.find(tp => tp.lat != null && tp.lon != null);
 
-    // if we now have coords AND the map isn't built yet, initialize it
     if (firstValid && !this.map) {
       this.initMap(firstValid.lon!, firstValid.lat!);
     }
-    // if we already have a map AND coords, just re-center & draw
     else if (firstValid && this.map) {
       this.map.flyTo({ center: [firstValid.lon!, firstValid.lat!], zoom: 13 });
       this.addPolyline();

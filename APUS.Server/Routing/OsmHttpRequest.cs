@@ -9,7 +9,7 @@ namespace OSMRouting
 {
 	public class OsmHttpRequest
 	{
-		private readonly string _osmXml;
+		private string _osmXml;
 
 		public string GetOsmXml() => _osmXml;
 
@@ -45,15 +45,19 @@ namespace OSMRouting
 			/*if (first)
 				throw new FileNotFoundException("No tile found covering the given bbox.", pbfPath);*/
 
+			if (sb.Length == 0)
+				throw new InvalidOperationException($"No PBF tiles found in '{pbfPath}' for that bbox.");
+
+
 			// add bbox and filters
-			sb.Append($"--bounding-box left={minLon} right={maxLon} top={maxLat} bottom={minLat} completeWays=yes clip=false ");
+			// correct: no “clip” parameter (or rename if you need it)
+			sb.Append($"--bounding-box left={minLon} right={maxLon} top={maxLat} bottom={minLat} completeWays=yes ");
 			sb.Append("--tf accept-ways highway=* --used-node --tf reject-relations ");
-			sb.Append($"--write-xml file=\"{tempFile}\"");
+			//sb.Append($"--write-xml file=\"{tempFile}\"");
+			sb.Append("--write-xml file=-");
 
 			// run osmosis with merged args
 			RunOsmosis(sb.ToString());
-
-			_osmXml = File.ReadAllText(tempFile);
 		}
 
 		private void RunOsmosis(string arguments)
@@ -72,19 +76,15 @@ namespace OSMRouting
 
 			using (var process = new Process { StartInfo = psi })
 			{
-				process.OutputDataReceived += (sender, e) => {
-					if (e.Data != null) Console.WriteLine("[OUT] " + e.Data);
-				};
-				process.ErrorDataReceived += (sender, e) => {
-					if (e.Data != null) Console.Error.WriteLine("[ERR] " + e.Data);
-				};
-
-				process.Start();
-
-				process.BeginOutputReadLine();
-				process.BeginErrorReadLine();
-
+				process.Start();                                   
+				_osmXml = process.StandardOutput.ReadToEnd();      
+				var errors = process.StandardError.ReadToEnd();   
 				process.WaitForExit();
+
+				if (process.ExitCode != 0)
+					throw new InvalidOperationException(
+						$"Osmosis failed (exit {process.ExitCode}):\n{errors}"
+					);
 
 			}
 		}

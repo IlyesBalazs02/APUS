@@ -18,9 +18,10 @@ export class CreateRouteComponent implements OnInit {
 
   selectedCoordinateType: 'start' | 'end' = 'start';
   coordinates = {
-    start: { lat: null as number | null, lon: null as number | null },
-    end: { lat: null as number | null, lon: null as number | null }
+    start: { lat: 0, lon: 0 },
+    end: { lat: 0, lon: 0 }
   };
+
 
   startMarker: mapboxgl.Marker | null = null;
   endMarker: mapboxgl.Marker | null = null;
@@ -126,7 +127,87 @@ export class CreateRouteComponent implements OnInit {
     };
 
     this.http.post<[number, number][]>('/api/routing/route', body).subscribe(route => {
-      console.log('Received route:', route);
+      this.DrawRoute(route);
     });
   }
+
+  private DrawRoute(rawCoords: any[]): void {
+    if (!Array.isArray(rawCoords) || rawCoords.length === 0) {
+      console.error('DrawRoute expected non-empty array, got:', rawCoords);
+      return;
+    }
+
+    const first = rawCoords[0] as any;
+    let routeCoords: [number, number][];
+
+    if (Array.isArray(first)) {
+      // [[lat,lon], …]
+      routeCoords = (rawCoords as [number, number][]).map(
+        ([lat, lon]) => [lon, lat]
+      );
+    } else if ('item1' in first && 'item2' in first) {
+      // C# Tuple serializes to { item1: lat, item2: lon }
+      routeCoords = (rawCoords as { item1: number, item2: number }[]).map(
+        c => [c.item2, c.item1]  // flip into [lng, lat]
+      );
+    } else if ('latitude' in first && 'longitude' in first) {
+      routeCoords = (rawCoords as any[]).map(
+        c => [c.longitude, c.latitude] as [number, number]
+      );
+    } else if ('lat' in first && 'lon' in first) {
+      routeCoords = (rawCoords as any[]).map(
+        c => [c.lon, c.lat] as [number, number]
+      );
+    } else {
+      console.error('Unrecognized coordinate format:', first);
+      return;
+    }
+
+    const data = {
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'LineString', coordinates: routeCoords }
+    };
+
+    const existingSource = this.map.getSource('route') as mapboxgl.GeoJSONSource;
+    if (existingSource) {
+      existingSource.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: routeCoords
+        }
+      });
+      return;
+    }
+
+    // Otherwise, add source and layer
+    this.map.addSource('route', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: routeCoords
+        }
+      }
+    });
+
+    this.map.addLayer({
+      id: 'route',
+      type: 'line',
+      source: 'route',
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#ff0000',
+        'line-width': 4
+      }
+    });
+  }
+
 }

@@ -1,5 +1,5 @@
 export interface Trackpoint {
-    time: string;  // or: time: Date;
+    time: string;
     lat?: number;
     lon?: number;
     hr?: number;

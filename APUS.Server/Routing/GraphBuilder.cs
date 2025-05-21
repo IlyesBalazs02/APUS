@@ -228,9 +228,11 @@ namespace OSMRouting
 
 		}
 
-		public void ProcessOsmXml(string filePath)
+		public void ProcessOsmXml(string xmlContent)
 		{
-			var doc = XDocument.Load(@"D:\tmp\asdasd.osm");
+			//var doc = XDocument.Load(@"D:\tmp\asdasd.osm");
+			var doc = XDocument.Parse(xmlContent);
+
 			nodeList.Clear();
 			wayList.Clear();
 

@@ -2,17 +2,17 @@ export interface ActivityDto {
     id: string;
     title: string;
     description?: string;
-    duration: string;        // or number, whatever you use
+    duration: string;
     date: string;
     avgHr?: number;
     totalCalories?: number;
-    type: string;            // e.g. "RunningActivityDto", "HikingActivityDto", etc.
+    type: string;
     displayname?: string;
 
-    // gps fields (only present on some)
+    // gps fields 
     distanceKm?: number;
     elevationGain?: number;
-    pace?: number;           // only on running
+    pace?: number;
 
     likescount?: number;
 }
