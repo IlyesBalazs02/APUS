@@ -1,28 +1,27 @@
-﻿using System.Globalization;
+﻿using APUS.Server.DTOs;
+using APUS.Server.Services.Interfaces;
+using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Xml.Linq;
 
-namespace APUS.Server.Controllers.Helpers
+namespace APUS.Server.Services.Implementations
 {
-	public class UploadTCXFileHelper
+	public class TCXFileService : ITCXFileService
 	{
-		private readonly Stream _stream;
 		private List<TcxTrackPoint> Points { get; set; }
 		private List<LapSummary> Laps { get; set; }
 		private ImportActivityModel ImportedActivity { get; set; }
 
-		public UploadTCXFileHelper(IFormFile formFile)
-		=> _stream = formFile.OpenReadStream();
-
-		public ImportActivityModel ImportActivity()
+		public ImportActivityModel ImportActivity(Stream tcxStream)
 		{
-			//parse trackpoints
-			Points = ParseTcxTrackpoints(_stream);
 
-			_stream.Seek(0, SeekOrigin.Begin);
+			//parse trackpoints
+			Points = ParseTcxTrackpoints(tcxStream);
+
+			tcxStream.Seek(0, SeekOrigin.Begin);
 
 			//parse lap extensions
-			Laps = ParseLapSummaries(_stream);
+			Laps = ParseLapSummaries(tcxStream);
 
 			//Compute additional information about the activity
 			ImportedActivity = ComputeAdditionalStats(Laps);
@@ -58,23 +57,23 @@ namespace APUS.Server.Controllers.Helpers
 				  var posEl = tp.Element(tcx + "Position");
 				  double? lat = posEl != null
 					  ? double.Parse(posEl.Element(tcx + "LatitudeDegrees").Value, CultureInfo.InvariantCulture)
-					  : (double?)null;
+					  : null;
 				  double? lon = posEl != null
 					  ? double.Parse(posEl.Element(tcx + "LongitudeDegrees").Value, CultureInfo.InvariantCulture)
-					  : (double?)null;
+					  : null;
 
 				  // Altitude, Distance, HeartRate
-				  double? alt = tp.Element(tcx + "AltitudeMeters") is XElement a ? double.Parse(a.Value, CultureInfo.InvariantCulture) : (double?)null;
-				  double? dist = tp.Element(tcx + "DistanceMeters") is XElement d ? double.Parse(d.Value, CultureInfo.InvariantCulture) : (double?)null;
+				  double? alt = tp.Element(tcx + "AltitudeMeters") is XElement a ? double.Parse(a.Value, CultureInfo.InvariantCulture) : null;
+				  double? dist = tp.Element(tcx + "DistanceMeters") is XElement d ? double.Parse(d.Value, CultureInfo.InvariantCulture) : null;
 				  int? hr = tp.Element(tcx + "HeartRateBpm")?
-								   .Element(tcx + "Value") is XElement h ? int.Parse(h.Value, CultureInfo.InvariantCulture) : (int?)null;
+								   .Element(tcx + "Value") is XElement h ? int.Parse(h.Value, CultureInfo.InvariantCulture) : null;
 
 				  // Extensions → <ns3:TPX>
 				  var tpx = tp.Element(tcx + "Extensions")?
 							  .Element(ext + "TPX");
-				  double? speed = tpx?.Element(ext + "Speed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : (double?)null;
-				  int? runCadence = tpx?.Element(ext + "RunCadence") is XElement r ? int.Parse(r.Value, CultureInfo.InvariantCulture) : (int?)null;
-				  int? watts = tpx?.Element(ext + "Watts") is XElement w ? int.Parse(w.Value, CultureInfo.InvariantCulture) : (int?)null;
+				  double? speed = tpx?.Element(ext + "Speed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : null;
+				  int? runCadence = tpx?.Element(ext + "RunCadence") is XElement r ? int.Parse(r.Value, CultureInfo.InvariantCulture) : null;
+				  int? watts = tpx?.Element(ext + "Watts") is XElement w ? int.Parse(w.Value, CultureInfo.InvariantCulture) : null;
 
 				  return new TcxTrackPoint
 				  {
@@ -106,7 +105,8 @@ namespace APUS.Server.Controllers.Helpers
 			//pars lap summaries
 			return doc
 			  .Descendants(tcx + "Lap")
-			  .Select(lap => {
+			  .Select(lap =>
+			  {
 				  var start = DateTime.Parse(
 					  lap.Attribute("StartTime").Value,
 					  CultureInfo.InvariantCulture,
@@ -128,21 +128,21 @@ namespace APUS.Server.Controllers.Helpers
 					.Element(tcx + "AverageHeartRateBpm")
 					?.Element(tcx + "Value") is XElement ahr
 					  ? int.Parse(ahr.Value, CultureInfo.InvariantCulture)
-					  : (int?)null;
+					  : null;
 
 				  int? maxHr = lap
 					.Element(tcx + "MaximumHeartRateBpm")
 					?.Element(tcx + "Value") is XElement mhr
 					  ? int.Parse(mhr.Value, CultureInfo.InvariantCulture)
-					  : (int?)null;
+					  : null;
 
 				  //ns3:LX> block:
 				  var lx = lap.Element(tcx + "Extensions")
 							  ?.Element(ext + "LX");
 
-				  double? avgSpeed = lx?.Element(ext + "AvgSpeed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : (double?)null;
-				  int? avgCad = lx?.Element(ext + "AvgRunCadence") is XElement c ? int.Parse(c.Value, CultureInfo.InvariantCulture) : (int?)null;
-				  int? maxCad = lx?.Element(ext + "MaxRunCadence") is XElement m ? int.Parse(m.Value, CultureInfo.InvariantCulture) : (int?)null;
+				  double? avgSpeed = lx?.Element(ext + "AvgSpeed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : null;
+				  int? avgCad = lx?.Element(ext + "AvgRunCadence") is XElement c ? int.Parse(c.Value, CultureInfo.InvariantCulture) : null;
+				  int? maxCad = lx?.Element(ext + "MaxRunCadence") is XElement m ? int.Parse(m.Value, CultureInfo.InvariantCulture) : null;
 
 
 				  return new LapSummary
@@ -167,7 +167,7 @@ namespace APUS.Server.Controllers.Helpers
 
 			double totalDistanceMeters = laps.Sum(l => l.DistanceMeters ?? 0);
 
-			double totalDistanceKm = Math.Ceiling((totalDistanceMeters / 1000.0) * 100) / 100.0;
+			double totalDistanceKm = Math.Ceiling(totalDistanceMeters / 1000.0 * 100) / 100.0;
 
 			var avgHrDouble = laps
 				.Where(l => l.AverageHeartRate.HasValue)

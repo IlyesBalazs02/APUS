@@ -1,4 +1,4 @@
-﻿namespace APUS.Server.Controllers.Helpers
+﻿namespace APUS.Server.DTOs
 
 {
 	//The tcx and gpx files data is collected here and with this class will the new activity be created

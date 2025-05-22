@@ -1,23 +1,21 @@
-﻿using System.Globalization;
+﻿using APUS.Server.DTOs;
+using APUS.Server.Services.Interfaces;
+using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace APUS.Server.Controllers.Helpers
+namespace APUS.Server.Services.Implementations
 {
 	// NOT FINISHED
-	public class UploadGPXFileHelper
+	public class GPXFileService : IGPXFileService
 	{
-		private readonly Stream _stream;
 		private List<Trackpoint> Points { get; set; }
 		private ImportActivityModel ImportedActivity { get; set; }
 
-		public UploadGPXFileHelper(IFormFile formFile)
-		=> _stream = formFile.OpenReadStream();
-
-		public ImportActivityModel ImportActivity()
+		public ImportActivityModel ImportActivity(Stream GPXStream)
 		{
-			Points = ParseGpx(_stream);   // may throw
+			Points = ParseGpx(GPXStream);   // may throw
 			ImportedActivity = ComputeStats(Points); // unlikely to throw, but could
 			return ImportedActivity;
 		}
@@ -33,7 +31,8 @@ namespace APUS.Server.Controllers.Helpers
 
 			return doc
 			  .Descendants(ns + "trkpt")
-			  .Select(pt => {
+			  .Select(pt =>
+			  {
 				  // latitude and longitude
 				  var lat = double.Parse(pt.Attribute("lat").Value, CultureInfo.InvariantCulture);
 				  var lon = double.Parse(pt.Attribute("lon").Value, CultureInfo.InvariantCulture);
@@ -81,7 +80,8 @@ namespace APUS.Server.Controllers.Helpers
 			// 1) only keep points that have both elevation & time
 			var valid = pts
 			  .Where(p => p.Elevation.HasValue && p.Time.HasValue)
-			  .Select(p => new {
+			  .Select(p => new
+			  {
 				  Lat = p.Latitude,
 				  Lon = p.Longitude,
 				  Ele = p.Elevation.Value,

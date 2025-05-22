@@ -1,4 +1,4 @@
-
+﻿
 using APUS.Server.Models;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -25,7 +25,6 @@ namespace APUS.Server
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			// region HTTTP POST Json
 			builder.Services.AddControllers()
 				.AddNewtonsoftJson(options => // Ensure the required package is installed
 				{
@@ -54,21 +53,33 @@ namespace APUS.Server
 						  .AllowCredentials();
 				});
 			});
-			// end-region
 
 			builder.Services.AddDbContext<ActivityDbContext>(opt =>
 			{
-				//opt.UseInMemoryDatabase("ActivitiesDev");
 				opt.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=APUSActivityDbDev;Trusted_Connection=True;MultipleActiveResultSets=true");
 			});
 
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-			builder.Services.AddTransient<IActivityRepository, ActivityRepository>();
+			builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 			builder.Services.AddSingleton<IStorageService, StorageService>();
-			builder.Services.AddScoped<ITrackpointLoader, TcxXmlTrackpointLoader>();
-			builder.Services.AddScoped<ICreateOsmMapPng, CreateOsmMapPng>();
+			builder.Services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
+			builder.Services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
+
+			builder.Services.AddTransient<ITCXFileService, TCXFileService>();
+			builder.Services.AddTransient<IGPXFileService, GPXFileService>();
+
+			builder.Services.AddTransient<Func<string, IActivityImportService>>(sp => ext =>
+			{
+				ext = ext?.Trim().ToLowerInvariant();
+				return ext switch
+				{
+					".tcx" => sp.GetRequiredService<ITCXFileService>(),   // ← interface, not concrete
+					".gpx" => sp.GetRequiredService<IGPXFileService>(),   // ← interface, not concrete
+					_ => throw new NotSupportedException($"No importer for '{ext}'")
+				};
+			});
+
 
 			builder.Services.AddIdentity<SiteUser, IdentityRole>(options =>
 			{

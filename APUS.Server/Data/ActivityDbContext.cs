@@ -8,8 +8,6 @@ namespace APUS.Server.Data
 	public class ActivityDbContext : IdentityDbContext
 	{
 		public DbSet<MainActivity> Activities { get; set; }
-		public DbSet<GpsRelatedActivity> GpsRelatedActivities { get; set; }
-		//public DbSet<ActivityImage> ActivityImages { get; set; }
 
 		public ActivityDbContext(DbContextOptions<ActivityDbContext> opt) :base(opt)
 		{

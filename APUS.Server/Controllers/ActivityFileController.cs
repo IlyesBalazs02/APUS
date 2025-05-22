@@ -1,5 +1,4 @@
-﻿using APUS.Server.Controllers.Helpers;
-using APUS.Server.Data;
+﻿using APUS.Server.Data;
 using APUS.Server.DTOs;
 using APUS.Server.Models;
 using APUS.Server.Services.Interfaces;
@@ -24,19 +23,24 @@ namespace APUS.Server.Controllers
 		private readonly IStorageService _storageService;
 		private readonly ITrackpointLoader _loader;
 		private readonly ICreateOsmMapPng _createOsmMapPng;
+		private readonly Func<string, IActivityImportService> _importerFactory;
+
 
 		public ActivityFileController(
 			ILogger<ActivityFileController> logger,
 			IActivityRepository activityRepository,
 			IStorageService storageService,
 			ITrackpointLoader loader,
-			ICreateOsmMapPng createOsmMapPng)
+			ICreateOsmMapPng createOsmMapPng,
+			Func<string, IActivityImportService> importerFactory
+			)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
 			_loader = loader;
 			_createOsmMapPng = createOsmMapPng;
+			_importerFactory = importerFactory;
 		}
 
 		[HttpPost("upload-activity")]
@@ -46,15 +50,16 @@ namespace APUS.Server.Controllers
 			if (trackFile == null || trackFile.Length == 0)
 				return BadRequest("No file provided.");
 
-			var ext = Path.GetExtension(trackFile.FileName).ToLowerInvariant();
-			if (ext != ".gpx" && ext != ".tcx")
-				return BadRequest("Only GPX or TCX files are allowed.");
+			await using var ms = new MemoryStream();
+			await trackFile.CopyToAsync(ms);
+			ms.Position = 0;
+
+			var ext = Path.GetExtension(trackFile.FileName);
+			var importerFactory = _importerFactory(ext);
 
 			try
 			{
-				var importedActivity = ext == ".gpx"
-					? new UploadGPXFileHelper(trackFile).ImportActivity()
-					: new UploadTCXFileHelper(trackFile).ImportActivity();
+				var importedActivity = importerFactory.ImportActivity(ms);
 
 				MainActivity newActivity = importedActivity.HasGpsTrack == true
 					? new GpsRelatedActivity
