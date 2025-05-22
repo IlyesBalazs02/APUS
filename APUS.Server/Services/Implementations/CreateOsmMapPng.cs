@@ -26,7 +26,7 @@ namespace APUS.Server.Services.Implementations
 			DefaultRequestHeaders = { { "User-Agent", "MyMapApp/1.0" } }
 		};
 
-		// Fixed pixel size
+		// Fixed map size
 		private const int WidthPx = 500;
 		private const int HeightPx = 200;
 		private const int TileSize = 256;
@@ -43,12 +43,9 @@ namespace APUS.Server.Services.Implementations
 			var coords = route.Where(t => t.Lat.HasValue && t.Lon.HasValue)
 							  .Select(t => (lat: t.Lat.Value, lon: t.Lon.Value))
 							  .ToArray();
-
 			var bbox = GetBbox(coords);
 			int zoom = CalculateZoomLevel(bbox.minLat, bbox.minLon, bbox.maxLat, bbox.maxLon);
-
 			byte[] pngBytes = await GenerateFixedSizeMap(coords, zoom);
-
 			string outPath = SysPath.Combine(_env.WebRootPath, "Users", activity.UserId, "Activities", activity.Id, "ActivityTrackImage.png");
 			await File.WriteAllBytesAsync(outPath, pngBytes);
 		}

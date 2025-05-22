@@ -54,6 +54,7 @@ namespace APUS.Server.Controllers
 			await trackFile.CopyToAsync(ms);
 			ms.Position = 0;
 
+			//Select the correct import service based on the extension
 			var ext = Path.GetExtension(trackFile.FileName);
 			var importerFactory = _importerFactory(ext);
 
@@ -81,12 +82,16 @@ namespace APUS.Server.Controllers
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 				newActivity.UserId = userId;
 
+				//Create the activity into the EF database
 				await _activityRepository.CreateAsync(newActivity);
 
+				//Create a folder for the activity in the blob storage
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
+				//Save the uploaded file into the activity's folder
 				await _storageService.SaveTrack(newActivity.Id,newActivity.UserId, trackFile);
 
+				//If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
 				if (importedActivity.HasGpsTrack) await _createOsmMapPng.GeneratePng(newActivity);
 
 

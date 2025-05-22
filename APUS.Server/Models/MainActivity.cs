@@ -80,14 +80,11 @@ namespace APUS.Server.Models
 				if (AvgPace == null || AvgPace == 0)
 					return "N/A";
 
-				// Calculate seconds to cover 1 kilometer
 				double secondsPerKilometer = 1000 / AvgPace.Value;
 
-				// Convert to minutes and seconds
 				int minutes = (int)(secondsPerKilometer / 60);
 				int seconds = (int)(secondsPerKilometer % 60);
 
-				// Return formatted string
 				return $"{minutes:D2}:{seconds:D2}";
 			}
 		}
@@ -96,12 +93,7 @@ namespace APUS.Server.Models
 		{
 			DisplayName = "Activity";
 		}
-		/*public virtual ICollection<ActivityImage>? ActivityImages { get; set; } = new List<ActivityImage>();
 
-		[System.Text.Json.Serialization.JsonIgnore]
-		public string StreamPath { get; set; }
-
-		public Boolean? ShowCoordinates { get; set; } = false;*/
 	}
 
 	public class Running : GpsRelatedActivity
@@ -116,7 +108,6 @@ namespace APUS.Server.Models
 	public class Bouldering : MainActivity
 	{
 		public int? Difficulty { get; set; }
-		//public bool? RedPoint { get; set; }
 		public Bouldering()
 		{
 			DisplayName = "Bouldering";

@@ -15,8 +15,8 @@ namespace APUS.Server.Services.Implementations
 
 		public ImportActivityModel ImportActivity(Stream GPXStream)
 		{
-			Points = ParseGpx(GPXStream);   // may throw
-			ImportedActivity = ComputeStats(Points); // unlikely to throw, but could
+			Points = ParseGpx(GPXStream);
+			ImportedActivity = ComputeStats(Points);
 			return ImportedActivity;
 		}
 
@@ -26,9 +26,6 @@ namespace APUS.Server.Services.Implementations
 
 			XNamespace ns = "http://www.topografix.com/GPX/1/1";
 
-			// Garmin’s TrackPointExtension namespace
-			XNamespace gpxtpx = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1";
-
 			return doc
 			  .Descendants(ns + "trkpt")
 			  .Select(pt =>
@@ -37,7 +34,7 @@ namespace APUS.Server.Services.Implementations
 				  var lat = double.Parse(pt.Attribute("lat").Value, CultureInfo.InvariantCulture);
 				  var lon = double.Parse(pt.Attribute("lon").Value, CultureInfo.InvariantCulture);
 
-				  //safely parse elevation if present
+				  //parse elevation if present
 				  var eleEl = pt.Element(ns + "ele");
 				  double? ele = eleEl != null
 					  ? double.Parse(eleEl.Value, CultureInfo.InvariantCulture)
@@ -52,11 +49,11 @@ namespace APUS.Server.Services.Implementations
 
 				  // navigate into <extensions><gpxtpx:TrackPointExtension>…
 				  var ext = pt.Element(ns + "extensions")
-							  ?.Element(gpxtpx + "TrackPointExtension");
+							  ?.Element("TrackPointExtension");
 
 				  // safely parse hr / cad if present
-				  int? hr = ext?.Element(gpxtpx + "hr") is XElement h ? int.Parse(h.Value) : null;
-				  int? cad = ext?.Element(gpxtpx + "cad") is XElement c ? int.Parse(c.Value) : null;
+				  int? hr = ext?.Element("hr") is XElement h ? int.Parse(h.Value) : null;
+				  int? cad = ext?.Element("cad") is XElement c ? int.Parse(c.Value) : null;
 
 				  return new Trackpoint
 				  {

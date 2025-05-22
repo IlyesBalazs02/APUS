@@ -40,11 +40,14 @@ namespace APUS.Server.Controllers
 									   .Select(e => e.ErrorMessage);
 				return BadRequest(new { errors });
 			}
+
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 			activity.UserId = userId;
 
+			//Create the activity into the EF database
 			await _activityRepository.CreateAsync(activity);
 
+			//Create a folder for the activity in the blob storage
 			_storageService.CreateActivityFolder(activity.Id, activity.UserId);
 
 			return CreatedAtAction(
@@ -62,6 +65,7 @@ namespace APUS.Server.Controllers
 			return Ok(act);
 		}
 
+		//ToDo: Pages
 		[HttpGet("get-activities")]
 		[Authorize]
 		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetActivities()
@@ -150,6 +154,7 @@ namespace APUS.Server.Controllers
 			};
 		}
 
+		//Define which values to send to the DisplayActivities component
 		private ActivityDto MapToDto(MainActivity activity)
 		{
 			return activity switch

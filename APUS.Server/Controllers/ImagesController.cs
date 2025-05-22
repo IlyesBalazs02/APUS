@@ -29,6 +29,7 @@ namespace APUS.Server.Controllers
 		{
 			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
 
+			// Activity is needed for it's id and userid to know where to save the images
 			var activity = await _activityRepository.ReadByIdAsync(id);
 
 			if (activity == null) return NotFound();
@@ -41,6 +42,7 @@ namespace APUS.Server.Controllers
 		[HttpGet("{id}")]
 		public async Task<ActionResult<IEnumerable<string>>> GetPictures(string id)
 		{
+			// Activity is needed for it's id and userid to know the path of the images
 			var activity = await _activityRepository.ReadByIdAsync(id);
 
 			if (activity == null) return NotFound();
@@ -49,12 +51,13 @@ namespace APUS.Server.Controllers
 			if (!names.Any()) return NotFound();
 
 			var baseUrl = $"{Request.Scheme}://{Request.Host}";
-			//var baseUrl = $"https://localhost:7244";
+
 			var urls = names.Select(fn => $"{baseUrl}/Users/{activity.UserId}/Activities/{id}/Images/{fn}");
 			return Ok(urls);
 
 		}
 
+		// Path to the activity's trak PNG ( if it exists)
 		[HttpGet("{id}/track")]
 		public async Task<ActionResult<IEnumerable<string>>> GetPicture(string id)
 		{

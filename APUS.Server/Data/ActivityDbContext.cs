@@ -34,7 +34,6 @@ namespace APUS.Server.Data
 				.WithMany(u => u.LikedPosts)
 				.UsingEntity<Dictionary<string, object>>(
 					"MainActivityLikes",
-					// 1) User → join : NO ACTION
 					j => j
 						.HasOne<SiteUser>()
 						.WithMany()
@@ -42,7 +41,6 @@ namespace APUS.Server.Data
 						.HasConstraintName("FK_MainActivityLikes_Users_UserId")
 						.OnDelete(DeleteBehavior.Restrict),
 
-					// 2) Activity → join : CASCADE
 					j => j
 						.HasOne<MainActivity>()
 						.WithMany()
