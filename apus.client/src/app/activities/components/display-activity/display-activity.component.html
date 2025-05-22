@@ -44,11 +44,11 @@
     </div>
 
     <div *ngIf="{hasCoordinates}">
-        <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
+        <app-activity-map [trackpoints]="elevPoints"></app-activity-map>
     </div>
 
 
-    <div *ngIf="trackpoints.length > 1">
+    <div *ngIf="elevPoints.length > 1">
         <h6>Elevation Profile</h6>
         <div style="display: block; width: 100%;">
             <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
@@ -57,9 +57,16 @@
         </div>
     </div>
 
-    <div *ngIf="trackpoints.length < 2">
-        <p>No elevation data available.</p>
+    <div *ngIf="hrpoints.length > 1">
+        <h6>Heart rate Profile</h6>
+        <div style="display: block; width: 100%;">
+            <canvas baseChart [data]="hrChartData" [options]="hrChartOptions" [type]="'line'" [style.height.px]="300">
+            </canvas>
+        </div>
     </div>
+
+
+
 
 
 

@@ -42,21 +42,14 @@ namespace OSMRouting
 				}
 			}
 
-			/*if (first)
-				throw new FileNotFoundException("No tile found covering the given bbox.", pbfPath);*/
-
 			if (sb.Length == 0)
 				throw new InvalidOperationException($"No PBF tiles found in '{pbfPath}' for that bbox.");
 
 
-			// add bbox and filters
-			// correct: no “clip” parameter (or rename if you need it)
 			sb.Append($"--bounding-box left={minLon} right={maxLon} top={maxLat} bottom={minLat} completeWays=yes ");
 			sb.Append("--tf accept-ways highway=* --used-node --tf reject-relations ");
-			//sb.Append($"--write-xml file=\"{tempFile}\"");
 			sb.Append("--write-xml file=-");
 
-			// run osmosis with merged args
 			RunOsmosis(sb.ToString());
 		}
 

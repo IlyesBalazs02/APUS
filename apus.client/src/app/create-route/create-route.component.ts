@@ -118,7 +118,6 @@ export class CreateRouteComponent implements OnInit {
       return;
     }
 
-    // Post to your backend route
     console.log('Posting coordinates', this.coordinates);
 
     const body = {
@@ -126,7 +125,14 @@ export class CreateRouteComponent implements OnInit {
       end: { latitude: this.coordinates.end.lat, longitude: this.coordinates.end.lon }
     };
 
+    const startTime = performance.now();
+
     this.http.post<[number, number][]>('/api/routing/route', body).subscribe(route => {
+      const endTime = performance.now();
+
+      const durationSec = (endTime - startTime) / 1000;
+      console.log(route);
+      console.log(`Request took ${durationSec.toFixed(3)} s`);
       this.DrawRoute(route);
     });
   }
@@ -141,14 +147,12 @@ export class CreateRouteComponent implements OnInit {
     let routeCoords: [number, number][];
 
     if (Array.isArray(first)) {
-      // [[lat,lon], …]
       routeCoords = (rawCoords as [number, number][]).map(
         ([lat, lon]) => [lon, lat]
       );
     } else if ('item1' in first && 'item2' in first) {
-      // C# Tuple serializes to { item1: lat, item2: lon }
       routeCoords = (rawCoords as { item1: number, item2: number }[]).map(
-        c => [c.item2, c.item1]  // flip into [lng, lat]
+        c => [c.item2, c.item1]
       );
     } else if ('latitude' in first && 'longitude' in first) {
       routeCoords = (rawCoords as any[]).map(
@@ -182,7 +186,6 @@ export class CreateRouteComponent implements OnInit {
       return;
     }
 
-    // Otherwise, add source and layer
     this.map.addSource('route', {
       type: 'geojson',
       data: {

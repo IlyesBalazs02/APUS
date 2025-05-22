@@ -2,7 +2,7 @@ import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Timestamp } from 'rxjs';
 import { Trackpoint } from '../../ActivityDto/TrackpointDto';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 
@@ -22,8 +22,13 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   images: string[] = [];
   selectedIndex: number | null = null;
 
-  trackpoints: Trackpoint[] = [];
+  //Elev/distabce
+  elevPoints: Trackpoint[] = [];
   hasCoordinates: boolean = false;
+
+  //Hr/Time
+  hrpoints: Trackpoint[] = [];
+  hasHrAndTime: boolean = false;
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
@@ -42,11 +47,17 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
           this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
             .subscribe(resp => {
-              this.trackpoints = resp;
-              this.hasCoordinates = this.trackpoints.some(tp => tp.lon != null);
-              console.log('Loaded points:', this.trackpoints.length);
+              this.elevPoints = resp;
+              this.hasCoordinates = this.elevPoints.some(tp => tp.lon != null);
 
-              this.buildChart();
+
+              this.hrpoints = resp;
+              this.hasHrAndTime = this.hrpoints.some(hp => hp.hr != null && hp.time);
+
+              console.log(this.hrpoints);
+
+              this.buildElevationChart();
+              this.buildHrChart();
             });
 
         },
@@ -55,41 +66,9 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['trackpoints']) {
-      this.buildChart();
-    }
-  }
+    if (changes['elevPoints']) this.buildElevationChart();
 
-  private buildChart(): void {
-    // Filter & map alt to elevation
-    const pts = this.trackpoints
-      .filter(p => p.lat != null && p.lon != null && p.alt != null)
-      .map(p => ({ lat: p.lat!, lon: p.lon!, elevation: p.alt! }));
-
-    if (pts.length < 2) {
-      console.log('DisplayActivityComponent: filtered points', pts);
-      this.elevationChartData = { labels: [], datasets: [] };
-      return;
-    }
-
-    // Compute cumulative distance
-    const distances: number[] = [0];
-    for (let i = 1; i < pts.length; i++) {
-      distances.push(distances[i - 1] + this.haversine(pts[i - 1], pts[i]));
-    }
-
-    // Build chart data
-    this.elevationChartData = {
-      labels: distances.map(d => d.toFixed(2)),
-      datasets: [{
-        data: pts.map(p => p.elevation),
-        label: 'Elevation (m)',
-        fill: false,
-        tension: 0.1,
-        borderColor: 'rgb(201, 198, 37)',
-        borderWidth: 3
-      }]
-    };
+    if (changes['hrpoints']) this.buildHrChart();
   }
 
   // map each activityType to the array of fields to show
@@ -121,6 +100,8 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     return allFields;
   }
 
+
+
   openViewer(i: number) {
     this.selectedIndex = i;
   }
@@ -144,6 +125,98 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   }
 
 
+
+  private buildElevationChart(): void {
+
+    // Filter & map alt to elevation
+    const pts = this.elevPoints
+      .filter(p => p.lat != null && p.lon != null && p.alt != null)
+      .map(p => ({ lat: p.lat!, lon: p.lon!, elevation: p.alt! }));
+
+    if (pts.length < 2) {
+      console.log('DisplayActivityComponent: filtered points', pts);
+      this.elevationChartData = { labels: [], datasets: [] };
+      return;
+    }
+
+    // Compute cumulative distance
+    const distances: number[] = [0];
+    for (let i = 1; i < pts.length; i++) {
+      distances.push(distances[i - 1] + this.haversine(pts[i - 1], pts[i]));
+    }
+
+
+    // Build chart data
+    this.elevationChartData = {
+      labels: distances.map(d => d.toFixed(2)),
+      datasets: [{
+        data: pts.map(p => p.elevation),
+        label: 'Elevation (m)',
+        fill: false,
+        tension: 0.1,
+        borderColor: 'rgb(201, 198, 37)',
+        borderWidth: 3
+      }]
+    };
+  }
+
+  private buildHrChart(): void {
+    const pts = this.hrpoints
+      .filter(p => p.hr != null && p.time != null)
+      .map(p => ({ heartrate: p.hr, time: p.time }));
+
+    // 1) turn ISO strings into millisecond timestamps
+    const timestamps = pts.map(p => new Date(p.time).getTime());
+
+    // max time gap between trackpoints, to filter out the time between pauses
+    const MAX_GAP_MS = 2000;
+
+    const elapsedMs: number[] = [];
+    let elapsedTotal = 0;
+    for (let i = 0; i < timestamps.length; i++) {
+      if (i === 0) {
+        elapsedMs.push(0);
+      } else {
+        const delta = timestamps[i] - timestamps[i - 1];
+        // only accept if its lower than the max_gap
+        if (delta <= MAX_GAP_MS) {
+          elapsedTotal += delta;
+        }
+        elapsedMs.push(elapsedTotal);
+      }
+    }
+
+    // 4) convert to whole seconds
+    const elapsedSecs = elapsedMs.map(ms => Math.floor(ms / 1000));
+
+    // 5) format hh:mm:ss
+    function formatHMS(totalSecs: number): string {
+      const h = Math.floor(totalSecs / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = totalSecs % 60;
+      return [h, m, s]
+        .map(n => String(n).padStart(2, '0'))
+        .join(':');
+    }
+
+
+    this.hrChartData = {
+      labels: elapsedSecs.map(formatHMS),
+      datasets: [{
+        data: pts.map(p => p.heartrate!),
+        label: 'HeartRate',
+        fill: false,
+        tension: 0.1,
+        borderColor: 'rgb(228, 7, 7)',
+        borderWidth: 3
+      }]
+    };
+
+  }
+
+  public elevationChartType: 'line' = 'line';
+
+  //Elevation/Distance
   public elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
   public elevationChartOptions: ChartOptions<'line'> = {
     responsive: true,
@@ -169,7 +242,21 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       }
     }
   };
-  public elevationChartType: 'line' = 'line';
+
+  //Hr/Time
+  public hrChartData: ChartData<'line'> = { labels: [], datasets: [] };
+  public hrChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    elements: {
+      line: { borderWidth: 3, borderColor: 'rgb(211, 30, 6)' },
+      point: { radius: 0 }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Time' } },
+
+      y: { title: { display: true, text: 'Heart Rate (bpm)' } }
+    }
+  };
 
   private toRad(deg: number): number {
     return deg * Math.PI / 180;
@@ -192,3 +279,4 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   }
 
 }
+
