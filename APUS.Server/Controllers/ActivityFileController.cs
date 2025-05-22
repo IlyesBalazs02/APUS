@@ -89,7 +89,7 @@ namespace APUS.Server.Controllers
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
 				//Save the uploaded file into the activity's folder
-				await _storageService.SaveTrack(newActivity.Id,newActivity.UserId, trackFile);
+				await _storageService.SaveTrackAsync(newActivity.Id,newActivity.UserId, trackFile);
 
 				//If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
 				if (importedActivity.HasGpsTrack) await _createOsmMapPng.GeneratePng(newActivity);

@@ -18,7 +18,7 @@ namespace APUS.Server.Services.Implementations
 
 		public async Task<List<TrackpointDto>> LoadTrack(MainActivity activity, CancellationToken ct = default)
 		{
-			string pathToTrackFile = _storageService.ReturnFilePath(activity.Id, activity.UserId);
+			string pathToTrackFile = _storageService.ReturnFirstFilePath(activity.Id, activity.UserId);
 
 			XNamespace tcx = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2";
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";

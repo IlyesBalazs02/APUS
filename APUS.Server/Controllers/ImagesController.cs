@@ -34,7 +34,7 @@ namespace APUS.Server.Controllers
 
 			if (activity == null) return NotFound();
 
-			await _storageService.SaveImages(id, images, activity.UserId);
+			await _storageService.SaveImagesAsync(id, images, activity.UserId);
 
 			return NoContent();
 		}

@@ -5,9 +5,9 @@
 		void CreateActivityFolder(string activityId, string userId);
 		void CreateUserFolder(string userId);
 		IEnumerable<string> GetImageFileNames(string activityId, string userId);
-		string ReturnFilePath(string activityId, string userId);
-		string ReturnTrackPngPath(string activityId, string userId);
-		Task SaveImages(string activityId, IFormFileCollection images, string userId);
-		Task SaveTrack(string activityId, string userId, IFormFile trackFile);
+		string ReturnFirstFilePath(string activityId, string userId);
+		string ReturnTrackImagePath(string activityId, string userId);
+		Task SaveImagesAsync(string activityId, IFormFileCollection images, string userId);
+		Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile);
 	}
 }

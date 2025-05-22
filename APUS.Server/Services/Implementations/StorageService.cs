@@ -8,8 +8,18 @@ namespace APUS.Server.Services.Implementations
 	{
 		private readonly string _uploadsRoot;
 
+		private const string UsersFolder = "Users";
+		private const string ActivitiesFolder = "Activities";
+		private const string ImagesFolder = "Images";
+		private const string TrackFolder = "Track";
+		private const string ActivityImageFileName = "ActivityTrackImage.png";
+		private static readonly string[] SupportedTrackExtensions = new[] { ".tcx", ".gpx" };
+
 		public StorageService(IWebHostEnvironment env)
-			=> _uploadsRoot = Path.Combine(env.WebRootPath, "Users");
+		{
+			if (env == null) throw new ArgumentNullException(nameof(env));
+			_uploadsRoot = Path.Combine(env.WebRootPath, UsersFolder);
+		}
 
 		public void CreateUserFolder(string userId)
 		{
@@ -19,85 +29,88 @@ namespace APUS.Server.Services.Implementations
 
 		public void CreateActivityFolder(string activityId, string userId)
 		{
-			var createActivityPath = Path.Combine(_uploadsRoot, userId, "Activities", activityId);
-
-			Directory.CreateDirectory(createActivityPath);
-
-			var path = Path.Combine(createActivityPath, "Images");
-			Directory.CreateDirectory(path);
-
-			path = Path.Combine(createActivityPath, "Track");
-			Directory.CreateDirectory(path);
+			var activityBase = GetActivityRootPath(userId, activityId);
+			Directory.CreateDirectory(activityBase);
+			Directory.CreateDirectory(Path.Combine(activityBase, ImagesFolder));
+			Directory.CreateDirectory(Path.Combine(activityBase, TrackFolder));
 		}
 
-		public async Task SaveTrack(string activityId, string userId, IFormFile trackFile)
+		public async Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile)
 		{
-			if (trackFile == null || trackFile.Length == 0)
-				return;
-
-			var filename = Path.GetFileName(trackFile.FileName);
-			var fullpath = Path.Combine(_uploadsRoot, userId,
-										"Activities", activityId,
-										"Track", filename);
-
-			// ensure the FileStream is closed/disposed immediately
-			await using var fs = new FileStream(
-				fullpath,
-				FileMode.Create,
-				FileAccess.Write,
-				FileShare.None,
-				bufferSize: 81920,
-				useAsync: true);
-
-			await trackFile.CopyToAsync(fs);
+			if (trackFile?.Length > 0)
+			{
+				var target = Path.Combine(GetTrackPath(userId, activityId), Path.GetFileName(trackFile.FileName));
+				await WriteFileAsync(trackFile, target).ConfigureAwait(false);
+			}
 		}
 
-		public string ReturnFilePath(string activityId, string userId)
+
+		public string ReturnFirstFilePath(string activityId, string userId)
 		{
-			string[] extensions = new string[] { ".tcx", ".gpx" };
-			string folderPath = Path.Combine(_uploadsRoot, userId, "Activities", activityId, "Track");
+			var folder = GetTrackPath(userId, activityId);
+			if (!Directory.Exists(folder)) return null;
 
-
-			return Directory.EnumerateFiles(folderPath)
-						.FirstOrDefault(file =>
-							extensions.Any(ext =>
-								file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)
-							)
-						);
+			return Directory
+				.EnumerateFiles(folder)
+				.FirstOrDefault(file => SupportedTrackExtensions
+					.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+				);
 		}
 
-		public string ReturnTrackPngPath(string activityId, string userId)
+		public string ReturnTrackImagePath(string activityId, string userId)
 		{
-			string folderPath = Path.Combine(_uploadsRoot, "Users" ,userId, "Activities", activityId, "ActivityTrackImage.png");
-
-			return folderPath;
+			return Path.Combine(GetActivityRootPath(userId, activityId), ActivityImageFileName);
 		}
 
-		public async Task SaveImages(string activityId, IFormFileCollection images, string userId)
+		public async Task SaveImagesAsync(string activityId, IFormFileCollection images, string userId)
 		{
-			var imagesFolder = Path.Combine(_uploadsRoot, userId, "Activities", activityId, "Images");
+			var folder = Path.Combine(GetActivityRootPath(userId, activityId), ImagesFolder);
+			Directory.CreateDirectory(folder);
 
-			foreach (var image in images)
+			foreach (var image in images ?? Enumerable.Empty<IFormFile>())
 			{
 				if (image.Length == 0) continue;
-
-				var fileName = Path.GetFileName(image.FileName);
-				var fullPath = Path.Combine(imagesFolder, fileName);
-
-				await image.CopyToAsync(new FileStream(fullPath, FileMode.Create));
+				var target = Path.Combine(folder, Path.GetFileName(image.FileName));
+				await WriteFileAsync(image, target).ConfigureAwait(false);
 			}
 		}
 
 		public IEnumerable<string> GetImageFileNames(string activityId, string userId)
 		{
-			var folder = Path.Combine(_uploadsRoot, userId, "Activities", activityId, "Images");
-			if (!Directory.Exists(folder))
-				return Array.Empty<string>();
+			var folder = Path.Combine(GetActivityRootPath(userId, activityId), ImagesFolder);
+			if (!Directory.Exists(folder)) return Enumerable.Empty<string>();
 
 			return Directory
-			  .GetFiles(folder)
-			  .Select(Path.GetFileName);
+				.GetFiles(folder)
+				.Select(Path.GetFileName);
 		}
+
+		#region Helpers
+
+		private string GetUserActivitiesPath(string userId)
+			=> Path.Combine(_uploadsRoot, userId, ActivitiesFolder);
+
+		private string GetActivityRootPath(string userId, string activityId)
+			=> Path.Combine(_uploadsRoot, userId, ActivitiesFolder, activityId);
+
+		private string GetTrackPath(string userId, string activityId)
+			=> Path.Combine(GetActivityRootPath(userId, activityId), TrackFolder);
+
+		private static async Task WriteFileAsync(IFormFile file, string destination)
+		{
+			await using var stream = new FileStream(
+				destination,
+				FileMode.Create,
+				FileAccess.Write,
+				FileShare.None,
+				bufferSize: 81920,
+				useAsync: true
+			);
+
+			await file.CopyToAsync(stream).ConfigureAwait(false);
+		}
+
+		#endregion
 
 	}
 }
