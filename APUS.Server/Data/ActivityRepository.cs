@@ -40,13 +40,18 @@ namespace APUS.Server.Data
 			{
 				// Same subtype: update properties
 				_context.Entry(oldEntity).CurrentValues.SetValues(activity);
+				await _context.SaveChangesAsync();
 			}
 			else
 			{
-				// Different subtype: remove and re-add
+				// 1) remove old
 				_context.Activities.Remove(oldEntity);
+				await _context.SaveChangesAsync();
+
+				// 2) add new
 				activity.Id = id;
 				_context.Activities.Add(activity);
+				await _context.SaveChangesAsync();
 			}
 
 			await _context.SaveChangesAsync();
