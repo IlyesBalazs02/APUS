@@ -58,7 +58,7 @@ namespace APUS.Server.Controllers
 				return Unauthorized("Invalid login");
 
 			var token = await GenerateJwtTokenAsync(dto.Email);
-			return Ok(new { token });
+			return Ok(new Dictionary<string, string> { ["token"] = token });
 		}
 
 

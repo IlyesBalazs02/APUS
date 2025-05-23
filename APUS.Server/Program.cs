@@ -65,6 +65,7 @@ namespace APUS.Server
 			builder.Services.AddSingleton<IStorageService, StorageService>();
 			builder.Services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			builder.Services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
+			builder.Services.AddTransient<IRouteService, RouteService>();
 
 			builder.Services.AddTransient<ITCXFileService, TCXFileService>();
 			builder.Services.AddTransient<IGPXFileService, GPXFileService>();
