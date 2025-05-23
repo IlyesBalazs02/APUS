@@ -169,10 +169,14 @@ namespace APUS.Server.Services.Implementations
 
 			double totalDistanceKm = Math.Ceiling(totalDistanceMeters / 1000.0 * 100) / 100.0;
 
-			var avgHrDouble = laps
+			var hrList = laps
 				.Where(l => l.AverageHeartRate.HasValue)
-				.Select(l => l.AverageHeartRate.Value)
-				.Average();
+				.Select(l => l.AverageHeartRate!.Value)
+				.ToList();
+
+			double avgHrDouble = hrList.Any()
+				? hrList.Average()
+				: 0;
 
 			double avgSpeedTmp = laps.Average(l => l.AvgSpeed ?? 0);
 
@@ -196,6 +200,15 @@ namespace APUS.Server.Services.Implementations
 					descentTmp += -delta;
 			}
 
+			var maxHrList = laps
+				.Where(l => l.MaximumHeartRate.HasValue)
+				.Select(l => l.MaximumHeartRate!.Value)
+				.ToList();
+
+			int? maxHr = maxHrList.Any()
+				? maxHrList.Max()
+				: null;
+
 			var stats = new ImportActivityModel
 			{
 				StartTime = laps.First().StartTime,
@@ -206,10 +219,7 @@ namespace APUS.Server.Services.Implementations
 				AvgPace = avgSpeedTmp,
 				TotalCalories = laps.Sum(l => l.Calories ?? 0),
 				AverageHeartRate = (int)avgHrDouble,
-				MaximumHeartRate = laps
-					.Where(l => l.MaximumHeartRate.HasValue)
-					.Select(l => l.MaximumHeartRate.Value)
-					.Max(),
+				MaximumHeartRate = maxHr,
 				TotalAscentMeters = ascentTmp,
 				TotalDescentMeters = descentTmp
 			};
