@@ -1,8 +1,6 @@
-import { Component, Inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivityDto, DisplayProp } from '../../../ActivityDto/ActivityDto';
 import { HttpClient } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
-import { MainActivity } from '../../../_models/ActivityClasses';
 
 type PropMap = Record<string, { key: keyof ActivityDto, label: string }[]>;
 
@@ -13,6 +11,7 @@ type PropMap = Record<string, { key: keyof ActivityDto, label: string }[]>;
   styleUrls: ['./activity-card.component.scss']
 })
 export class ActivityCardComponent implements OnChanges, OnInit {
+  @Input() activity!: ActivityDto;
 
   public displayProps: DisplayProp[] = [];
 
@@ -20,8 +19,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   trackImage: string = '';
   selectedIndex: number | null = null;
 
-  constructor(private http: HttpClient,
-    @Inject('activity') private activity: MainActivity) { }
+  constructor(private http: HttpClient) { }
 
   //Which properties to display
   private readonly propMap: PropMap = {
@@ -40,36 +38,23 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   };
 
   ngOnInit(): void {
-    // 1) Load the gallery
+    // 1) Load the gallery of images
     this.http
       .get<string[]>(`/api/images/${this.activity.id}`)
-      .pipe(
-        catchError(err => {
-          if (err.status === 404) {
-            // no images for this activity → just use empty array
-            return of([]);
-          }
-          // some other error → rethrow/log then fallback
-          console.error('Gallery load failed:', err);
-          return of([]);
-        })
-      )
-      .subscribe(urls => this.images = urls);
+      .subscribe(
+        urls => this.images = urls,
+        err => console.error('gallery load failed', err)
+      );
 
-    // 2) Load the track‐png URL
+    // 2) Load the single track‐png URL
     this.http
-      .get<string>(`/api/images/${this.activity.id}/track`, { responseType: 'text' })
-      .pipe(
-        catchError(err => {
-          if (err.status === 404) {
-            // no track image → leave trackImage blank (or point at a placeholder)
-            return of('');
-          }
-          console.error('Track‐png load failed:', err);
-          return of('');
-        })
-      )
-      .subscribe(url => this.trackImage = url);
+      .get(`/api/images/${this.activity.id}/track`, { responseType: 'text' })
+      .subscribe(
+        url => {
+          this.trackImage = url;
+        },
+        err => console.error('track‐png load failed', err)
+      );
   }
 
   ngOnChanges(changes: SimpleChanges) {
