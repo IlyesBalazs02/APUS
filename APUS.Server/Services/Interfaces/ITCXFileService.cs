@@ -4,6 +4,6 @@ namespace APUS.Server.Services.Interfaces
 {
 	public interface ITCXFileService : IActivityImportService
 	{
-		ImportActivityModel ImportActivity(Stream tcxStream);
+		ImportActivityModel ImportActivity(MemoryStream tcxStream);
 	}
 }

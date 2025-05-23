@@ -13,14 +13,14 @@ namespace APUS.Server.Services.Implementations
 		private List<Trackpoint> Points { get; set; }
 		private ImportActivityModel ImportedActivity { get; set; }
 
-		public ImportActivityModel ImportActivity(Stream GPXStream)
+		public ImportActivityModel ImportActivity(MemoryStream GPXStream)
 		{
-			Points = ParseGpx(GPXStream);
-			ImportedActivity = ComputeStats(Points);
-			return ImportedActivity;
+			var points = ParseGpx(GPXStream);
+			var model = ComputeStats(points);
+			return model;
 		}
 
-		private List<Trackpoint> ParseGpx(Stream s)
+		private List<Trackpoint> ParseGpx(MemoryStream s)
 		{
 			var doc = XDocument.Load(s);
 

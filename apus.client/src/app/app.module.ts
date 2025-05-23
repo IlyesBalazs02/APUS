@@ -1,24 +1,10 @@
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { CommonModule } from '@angular/common';
-import { NgTemplateOutlet } from '@angular/common';
-import { NgComponentOutlet } from '@angular/common';
-
-// COMPONENTS
-import { CreateActivityComponent } from './activities/components/create-activity/create-activity.component';
-import { FooterComponent } from './footer/footer.component';
-import { NavigationComponent } from './navigation/navigation.component';
-import { UploadActivityComponent } from './activities/components/upload-activity/upload-activity.component';
-import { DisplayActivityComponent } from './activities/components/display-activity/display-activity.component';
-import { DisplayActivitiesComponent } from './activities/components/display-activities/display-activities.component';
-import { ActivityCardComponent } from './activities/components/display-activities/activity-card/activity-card.component';
-import { ActivityMapComponent } from './activities/components/display-activity/activity-map/activity-map.component';
 
 // FORMS
 import { ReactiveFormsModule } from '@angular/forms';
@@ -31,32 +17,22 @@ import { MatInputModule } from '@angular/material/input';
 // Card
 import { MatCardModule } from '@angular/material/card';
 
-//SANDBOX
-import { MapSandBoxComponent } from './Testing/map-sand-box/map-sand-box.component';
-import { UploadGpxFileComponent } from './Testing/upload-gpx-file/upload-gpx-file.component';
-import { EditActivityComponent } from './activities/components/edit-activity/edit-activity.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { JwtInterceptor } from './interceptors/jwt.interceptor';
-import { LoginComponent } from './auth/login/login.component';
-import { HomeComponentComponent } from './home-component/home-component.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { HomeComponentComponent } from './shared/components/home-component/home-component.component';
 
 //DisplayActivity
-import { NgChartsModule } from 'ng2-charts';
-import { CreateRouteComponent } from './create-route/create-route.component';
+import { CreateRouteComponent } from './features/create-route/create-route.component';
+import { SharedModule } from './shared/shared.module';
+import { CoreModule } from './core/core.module';
+
+//refresh fix
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+
 
 @NgModule({
   declarations: [
     AppComponent,
-    CreateActivityComponent,
-    FooterComponent,
-    NavigationComponent,
-    UploadGpxFileComponent,
-    UploadActivityComponent,
-    DisplayActivityComponent,
-    DisplayActivitiesComponent,
-    ActivityCardComponent,
-    EditActivityComponent,
-    ActivityMapComponent,
     RegisterComponent,
     LoginComponent,
     HomeComponentComponent,
@@ -64,7 +40,9 @@ import { CreateRouteComponent } from './create-route/create-route.component';
   ],
   imports: [
     BrowserModule,
-
+    SharedModule,
+    CoreModule,
+    AppRoutingModule,
     ReactiveFormsModule,
     FormlyModule.forRoot(),
     FormlyBootstrapModule,
@@ -74,14 +52,10 @@ import { CreateRouteComponent } from './create-route/create-route.component';
     MatInputModule,
     AppRoutingModule,
     HttpClientModule,
-    MapSandBoxComponent,
-
     MatCardModule,
 
-    NgChartsModule
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-  ],
+  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }], //ONLY TEMPORARY FIX
   bootstrap: [AppComponent]
 })
 export class AppModule { }

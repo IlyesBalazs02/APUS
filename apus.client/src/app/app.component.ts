@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,9 @@ import { AuthService } from './services/auth.service';
 })
 export class AppComponent {
 
-
+  constructor(router: Router) {
+    console.log('REGISTERED ROUTES:', router.config);
+  }
 
   title = 'apus.client';
 }

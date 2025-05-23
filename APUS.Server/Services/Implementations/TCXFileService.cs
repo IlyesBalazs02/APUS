@@ -12,27 +12,27 @@ namespace APUS.Server.Services.Implementations
 		private List<LapSummary> Laps { get; set; }
 		private ImportActivityModel ImportedActivity { get; set; }
 
-		public ImportActivityModel ImportActivity(Stream tcxStream)
+		public ImportActivityModel ImportActivity(MemoryStream tcxStream)
 		{
 
 			//parse trackpoints
-			Points = ParseTcxTrackpoints(tcxStream);
+			var points = ParseTcxTrackpoints(tcxStream);
 
 			tcxStream.Seek(0, SeekOrigin.Begin);
 
 			//parse lap extensions
-			Laps = ParseLapSummaries(tcxStream);
+			var laps = ParseLapSummaries(tcxStream);
 
 			//Compute additional information about the activity
-			ImportedActivity = ComputeAdditionalStats(Laps);
+			var model = ComputeAdditionalStats(laps, points);
 
 			//Check if the uploaded activity contains coordinates or it's just a simple activity
-			ImportedActivity.HasGpsTrack = ContainsGPSTrack(Points);
+			model.HasGpsTrack = ContainsGPSTrack(points);
 
-			return ImportedActivity;
+			return model;
 		}
 
-		private List<TcxTrackPoint> ParseTcxTrackpoints(Stream stream)
+		private List<TcxTrackPoint> ParseTcxTrackpoints(MemoryStream stream)
 		{
 			var doc = XDocument.Load(stream);
 
@@ -93,7 +93,7 @@ namespace APUS.Server.Services.Implementations
 			  .ToList();
 		}
 
-		private List<LapSummary> ParseLapSummaries(Stream stream)
+		private List<LapSummary> ParseLapSummaries(MemoryStream stream)
 		{
 			var doc = XDocument.Load(stream);
 
@@ -161,7 +161,7 @@ namespace APUS.Server.Services.Implementations
 			  .ToList();
 		}
 
-		private ImportActivityModel ComputeAdditionalStats(List<LapSummary> laps)
+		private ImportActivityModel ComputeAdditionalStats(List<LapSummary> laps, List<TcxTrackPoint> points)
 		{
 			double totalTime = laps.Sum(l => l.TotalTimeSeconds ?? 0);
 
@@ -179,7 +179,7 @@ namespace APUS.Server.Services.Implementations
 
 
 			//Calc the totalAscent and TotalDescent
-			var elevationPoints = Points
+			var elevationPoints = points
 				   .Where(p => p.Altitude.HasValue)
 				   .Select(p => p.Altitude.Value)
 				   .ToList();
