@@ -11,15 +11,15 @@ import { ActivityMapComponent } from './components/display-activity/activity-map
 
 const routes: Routes = [
     {
-        path: '',
+        path: '', //   /activities
         canActivateChild: [AuthGuard],
         children: [
-            { path: '', component: DisplayActivitiesComponent }, // /activities
-            { path: 'create', component: CreateActivityComponent },    // /activities/create
-            { path: 'upload', component: UploadActivityComponent },    // /activities/upload
-            { path: ':id', component: DisplayActivityComponent },   // /activities/42
-            { path: ':id/edit', component: EditActivityComponent },      // /activities/42/edit
-            { path: ':id/map', component: ActivityMapComponent }        // /activities/42/map
+            { path: '', component: DisplayActivitiesComponent },
+            { path: 'create', component: CreateActivityComponent },
+            { path: 'upload', component: UploadActivityComponent },
+            { path: ':id', component: DisplayActivityComponent },
+            { path: ':id/edit', component: EditActivityComponent },
+            { path: ':id/map', component: ActivityMapComponent }
         ]
     }
 ];

@@ -2,6 +2,7 @@
 <label for="activity">Choose an activity:</label>
 
 <mat-accordion>
+    <!-- Select the activitytype (running, climbing,....) -->
     <select [(ngModel)]="selectActivityHelper.selectedActivity" (ngModelChange)="onActivityChange($event)"
         name="activity" id="activity">
         <option *ngFor="let activity of selectActivityHelper.SportTypes" [ngValue]="activity">
@@ -9,6 +10,7 @@
         </option>
     </select>
 
+    <!-- Only display inputs defined in the formly -->
     <form [formGroup]="form" (ngSubmit)="submit()">
         <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
 

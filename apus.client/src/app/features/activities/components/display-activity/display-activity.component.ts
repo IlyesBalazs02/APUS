@@ -22,11 +22,11 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   images: string[] = [];
   selectedIndex: number | null = null;
 
-  //Elev/distabce
+  //Elev/distabce chart
   elevPoints: Trackpoint[] = [];
   hasCoordinates: boolean = false;
 
-  //Hr/Time
+  //Hr/Time chart
   hrpoints: Trackpoint[] = [];
   hasHrAndTime: boolean = false;
 
@@ -165,7 +165,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       .filter(p => p.hr != null && p.time != null)
       .map(p => ({ heartrate: p.hr, time: p.time }));
 
-    // 1) turn ISO strings into millisecond timestamps
+    // turn ISO strings into millisecond timestamps
     const timestamps = pts.map(p => new Date(p.time).getTime());
 
     // max time gap between trackpoints, to filter out the time between pauses

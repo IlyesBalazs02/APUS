@@ -13,6 +13,7 @@ import { Trackpoint } from '../../../ActivityDto/TrackpointDto';
       }`
   ]
 })
+
 export class ActivityMapComponent implements OnChanges {
   @Input() trackpoints: Trackpoint[] = [];
 
@@ -20,6 +21,7 @@ export class ActivityMapComponent implements OnChanges {
   private style = 'mapbox://styles/mapbox/streets-v11';
 
   // Correct default lat/lon
+  //TODO: Save last values
   private defaultLat = 30.2672;
   private defaultLon = -97.7431;
 
@@ -52,6 +54,7 @@ export class ActivityMapComponent implements OnChanges {
     });
   }
 
+  //Show the track
   addPolyline() {
     const coords = this.trackpoints
       .filter(tp => tp.lat != null && tp.lon != null)

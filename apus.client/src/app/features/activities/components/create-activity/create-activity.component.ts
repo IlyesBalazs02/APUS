@@ -20,10 +20,7 @@ export class CreateActivityComponent implements OnInit {
   fields: FormlyFieldConfig[] = [];
   selectActivityHelper = new selectActivityHelper();
 
-  // Drag & Drop state
-  isDragOver = false;
-  files: File[] = [];
-  previewUrls: string[] = [];
+
 
   constructor(private http: HttpClient) { }
   ngOnInit() {
@@ -42,11 +39,16 @@ export class CreateActivityComponent implements OnInit {
     // merge main + subtype, then reset form & model
     this.fields = [
       ...mainFields,
-      ...extras,
+      //...extras,
     ];
     this.model = {};
     this.form.reset();
   }
+
+  // Drag & Drop state
+  isDragOver = false;
+  files: File[] = [];
+  previewUrls: string[] = [];
 
   // Drag & Drop handlers
   onDragOver(event: DragEvent) {

@@ -1,9 +1,8 @@
 <p>upload-activity works!</p>
 
 <form [formGroup]="form" (ngSubmit)="submit()">
-    <!-- Existing formly-form fields... -->
 
-    <!-- GPX file input -->
+    <!-- file input -->
     <div class="form-group">
         <label for="gpxFile">Upload the activity file</label>
         <input type="file" id="gpxFile" accept=".gpx,.tcx" (change)="onFileSelected($event)" />

@@ -17,12 +17,12 @@ export class DisplayActivitiesComponent implements OnInit {
 
   constructor(private activityService: ActivityService) { }
 
+  // TODO: Infinite Scrolling
   ngOnInit(): void {
     this.activityService
       .getActivitiesDto()
       .subscribe((dtos: ActivityDto[]) => {
         this.activities = dtos;
-        //console.log(this.activities);
       });
 
   }

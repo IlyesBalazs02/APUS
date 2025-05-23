@@ -7,9 +7,7 @@ export class AuthGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) { }
 
   private check(): boolean {
-    console.log('asdasdasdsad');
     if (!this.auth.isLoggedIn()) {
-      console.log('asdasdasdsad');
       this.router.navigate(['/login']);
       return false;
     }
@@ -20,7 +18,6 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean {
-    console.log('asdasdasdsad1');
     return this.check();
   }
 
@@ -28,7 +25,6 @@ export class AuthGuard implements CanActivate {
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean {
-    console.log('asdasdasdsad2');
     return this.check();
   }
 

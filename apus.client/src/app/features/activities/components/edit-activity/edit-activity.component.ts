@@ -22,7 +22,6 @@ export class EditActivityComponent {
   fields: FormlyFieldConfig[] = [];
   selectActivityHelper = new selectActivityHelper();
 
-  /** Cache of models per activityType */
   private models: Record<string, any> = {};
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {

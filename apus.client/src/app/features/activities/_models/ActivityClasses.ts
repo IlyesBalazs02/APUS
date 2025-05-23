@@ -1,8 +1,3 @@
-import { Time } from "@angular/common";
-import { ActivityImage } from "./ActivityImage";
-import { Coordinate } from "./Coordinate";
-import { Timestamp } from "rxjs";
-
 export class MainActivity {
     [key: string]: any;
 
@@ -17,9 +12,6 @@ export class MainActivity {
     avgHeartRate: number | null = null;
     maxHeartRate: number | null = null;
     displayName: string | null = null;
-    //activityImages: ActivityImage[] = [];
-    //coordinates: Coordinate[] = [];
-    //showCoordinates: boolean = false;
 
 
     constructor() {

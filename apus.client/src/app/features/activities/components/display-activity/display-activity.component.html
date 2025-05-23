@@ -30,10 +30,6 @@
                 </div>
             </div>
         </div>
-
-        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content.
-            This content is a little bit longer.</p>
-        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
     </div>
 
     <div class="images-container" *ngIf="images.length">
@@ -43,11 +39,12 @@
         </div>
     </div>
 
+    <!-- map -->
     <div *ngIf="{hasCoordinates}">
         <app-activity-map [trackpoints]="elevPoints"></app-activity-map>
     </div>
 
-
+    <!-- elevationChart -->
     <div *ngIf="elevPoints.length > 1">
         <h6>Elevation Profile</h6>
         <div style="display: block; width: 100%;">
@@ -57,6 +54,7 @@
         </div>
     </div>
 
+    <!-- heartrateChart -->
     <div *ngIf="hrpoints.length > 1">
         <h6>Heart rate Profile</h6>
         <div style="display: block; width: 100%;">
