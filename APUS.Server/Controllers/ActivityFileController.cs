@@ -45,6 +45,9 @@ namespace APUS.Server.Controllers
 
 		[HttpPost("upload-activity")]
 		[Authorize]
+		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile)
 		{
 			if (trackFile == null || trackFile.Length == 0)
@@ -121,6 +124,9 @@ namespace APUS.Server.Controllers
 
 		[HttpGet("{id}")]
 		[Authorize]
+		[ProducesResponseType(typeof(List<TrackpointDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<List<TrackpointDto>>> GetTrackfile(string id)
 		{
 			var activity = await _activityRepository.ReadByIdAsync(id);

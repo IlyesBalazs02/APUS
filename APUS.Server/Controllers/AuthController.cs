@@ -4,6 +4,7 @@ using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,6 +21,7 @@ namespace APUS.Server.Controllers
 		private readonly UserManager<SiteUser> _userMgr;
 		private readonly SignInManager<SiteUser> _signInMgr;
 		private readonly IStorageService _storageService;
+		public record TokenResponseDto(string Token);
 
 		public AuthController(IConfiguration config, UserManager<SiteUser> userMgr, SignInManager<SiteUser> signInMgr, IStorageService storageService)
 		{
@@ -31,10 +33,16 @@ namespace APUS.Server.Controllers
 
 		[HttpPost("register")]
 		[AllowAnonymous]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Register(RegisterDto dto)
 		{
 			if (dto.Password != dto.ConfirmPassword)
-				return BadRequest("Passwords must match.");
+			{
+				// mark the ConfirmPassword field as invalid
+				ModelState.AddModelError(nameof(dto.ConfirmPassword), "Passwords must match.");
+				return ValidationProblem(ModelState);
+			}
 
 			var user = new SiteUser { UserName = dto.Email, Email = dto.Email };
 			var result = await _userMgr.CreateAsync(user, dto.Password);
@@ -43,22 +51,23 @@ namespace APUS.Server.Controllers
 				return BadRequest(result.Errors);
 
 			_storageService.CreateUserFolder(user.Id);
-
 			return Ok();
 		}
 
 		[HttpPost("login")]
 		[AllowAnonymous]
-		public async Task<IActionResult> Login(LoginDto dto)
+		[ProducesResponseType(typeof(TokenResponseDto), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<TokenResponseDto>> Login([FromBody] LoginDto dto)
 		{
-			var result = await _signInMgr.PasswordSignInAsync(
+			var signIn = await _signInMgr.PasswordSignInAsync(
 				dto.Email, dto.Password, isPersistent: false, lockoutOnFailure: false);
 
-			if (!result.Succeeded)
-				return Unauthorized("Invalid login");
+			if (!signIn.Succeeded)
+				return Unauthorized("Invalid login credentials.");
 
 			var token = await GenerateJwtTokenAsync(dto.Email);
-			return Ok(new Dictionary<string, string> { ["token"] = token });
+			return Ok(new TokenResponseDto(token));
 		}
 
 

@@ -31,6 +31,8 @@ namespace APUS.Server.Controllers
 
 		[HttpPost]
 		[Authorize]
+		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<MainActivity>> CreateActivity([FromBody] MainActivity activity)
 		{
 			if (!ModelState.IsValid)
@@ -58,9 +60,12 @@ namespace APUS.Server.Controllers
 
 		[HttpGet("{id}", Name = nameof(GetById))]
 		[Authorize]
+		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<MainActivity>> GetById(string id)
 		{
 			var act = await _activityRepository.ReadByIdAsync(id);
+
 			if (act == null) return NotFound();
 			return Ok(act);
 		}
@@ -68,19 +73,37 @@ namespace APUS.Server.Controllers
 		//ToDo: Pages
 		[HttpGet("get-activities")]
 		[Authorize]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(typeof(IEnumerable<ActivityDto>), StatusCodes.Status200OK)]
 		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetActivities()
 		{
 			var entities = await _activityRepository.ReadAllAsync();
+
+			if (entities == null) return NotFound();
+
 			var dtos = entities.Select(MapToDto);
 			return Ok(dtos);
 		}
 
 		[HttpPut("{id}")]
 		[Authorize]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> EditActivity(string id, [FromBody] MainActivity activity)
 		{
 			if (id != activity.Id)
 				return BadRequest("Mismatched activity ID.");
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var existing = await _activityRepository.ReadByIdAsync(id);
+			if (existing == null)
+				return NotFound();
+
+			if (existing.UserId != userId)
+				return Forbid();
 
 			if (!ModelState.IsValid)
 			{
@@ -112,8 +135,21 @@ namespace APUS.Server.Controllers
 
 		[HttpDelete("{id}")]
 		[Authorize]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status403Forbidden)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DeleteActivity(string id)
 		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var existing = await _activityRepository.ReadByIdAsync(id);
+			if (existing == null)
+				return NotFound();
+
+			if (existing.UserId != userId)
+				return Forbid();
+
 			try
 			{
 				await _activityRepository.DeleteAsync(id);
