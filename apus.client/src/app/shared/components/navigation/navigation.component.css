@@ -1,0 +1,36 @@
+header {
+    /* flex layout: everything in one horizontal line */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* or space-between / space-around, as you prefer */
+  
+    /* padding + box-sizing makes it size to its contents */
+    padding: 20px 40px;
+    box-sizing: border-box;
+  
+    /* remove fixed height so content never overflows */
+    height: auto;
+    /* you can drop min-height too, if you like */
+    /* min-height: 10px; */
+  
+    text-align: center;
+    background-color: rgb(46, 184, 149);
+  
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  /* reset paragraph margins so it sits nicely next to the buttons */
+  header p {
+    margin: 0;
+    margin-right: 20px; /* spacing between your “navigation works!” text and the buttons */
+  }
+  
+  /* give each button a little breathing room */
+  header button {
+    margin: 0 5px;
+  }
+  

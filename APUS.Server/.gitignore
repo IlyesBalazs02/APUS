@@ -1,0 +1,10 @@
+# Ignore logs and temp files
+logs/
+*.log
+
+# Ignore build outputs
+bin/
+obj/
+
+wwwroot
+./wwwroot

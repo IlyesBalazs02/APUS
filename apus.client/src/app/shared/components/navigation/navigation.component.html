@@ -1,0 +1,38 @@
+<header>
+    <!-- List all activities -->
+    <button class="btn btn-primary submit-button" routerLink="/activities" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }" *ngIf="(loggedIn$ | async)">
+        All Activities
+    </button>
+
+    <!-- Create a new activity -->
+    <button class="btn btn-primary submit-button" routerLink="/activities/create" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Create Activity
+    </button>
+
+    <!-- Upload a GPX file -->
+    <button class="btn btn-primary submit-button" routerLink="/activities/upload" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Upload Activity
+    </button>
+
+    <!-- Create Route (match your route in app-routing.module.ts) -->
+    <button class="btn btn-primary submit-button" routerLink="/createRoute" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Create Route
+    </button>
+
+    <!-- Authentication -->
+    <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
+        Register
+    </button>
+
+    <button class="btn btn-primary submit-button" routerLink="/login" *ngIf="!(loggedIn$ | async)">
+        Login
+    </button>
+
+    <button class="btn btn-primary submit-button" *ngIf="(loggedIn$ | async)" (click)="logout()">
+        Log Outs
+    </button>
+</header>

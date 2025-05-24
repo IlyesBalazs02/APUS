@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "apus.client", "apus.client\apus.client.esproj", "{63C44F81-2B8B-279C-3A95-1750E22CB3C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APUS.Server", "APUS.Server\APUS.Server.csproj", "{3BA144ED-31B1-4930-B60D-5DDCFF2DB844}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APUS.tests", "APUS.tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APUS.Server.Tests", "APUS.Server.Tests\APUS.Server.Tests.csproj", "{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,9 +27,16 @@ Global
 		{3BA144ED-31B1-4930-B60D-5DDCFF2DB844}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BA144ED-31B1-4930-B60D-5DDCFF2DB844}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BA144ED-31B1-4930-B60D-5DDCFF2DB844}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {331CBD5C-D108-487B-86E7-4A1BF7E5889A}

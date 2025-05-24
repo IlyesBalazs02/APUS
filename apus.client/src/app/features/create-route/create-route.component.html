@@ -1,0 +1,16 @@
+<div class="coordinate-selector">
+    <label>
+        <input type="radio" name="coordinate" [(ngModel)]="selectedCoordinateType" value="start" checked />
+        Start
+    </label>
+    <label>
+        <input type="radio" name="coordinate" [(ngModel)]="selectedCoordinateType" value="end" />
+        End
+    </label>
+</div>
+
+<div class="map-container">
+    <div id="map"></div>
+</div>
+
+<button (click)="submitCoordinates()">Submit Coordinates</button>
