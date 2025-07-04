@@ -15,6 +15,8 @@ interface UploadResponse {
   templateUrl: './upload-activity.component.html',
   styleUrls: ['./upload-activity.component.scss'],
 })
+
+//TODO IMPORT EXIFR TO SAVE THE IMAGES EXIF DATA
 export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});

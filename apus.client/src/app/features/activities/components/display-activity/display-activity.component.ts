@@ -22,13 +22,15 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   images: string[] = [];
   selectedIndex: number | null = null;
 
-  //Elev/distabce chart
-  elevPoints: Trackpoint[] = [];
   hasCoordinates: boolean = false;
-
-  //Hr/Time chart
-  hrpoints: Trackpoint[] = [];
-  hasHrAndTime: boolean = false;
+  trackpoints: Trackpoint[] = [];
+  /*
+    //Elev/distabce chart
+    elevPoints: Trackpoint[] = [];
+  
+    //Hr/Time chart
+    hrpoints: Trackpoint[] = [];
+    hasHrAndTime: boolean = false;*/
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
@@ -39,26 +41,29 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
     const trackpointdto$ = this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`);
 
-    forkJoin({ activity: activity$, images: images$ })
+    forkJoin({ activity: activity$, images: images$, trackpoints: trackpointdto$ })
       .subscribe({
-        next: ({ activity: dto, images }) => {
+        next: ({ activity: dto, images, trackpoints }) => {
           this.activity = createActivity(dto);
           this.images = images;
+          this.trackpoints = trackpoints;
 
-          this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
+          console.log(this.trackpoints);
+
+          /*this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
             .subscribe(resp => {
-              this.elevPoints = resp;
-              this.hasCoordinates = this.elevPoints.some(tp => tp.lon != null);
-
-
-              this.hrpoints = resp;
-              this.hasHrAndTime = this.hrpoints.some(hp => hp.hr != null && hp.time);
-
-              console.log(this.hrpoints);
+               this.elevPoints = resp;
+               this.hasCoordinates = this.elevPoints.some(tp => tp.lon != null);
+ 
+ 
+               this.hrpoints = resp;
+               this.hasHrAndTime = this.hrpoints.some(hp => hp.hr != null && hp.time);
+ 
+               console.log(this.hrpoints);
 
               this.buildElevationChart();
               this.buildHrChart();
-            });
+            });*/
 
         },
         error: err => console.error(err)
@@ -66,14 +71,14 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['elevPoints']) this.buildElevationChart();
+    /*if (changes['elevPoints']) this.buildElevationChart();
 
-    if (changes['hrpoints']) this.buildHrChart();
+    if (changes['hrpoints']) this.buildHrChart();*/
   }
 
   // map each activityType to the array of fields to show
   fieldConfig: Record<string, string[]> = {
-    MainActivity: ['duration'],
+    MainActivity: ['avgHeartRate', 'calories'],
     GpsRelatedActivity: ['totalDistanceKm', 'totalAscentMeters'],
     Running: ['totalDistanceKm', 'avgpace'],
     // …etc
@@ -86,17 +91,22 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     totalDistanceKm: 'Distance (km)',
     avgpace: 'Avg. Pace',
     difficulty: 'Difficulty',
-    totalAscentMeters: 'Elevation gain'
+    totalAscentMeters: 'Elevation gain',
+    avgHeartRate: 'Avg. Heartrate',
+    calories: 'Calories'
     // …
   };
 
   get fieldsToShow(): string[] {
     const mainFields = this.fieldConfig['MainActivity'];
     const activityFields = this.fieldConfig[this.activity.activityType] || [];
-    //console.log(this.activity);
-    const allFields = Array.from(new Set([...mainFields, ...activityFields])).filter(f => this.activity[f] != null);
 
     // only keep fields where activity[field] is non-null/undefined (and you can add
+    const allFields = Array.from(new Set([...mainFields, ...activityFields])).filter(f => this.activity[f] != null);
+
+    //duration is a must-to-display element
+    allFields.unshift('duration');
+
     return allFields;
   }
 
@@ -126,7 +136,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
 
 
-  private buildElevationChart(): void {
+  /*private buildElevationChart(): void {
 
     // Filter & map alt to elevation
     const pts = this.elevPoints
@@ -256,7 +266,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
       y: { title: { display: true, text: 'Heart Rate (bpm)' } }
     }
-  };
+  };*/
 
   private toRad(deg: number): number {
     return deg * Math.PI / 180;

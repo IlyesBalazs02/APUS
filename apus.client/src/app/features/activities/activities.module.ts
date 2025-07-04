@@ -5,6 +5,7 @@ import { ActivityMapComponent } from "./components/display-activity/activity-map
 import { DisplayActivityComponent } from "./components/display-activity/display-activity.component";
 import { EditActivityComponent } from "./components/edit-activity/edit-activity.component";
 import { UploadActivityComponent } from "./components/upload-activity/upload-activity.component";
+import { ActivityChartComponentComponent } from './components/display-activity/activity-chart-component/activity-chart-component.component';
 import { ActivitiesRoutingModule } from "./activities-routing.module";
 import { NgModule } from "@angular/core";
 import { NgChartsModule } from 'ng2-charts';
@@ -23,6 +24,7 @@ import { CommonModule } from "@angular/common";
         ActivityCardComponent,
         EditActivityComponent,
         ActivityMapComponent,
+        ActivityChartComponentComponent,
     ],
     imports: [
         CommonModule,

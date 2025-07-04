@@ -41,26 +41,7 @@
 
     <!-- map -->
     <div *ngIf="{hasCoordinates}">
-        <app-activity-map [trackpoints]="elevPoints"></app-activity-map>
-    </div>
-
-    <!-- elevationChart -->
-    <div *ngIf="elevPoints.length > 1">
-        <h6>Elevation Profile</h6>
-        <div style="display: block; width: 100%;">
-            <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
-                [style.height.px]="300">
-            </canvas>
-        </div>
-    </div>
-
-    <!-- heartrateChart -->
-    <div *ngIf="hrpoints.length > 1">
-        <h6>Heart rate Profile</h6>
-        <div style="display: block; width: 100%;">
-            <canvas baseChart [data]="hrChartData" [options]="hrChartOptions" [type]="'line'" [style.height.px]="300">
-            </canvas>
-        </div>
+        <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
     </div>
 
 

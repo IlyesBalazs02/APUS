@@ -36,7 +36,7 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
     RegisterComponent,
     LoginComponent,
     HomeComponentComponent,
-    CreateRouteComponent
+    CreateRouteComponent,
   ],
   imports: [
     BrowserModule,
