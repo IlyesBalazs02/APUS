@@ -40,12 +40,9 @@
     </div>
 
     <!-- map -->
-    <div *ngIf="{hasCoordinates}">
-        <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
-    </div>
+    <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
 
-
-
+    <app-activity-chart-component [trackpoints]="trackpoints"></app-activity-chart-component>
 
 
 

@@ -47,6 +47,8 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
           this.activity = createActivity(dto);
           this.images = images;
           this.trackpoints = trackpoints;
+          this.hasCoordinates = this.trackpoints.some(tp => tp.lon != null);
+
 
           console.log(this.trackpoints);
 

@@ -14,7 +14,7 @@ import { Trackpoint } from '../../../ActivityDto/TrackpointDto';
   ]
 })
 
-export class ActivityMapComponent implements OnChanges {
+export class ActivityMapComponent implements OnInit, OnChanges {
   @Input() trackpoints: Trackpoint[] = [];
 
   private map?: mapboxgl.Map;
@@ -24,6 +24,13 @@ export class ActivityMapComponent implements OnChanges {
   //TODO: Save last values
   private defaultLat = 30.2672;
   private defaultLon = -97.7431;
+
+  hasCoordinates: boolean = false;
+
+  ngOnInit(): void {
+    //Load the map only if there are coordinates
+    this.hasCoordinates = this.trackpoints.some(tp => tp.lon != null);
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (!changes['trackpoints']) return;

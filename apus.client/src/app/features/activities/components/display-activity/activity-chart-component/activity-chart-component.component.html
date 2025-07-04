@@ -1,1 +1,16 @@
-<p>activity-chart-component works!</p>
+<div *ngIf="hasCoordinates">
+    <h6>Elevation Profile</h6>
+    <div style="display: block; width: 100%;">
+        <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
+            [style.height.px]="300">
+        </canvas>
+    </div>
+</div>
+
+<div *ngIf="hasHeartRate">
+    <h6>Heart rate Profile</h6>
+    <div style="display: block; width: 100%;">
+        <canvas baseChart [data]="hrChartData" [options]="hrChartOptions" [type]="'line'" [style.height.px]="300">
+        </canvas>
+    </div>
+</div>
