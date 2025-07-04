@@ -16,7 +16,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   public displayProps: DisplayProp[] = [];
 
   images: string[] = [];
-  trackImage: string = '';
+  public trackImage: string | null = null;
   selectedIndex: number | null = null;
 
   constructor(private http: HttpClient) { }
@@ -35,6 +35,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       { key: 'avgHr', label: 'Avg HR' },
       { key: 'totalCalories', label: 'Calories' },
     ],
+
   };
 
   ngOnInit(): void {
@@ -51,9 +52,16 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       .get(`/api/images/${this.activity.id}/track`, { responseType: 'text' })
       .subscribe(
         url => {
-          this.trackImage = url;
+          // quick preload
+          const img = new Image();
+          img.onload = () => { this.trackImage = url; };
+          img.onerror = () => { /* nothing: leave trackImage null */ };
+          img.src = url;
         },
-        err => console.error('track‐png load failed', err)
+        _ => {
+          // API 404 or network error → definitely no map
+          this.trackImage = null;
+        }
       );
   }
 

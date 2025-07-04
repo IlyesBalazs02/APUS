@@ -147,7 +147,7 @@ namespace APUS.Server.Tests.Controllers
 					 .ReturnsAsync((MainActivity?)null);
 
 			var ctrl = CreateController();
-			var result = await ctrl.GetPicture("Q");
+			var result = await ctrl.GetTrackImage("Q");
 
 			result.Result.Should().BeOfType<NotFoundResult>();
 		}
@@ -161,7 +161,7 @@ namespace APUS.Server.Tests.Controllers
 
 			// port 7244 hardcode
 			var ctrl = CreateController(scheme: "https", host: "localhost", port: 7244);
-			var result = await ctrl.GetPicture("T1");
+			var result = await ctrl.GetTrackImage("T1");
 
 			var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
 			ok.Value.Should().Be(
