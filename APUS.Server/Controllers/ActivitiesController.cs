@@ -29,6 +29,7 @@ namespace APUS.Server.Controllers
 			_storageService = storageService;
 		}
 
+		//TODO Create DTO for mainactivity
 		[HttpPost]
 		[Authorize]
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
@@ -58,6 +59,7 @@ namespace APUS.Server.Controllers
 				activity);
 		}
 
+		//TODO Create DTO for mainactivity
 		[HttpGet("{id}", Name = nameof(GetById))]
 		[Authorize]
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status200OK)]

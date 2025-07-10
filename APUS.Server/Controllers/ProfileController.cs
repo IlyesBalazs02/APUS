@@ -1,5 +1,10 @@
 ﻿using APUS.Server.Data;
+using APUS.Server.DTOs;
+using APUS.Server.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace APUS.Server.Controllers
 {
@@ -9,13 +14,30 @@ namespace APUS.Server.Controllers
 	{
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
+		private readonly UserManager<SiteUser> _userMgr;
 
-		public ProfileController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository)
+		public ProfileController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository, UserManager<SiteUser> userMgr)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
+			_userMgr = userMgr;
 		}
 
+		[HttpGet("me")]
+		[Authorize]
+		public async Task<ActionResult<ProfileDto>> GetUsersProfile()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+			var user = await _userMgr.FindByIdAsync(userId);
+
+			if (user == null)
+				return NotFound($"User doesnt exist with id:{userId}");
+
+			//ONLY TEMPORARY
+			var name = $"{user.FirstName} {user.LastName}";
+
+			return Ok(new ProfileDto { Name = name });
+		}
 	}
 }

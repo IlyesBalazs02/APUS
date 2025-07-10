@@ -13,6 +13,8 @@ const PROXY_CONFIG = [
       "/activities",
       "/images/**",
       "/Images/**",
+      "profile/**",
+      "Profile/**",
       "/Activities/**",
       "/Users/**"
     ],
