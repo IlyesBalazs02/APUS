@@ -44,7 +44,7 @@ namespace APUS.Server.Controllers
 				return ValidationProblem(ModelState);
 			}
 
-			var user = new SiteUser { UserName = dto.Email, Email = dto.Email };
+			var user = new SiteUser { FirstName = dto.FirstName, LastName = dto.LastName, UserName = dto.Email, Email = dto.Email };
 			var result = await _userMgr.CreateAsync(user, dto.Password);
 
 			if (!result.Succeeded)

@@ -12,6 +12,7 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   register(dto: RegisterDto): Observable<any> {
+    console.log(dto);
     return this.http.post(`${this.baseUrl}/register`, dto);
   }
 

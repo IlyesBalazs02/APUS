@@ -10,7 +10,6 @@ import { CreateRouteComponent } from './features/create-route/create-route.compo
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-
   { path: 'createRoute', component: CreateRouteComponent, canActivate: [AuthGuard] },
 
   {
