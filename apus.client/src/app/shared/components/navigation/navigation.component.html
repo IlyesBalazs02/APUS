@@ -17,10 +17,15 @@
         Upload Activity
     </button>
 
-    <!-- Create Route (match your route in app-routing.module.ts) -->
+    <!-- Create Route -->
     <button class="btn btn-primary submit-button" routerLink="/createRoute" routerLinkActive="active"
         *ngIf="(loggedIn$ | async)">
         Create Route
+    </button>
+
+    <button class="btn btn-primary submit-button" routerLink="/userprofile" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Profile
     </button>
 
     <!-- Authentication -->

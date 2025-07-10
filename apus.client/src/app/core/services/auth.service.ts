@@ -12,7 +12,6 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   register(dto: RegisterDto): Observable<any> {
-    console.log(dto);
     return this.http.post(`${this.baseUrl}/register`, dto);
   }
 
@@ -22,7 +21,7 @@ export class AuthService {
         tap(res => {
           // store the token…
           localStorage.setItem('jwt', res.token);
-          // …and notify subscribers that we’re now logged in
+          // notify subscribers that the user is now logged in
           this._loggedIn$.next(true);
         })
       );

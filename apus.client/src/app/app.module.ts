@@ -25,6 +25,7 @@ import { HomeComponentComponent } from './shared/components/home-component/home-
 import { CreateRouteComponent } from './features/create-route/create-route.component';
 import { SharedModule } from './shared/shared.module';
 import { CoreModule } from './core/core.module';
+import { UserProfileComponent } from './features/user-profile/user-profile.component';
 
 //refresh fix
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
@@ -37,6 +38,7 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
     LoginComponent,
     HomeComponentComponent,
     CreateRouteComponent,
+    UserProfileComponent,
   ],
   imports: [
     BrowserModule,
