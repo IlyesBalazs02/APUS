@@ -27,33 +27,36 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<Hiking>().ToTable("Hiking", "Activities");
 			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
 
+			modelBuilder.Entity<MainActivity>()
+				.HasOne(t => t.User)
+				.WithMany(u => u.Activities)
+				.HasForeignKey(t => t.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
 
-			//user
 			modelBuilder.Entity<MainActivity>()
 				.HasMany(a => a.LikedBy)
 				.WithMany(u => u.LikedPosts)
 				.UsingEntity<Dictionary<string, object>>(
-					"MainActivityLikes",
+					"ActivityLikes",
 					j => j
 						.HasOne<SiteUser>()
 						.WithMany()
-						.HasForeignKey("UserId")
-						.HasConstraintName("FK_MainActivityLikes_Users_UserId")
-						.OnDelete(DeleteBehavior.Restrict),
-
+						.HasForeignKey("LikedByUsersId")
+						.HasConstraintName("FK_ActivityLikes_AspNetUsers_LikedByUsersId")
+						.OnDelete(DeleteBehavior.Cascade),
 					j => j
 						.HasOne<MainActivity>()
 						.WithMany()
-						.HasForeignKey("MainActivityId")
-						.HasConstraintName("FK_MainActivityLikes_Activities_ActivityId")
-						.OnDelete(DeleteBehavior.Cascade),
-
+						.HasForeignKey("LikedPostsId")
+						.HasConstraintName("FK_ActivityLikes_MainActivities_LikedPostsId")
+						.OnDelete(DeleteBehavior.Restrict),
 					j =>
 					{
-						j.ToTable("MainActivityLikes", "Activities");
-						j.HasKey("MainActivityId", "UserId")
-						.IsClustered(false);
+						j.ToTable("ActivityLikes");
+						j.HasKey("LikedByUsersId", "LikedPostsId");
 					});
+
+
 
 		}
 

@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250710140752_DeleteMainActivityLikesTable")]
+    partial class DeleteMainActivityLikesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,19 +71,19 @@ namespace APUS.Server.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("ActivityLikes", b =>
+            modelBuilder.Entity("MainActivitySiteUser", b =>
                 {
-                    b.Property<string>("LikedByUsersId")
+                    b.Property<string>("LikedById")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LikedPostsId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("LikedByUsersId", "LikedPostsId");
+                    b.HasKey("LikedById", "LikedPostsId");
 
                     b.HasIndex("LikedPostsId");
 
-                    b.ToTable("ActivityLikes", (string)null);
+                    b.ToTable("MainActivitySiteUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -370,21 +373,19 @@ namespace APUS.Server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ActivityLikes", b =>
+            modelBuilder.Entity("MainActivitySiteUser", b =>
                 {
                     b.HasOne("APUS.Server.Models.SiteUser", null)
                         .WithMany()
-                        .HasForeignKey("LikedByUsersId")
+                        .HasForeignKey("LikedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_ActivityLikes_AspNetUsers_LikedByUsersId");
+                        .IsRequired();
 
                     b.HasOne("APUS.Server.Models.MainActivity", null)
                         .WithMany()
                         .HasForeignKey("LikedPostsId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("FK_ActivityLikes_MainActivities_LikedPostsId");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

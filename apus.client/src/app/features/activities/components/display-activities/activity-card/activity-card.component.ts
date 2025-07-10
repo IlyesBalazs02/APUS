@@ -35,7 +35,6 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       { key: 'avgHr', label: 'Avg HR' },
       { key: 'totalCalories', label: 'Calories' },
     ],
-
   };
 
   ngOnInit(): void {

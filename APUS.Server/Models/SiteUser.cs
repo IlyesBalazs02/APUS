@@ -16,7 +16,6 @@ namespace APUS.Server.Models
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }
 
-		[NotMapped]
 		public virtual ICollection<MainActivity> LikedPosts { get; set; }
 
 

@@ -49,7 +49,6 @@ namespace APUS.Server.Models
 
 		[BindNever]
 		[ValidateNever]
-		[NotMapped]
 		[System.Text.Json.Serialization.JsonIgnore]
 		public virtual ICollection<SiteUser> LikedBy { get; set; }
 
