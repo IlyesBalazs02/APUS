@@ -1,1 +1,6 @@
 <p *ngIf="profile">{{ profile.name }}</p>
+
+<div *ngIf="activities" class="activities-list">
+    <app-activity-card *ngFor="let activity of activities" [activity]="activity">
+    </app-activity-card>
+</div>

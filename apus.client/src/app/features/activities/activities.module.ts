@@ -1,5 +1,4 @@
 import { CreateActivityComponent } from "./components/create-activity/create-activity.component";
-import { ActivityCardComponent } from "./components/display-activities/activity-card/activity-card.component";
 import { DisplayActivitiesComponent } from "./components/display-activities/display-activities.component";
 import { ActivityMapComponent } from "./components/display-activity/activity-map/activity-map.component";
 import { DisplayActivityComponent } from "./components/display-activity/display-activity.component";
@@ -14,6 +13,7 @@ import { FormsModule, NgModel, ReactiveFormsModule } from "@angular/forms";
 import { FormlyModule } from "@ngx-formly/core";
 import { FormlyBootstrapModule } from "@ngx-formly/bootstrap";
 import { CommonModule } from "@angular/common";
+import { SharedModule } from "../../shared/shared.module";
 
 @NgModule({
     declarations: [
@@ -21,7 +21,6 @@ import { CommonModule } from "@angular/common";
         UploadActivityComponent,
         DisplayActivitiesComponent,
         DisplayActivityComponent,
-        ActivityCardComponent,
         EditActivityComponent,
         ActivityMapComponent,
         ActivityChartComponentComponent,
@@ -34,7 +33,8 @@ import { CommonModule } from "@angular/common";
         NgChartsModule,
         MatExpansionModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        SharedModule
     ]
 })
 export class ActivitiesModule { }

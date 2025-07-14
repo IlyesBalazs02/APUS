@@ -3,11 +3,13 @@ import { FooterComponent } from "./components/footer/footer.component";
 import { NavigationComponent } from "./components/navigation/navigation.component";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
+import { ActivityCardComponent } from "./activity-card/activity-card.component";
 
 @NgModule({
     declarations: [
         FooterComponent,
-        NavigationComponent
+        NavigationComponent,
+        ActivityCardComponent
     ],
     imports: [
         CommonModule,
@@ -18,6 +20,7 @@ import { RouterModule } from "@angular/router";
         RouterModule,
         FooterComponent,
         NavigationComponent,
+        ActivityCardComponent
     ]
 })
 

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { ActivityDto, DisplayProp } from '../../../ActivityDto/ActivityDto';
+import { ActivityDto, DisplayProp } from '../../features/activities/ActivityDto/ActivityDto';
 import { HttpClient } from '@angular/common/http';
 
 type PropMap = Record<string, { key: keyof ActivityDto, label: string }[]>;
