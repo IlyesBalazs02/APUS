@@ -87,6 +87,23 @@ namespace APUS.Server.Controllers
 			return Ok(dtos);
 		}
 
+		//ToDo: Pages
+		[HttpGet("get-user-activities")]
+		[Authorize]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(typeof(IEnumerable<ActivityDto>), StatusCodes.Status200OK)]
+		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetUserActivities()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var entities = await _activityRepository.GetActivitiesByUserIdAsync(userId);
+
+			if (entities == null) return NotFound();
+
+			var dtos = entities.Select(MapToDto);
+			return Ok(dtos);
+		}
+
 		[HttpPut("{id}")]
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -10,6 +10,8 @@ namespace APUS.Server.Data
 
 		Task<MainActivity?> ReadByIdAsync(string id);
 
+		Task<IEnumerable<MainActivity>> GetActivitiesByUserIdAsync(string userId);
+
 		Task UpdateAsync(string id, MainActivity activity);
 
 		Task DeleteAsync(string id);

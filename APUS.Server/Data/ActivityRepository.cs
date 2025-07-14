@@ -31,6 +31,13 @@ namespace APUS.Server.Data
 				.FirstOrDefaultAsync(a => a.Id == id);
 		}
 
+		public async Task<IEnumerable<MainActivity>> GetActivitiesByUserIdAsync(string userId)
+		{
+			return await _context.Activities
+				.Where(a => a.UserId == userId)
+				.ToListAsync();
+		}
+
 		public async Task UpdateAsync(string id, MainActivity activity)
 		{
 			var oldEntity = await _context.Activities.FindAsync(id)
@@ -65,6 +72,8 @@ namespace APUS.Server.Data
 			_context.Activities.Remove(entity);
 			await _context.SaveChangesAsync();
 		}
+
+
 	}
 	
 }

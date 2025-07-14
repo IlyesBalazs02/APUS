@@ -52,6 +52,8 @@ namespace APUS.Server.Controllers
 			// Activity is needed for it's id and userid to know the path of the images
 			var activity = await _activityRepository.ReadByIdAsync(id);
 
+			if (activity == null) return NoContent();
+
 			var names = _storageService.GetImageFileNames(id, activity.UserId);
 			// always return 200, even if the array is empty
 			var baseUrl = $"{Request.Scheme}://{Request.Host}";

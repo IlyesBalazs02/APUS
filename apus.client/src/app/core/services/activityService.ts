@@ -15,5 +15,11 @@ export class ActivityService {
             .get<ActivityDto[]>(`${this.apiUrl}/get-activities`);
     }
 
+    //Create a new service
+    getUserActivities(): Observable<ActivityDto[]> {
+        return this.http
+            .get<ActivityDto[]>(`${this.apiUrl}/get-user-activities`);
+    }
+
 
 }

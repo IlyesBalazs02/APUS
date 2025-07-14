@@ -27,6 +27,13 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<Hiking>().ToTable("Hiking", "Activities");
 			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
 
+
+			// Add index to UserId
+			modelBuilder.Entity<MainActivity>()
+				.HasIndex(a => a.UserId)
+				.HasDatabaseName("IX_MainActivities_UserId");
+
+
 			modelBuilder.Entity<MainActivity>()
 				.HasOne(t => t.User)
 				.WithMany(u => u.Activities)
