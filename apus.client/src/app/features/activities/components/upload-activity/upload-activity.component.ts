@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import * as ExifReader from 'exifreader';
 
 interface UploadResponse {
   id: number;
@@ -59,10 +60,25 @@ export class UploadActivityComponent {
     this.handleFiles(selected);
   }
 
-  private handleFiles(files: File[]) {
+  private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
+
     images.forEach(file => {
       this.files.push(file);
+
+      // Read EXIF
+      ExifReader.load(file).then(tags => {
+        const imageDate =
+          tags['DateTime']?.description ||
+          tags['DateTimeOriginal']?.description ||
+          tags['CreateDate']?.description;
+
+        console.log('EXIF Date:', imageDate);
+      }).catch(error => {
+        console.warn('EXIF load failed:', error);
+      });
+
+      // Preview
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -71,8 +87,8 @@ export class UploadActivityComponent {
       };
       reader.readAsDataURL(file);
     });
-
   }
+
 
   removeImage(i: number) {
     this.previewUrls.splice(i, 1);

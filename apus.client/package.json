@@ -28,6 +28,7 @@
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.13.1",
     "chart.js": "^4.4.9",
+    "exifreader": "^4.31.1",
     "jest-editor-support": "*",
     "mapbox-gl": "^3.12.0",
     "ng2-charts": "^5.0.4",
