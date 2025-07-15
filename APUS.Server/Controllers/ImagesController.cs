@@ -30,13 +30,19 @@ namespace APUS.Server.Controllers
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> UploadImages(string id, [FromForm] IFormFileCollection images)
+		public async Task<IActionResult> UploadImages(string id, [FromForm] IFormFileCollection images, [FromForm] string? exifJson)
 		{
 			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
 
 			// Activity is needed for it's id and userid to know where to save the images
 			var activity = await _activityRepository.ReadByIdAsync(id);
 			if (activity == null) return NotFound();
+
+			Dictionary<string, Dictionary<string, string>>? exifData = null;
+			if (!string.IsNullOrEmpty(exifJson))
+			{
+				exifData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(exifJson);
+			}
 
 			await _storageService.SaveImagesAsync(id, images, activity.UserId);
 

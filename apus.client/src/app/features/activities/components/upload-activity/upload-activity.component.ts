@@ -60,6 +60,7 @@ export class UploadActivityComponent {
     this.handleFiles(selected);
   }
 
+  exifDataMap: Map<string, any> = new Map();
   private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
 
@@ -73,10 +74,19 @@ export class UploadActivityComponent {
           tags['DateTimeOriginal']?.description ||
           tags['CreateDate']?.description;
 
+        const metadata = {
+          dateTaken: imageDate
+        }
+
+        //dont create new set if the metadata is empty
+        if (metadata.dateTaken)
+          this.exifDataMap.set(file.name, metadata);
+
         console.log('EXIF Date:', imageDate);
       }).catch(error => {
         console.warn('EXIF load failed:', error);
       });
+
 
       // Preview
       const reader = new FileReader();
@@ -111,6 +121,9 @@ export class UploadActivityComponent {
 
         const formData = new FormData();
         this.files.forEach(f => formData.append('images', f));
+
+        const exifJson = JSON.stringify(Object.fromEntries(this.exifDataMap.entries()));
+        formData.append('exifJson', exifJson);
 
         this.http.post(`/api/images/${response.id}/images`, formData, { withCredentials: true })
           .subscribe(() => {
