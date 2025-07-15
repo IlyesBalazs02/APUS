@@ -7,12 +7,14 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { CreateRouteComponent } from './features/create-route/create-route.component';
 import { UserProfileComponent } from './features/user-profile/user-profile.component';
+import { SettingsComponent } from './features/settings/settings.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'createRoute', component: CreateRouteComponent, canActivate: [AuthGuard] },
   { path: 'userprofile', component: UserProfileComponent, canActivate: [AuthGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
 
   {
     path: 'activities',

@@ -28,6 +28,11 @@
         Profile
     </button>
 
+    <button class="btn btn-primary submit-button" routerLink="/settings" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Settings
+    </button>
+
     <!-- Authentication -->
     <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
         Register

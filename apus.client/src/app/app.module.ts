@@ -29,6 +29,7 @@ import { UserProfileComponent } from './features/user-profile/user-profile.compo
 
 //refresh fix
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { SettingsComponent } from './features/settings/settings.component';
 
 
 @NgModule({
@@ -39,6 +40,7 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
     HomeComponentComponent,
     CreateRouteComponent,
     UserProfileComponent,
+    SettingsComponent,
   ],
   imports: [
     BrowserModule,
