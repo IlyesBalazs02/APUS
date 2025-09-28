@@ -4,6 +4,7 @@ using APUS.Server.Models;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -69,7 +70,9 @@ namespace APUS.Server.Controllers
 			var act = await _activityRepository.ReadByIdAsync(id);
 
 			if (act == null) return NotFound();
-			return Ok(act);
+
+			var dto = MapToDto(act);
+			return Ok(dto);
 		}
 
 		//ToDo: Pages
