@@ -12,8 +12,8 @@ using SixLabors.ImageSharp.Processing;
 
 // Alias to disambiguate Path
 using SysPath = System.IO.Path;
-using APUS.Server.Models;
 using APUS.Server.Services.Interfaces;
+using APUS.Server.Domain.Models;
 
 namespace APUS.Server.Services.Implementations
 {

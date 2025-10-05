@@ -1,4 +1,4 @@
-﻿using APUS.Server.DTOs;
+﻿using APUS.Server.Domain.DTOs.Feature;
 using APUS.Server.Services.Interfaces;
 using System.Globalization;
 using System.Net.NetworkInformation;

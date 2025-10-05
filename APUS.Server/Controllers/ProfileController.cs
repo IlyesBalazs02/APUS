@@ -1,6 +1,6 @@
-﻿using APUS.Server.Data;
-using APUS.Server.DTOs;
-using APUS.Server.Models;
+﻿using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.User;
+using APUS.Server.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

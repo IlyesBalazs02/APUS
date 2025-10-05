@@ -1,4 +1,4 @@
-﻿using APUS.Server.Models;
+﻿using APUS.Server.Domain.Models;
 using APUS.Server.Services.Implementations;
 using APUS.Server.Services.Interfaces;
 using FluentAssertions;

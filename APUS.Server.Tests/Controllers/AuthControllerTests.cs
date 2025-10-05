@@ -1,6 +1,6 @@
 ﻿using APUS.Server.Controllers;
-using APUS.Server.DTOs;
-using APUS.Server.Models;
+using APUS.Server.Domain.DTOs;
+using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;

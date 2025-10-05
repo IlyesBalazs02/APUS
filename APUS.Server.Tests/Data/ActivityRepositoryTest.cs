@@ -1,5 +1,6 @@
 ﻿using APUS.Server.Data;
-using APUS.Server.Models;
+using APUS.Server.Data.Repositories.Implementations;
+using APUS.Server.Domain.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,15 +13,15 @@ namespace APUS.Server.Tests.Data
 {
 	public class ActivityRepositoryTest : IDisposable
 	{
-		private readonly ActivityDbContext _context;
+		private readonly AppDbContext _context;
 		private readonly ActivityRepository _repo;
 
 		public ActivityRepositoryTest()
 		{
-			var options = new DbContextOptionsBuilder<ActivityDbContext>()
+			var options = new DbContextOptionsBuilder<AppDbContext>()
 				.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
 				.Options;
-			_context = new ActivityDbContext(options);
+			_context = new AppDbContext(options);
 			_repo = new ActivityRepository(_context);
 		}
 

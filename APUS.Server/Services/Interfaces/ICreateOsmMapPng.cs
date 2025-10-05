@@ -1,4 +1,4 @@
-﻿using APUS.Server.Models;
+﻿using APUS.Server.Domain.Models;
 
 namespace APUS.Server.Services.Interfaces
 {

@@ -1,5 +1,5 @@
-﻿using APUS.Server.DTOs;
-using APUS.Server.Models;
+﻿using APUS.Server.Domain.DTOs.Routing;
+using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using System.Globalization;
 using System.IO;
