@@ -4,23 +4,26 @@ import { NavigationComponent } from "./components/navigation/navigation.componen
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { ActivityCardComponent } from "./activity-card/activity-card.component";
+import { FriendSearchComponent } from "./components/friend-search/friend-search.component";
 
 @NgModule({
     declarations: [
         FooterComponent,
         NavigationComponent,
-        ActivityCardComponent
+        ActivityCardComponent,
     ],
     imports: [
         CommonModule,
-        RouterModule
+        RouterModule,
+        FriendSearchComponent
     ],
     exports: [
         CommonModule,
         RouterModule,
         FooterComponent,
         NavigationComponent,
-        ActivityCardComponent
+        ActivityCardComponent,
+        FriendSearchComponent
     ]
 })
 

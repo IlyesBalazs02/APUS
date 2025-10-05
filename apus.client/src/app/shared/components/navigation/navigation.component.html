@@ -33,6 +33,10 @@
         Settings
     </button>
 
+    <div class="search-bar">
+        <app-friend-search></app-friend-search>
+    </div>
+
     <!-- Authentication -->
     <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
         Register

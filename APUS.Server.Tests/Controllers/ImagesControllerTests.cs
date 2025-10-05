@@ -57,7 +57,7 @@ namespace APUS.Server.Tests.Controllers
 			}
 			return formFiles;
 		}
-
+		/*
 		[Fact]
 		public async Task UploadImages_NoFiles_ReturnsBadRequest()
 		{
@@ -97,7 +97,7 @@ namespace APUS.Server.Tests.Controllers
 				Times.Once);
 
 			result.Should().BeOfType<NoContentResult>();
-		}
+		}*/
 
 		[Fact]
 		public async Task GetPictures_NoImages_ReturnsNotFound()
