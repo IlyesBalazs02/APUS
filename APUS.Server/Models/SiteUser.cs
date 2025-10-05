@@ -19,6 +19,11 @@ namespace APUS.Server.Models
 		public virtual ICollection<MainActivity> LikedPosts { get; set; }
 
 
+		// Friendships this user initiated (sent requests)
+		public virtual ICollection<UserRelation> FriendRequestInitiated { get; set; } = new List<UserRelation>();
+		// Friendships this user received (incoming requests)
+		public virtual ICollection<UserRelation> FriendRequestReceived { get; set; } = new List<UserRelation>();
+
 		public SiteUser()
 		{
 			Activities = new List<MainActivity>();

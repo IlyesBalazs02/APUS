@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(ActivityDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251005141255_FriendsRelation")]
+    partial class FriendsRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,9 +85,7 @@ namespace APUS.Server.Migrations
 
                     b.HasKey("UserId", "FriendId");
 
-                    b.HasIndex("FriendId", "Status", "UserId");
-
-                    b.HasIndex("UserId", "Status", "FriendId");
+                    b.HasIndex("FriendId");
 
                     b.ToTable("UserRelation", t =>
                         {

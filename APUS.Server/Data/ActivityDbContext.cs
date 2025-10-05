@@ -64,6 +64,27 @@ namespace APUS.Server.Data
 					});
 
 
+			modelBuilder.Entity<UserRelation>(t =>
+			{
+				t.HasKey(f => new { f.UserId, f.FriendId });
+
+				t.HasOne(f => f.User)
+				   .WithMany(u => u.FriendRequestInitiated)
+				   .HasForeignKey(f => f.UserId)
+				   .OnDelete(DeleteBehavior.NoAction);
+
+				t.HasOne(f => f.Friend)
+				   .WithMany(u => u.FriendRequestReceived)
+				   .HasForeignKey(f => f.FriendId)
+				   .OnDelete(DeleteBehavior.NoAction);
+
+				// prevent self-friendship
+				t.HasCheckConstraint("CK_Friendship_NotSelf", "[UserId] <> [FriendId]");
+				t.HasIndex(f => new { f.UserId, f.Status, f.FriendId });
+				t.HasIndex(f => new { f.FriendId, f.Status, f.UserId });
+			});
+
+
 
 		}
 
