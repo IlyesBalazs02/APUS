@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, Observable, of, switchMap } from 'rxjs';
 import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
@@ -11,10 +11,11 @@ import { CommonModule } from '@angular/common';
   templateUrl: './friend-search.component.html',
   styleUrls: ['./friend-search.component.css']
 })
-export class FriendSearchComponent implements AfterViewInit {
+export class FriendSearchComponent implements AfterViewInit, OnDestroy {
   query = new FormControl<string>('', { nonNullable: true });
   results$: Observable<UserMatch[]> = of([]);
-  @ViewChild('friendInput', { static: false }) inputEl!: ElementRef<HTMLInputElement>;
+
+  private resizeHandler!: () => void;
 
   constructor(private svc: FriendSearchService, private el: ElementRef) {
     this.results$ = this.query.valueChanges.pipe(
@@ -26,6 +27,20 @@ export class FriendSearchComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.updateDropdownPosition();
+
+    // Recalculate on resize or scroll
+    this.resizeHandler = () => this.updateDropdownPosition();
+    window.addEventListener('resize', this.resizeHandler);
+    window.addEventListener('scroll', this.resizeHandler, true);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.resizeHandler);
+    window.removeEventListener('scroll', this.resizeHandler, true);
+  }
+
+  private updateDropdownPosition() {
     const input = this.el.nativeElement.querySelector('input');
     if (!input) return;
 
