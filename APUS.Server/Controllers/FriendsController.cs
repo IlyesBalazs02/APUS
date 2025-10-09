@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using APUS.Server.Domain.DTOs.Feature;
+using APUS.Server.Domain.DTOs.User;
+using APUS.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APUS.Server.Controllers
@@ -9,7 +12,31 @@ namespace APUS.Server.Controllers
 	[Authorize]
 	public class FriendsController : ControllerBase
 	{
+		private readonly ISearchUsersService _searchUsersService;
 
+		public FriendsController(ISearchUsersService searchUsersService)
+		{
+			_searchUsersService = searchUsersService;
+		}
 
+		[HttpGet("get-all-user")]
+		[Authorize]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(typeof(IEnumerable<UserMatchDto>), StatusCodes.Status200OK)]
+		public async Task<ActionResult<IEnumerable<UserMatchDto>>> GetActivities()
+		{
+			var entities = await _searchUsersService.GetAllUser();
+
+			if (entities == null) return NotFound();
+
+			var dtos = entities.Select(u => new UserMatchDto
+			{
+				Id = u.Id.ToString(),
+				FullName = u.FirstName + u.LastName,
+				AvatarUrl = u.AvatarUrl
+			});
+
+			return Ok(dtos);
+		}
 	}
 }

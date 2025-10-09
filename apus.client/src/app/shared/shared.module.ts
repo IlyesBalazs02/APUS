@@ -15,7 +15,7 @@ import { FriendSearchComponent } from "./components/friend-search/friend-search.
     imports: [
         CommonModule,
         RouterModule,
-        FriendSearchComponent
+        FriendSearchComponent,
     ],
     exports: [
         CommonModule,
@@ -23,7 +23,7 @@ import { FriendSearchComponent } from "./components/friend-search/friend-search.
         FooterComponent,
         NavigationComponent,
         ActivityCardComponent,
-        FriendSearchComponent
+        FriendSearchComponent,
     ]
 })
 

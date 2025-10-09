@@ -1,5 +1,6 @@
 ﻿using APUS.Server.Controllers;
 using APUS.Server.Domain.DTOs;
+using APUS.Server.Domain.DTOs.Auth;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using FluentAssertions;

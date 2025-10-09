@@ -15,6 +15,8 @@ export class FriendSearchService {
 
     search(q: string, limit = 20): Observable<UserMatch[]> {
         const params = new HttpParams().set('q', q).set('limit', limit);
-        return this.http.get<UserMatch[]>('/api/friends/search', { params });
+        var asd = this.http.get<UserMatch[]>('/api/friends/get-all-user', { params });
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + asd);
+        return asd;
     }
 }

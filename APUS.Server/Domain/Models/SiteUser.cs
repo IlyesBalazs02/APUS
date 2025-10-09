@@ -10,8 +10,7 @@ namespace APUS.Server.Domain.Models
 		public string LastName { get; set; }
 
 		//For profile picture
-		public string ContentType { get; set; }
-		public byte[] Data { get; set; }
+		public string AvatarUrl { get; set; }
 
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }

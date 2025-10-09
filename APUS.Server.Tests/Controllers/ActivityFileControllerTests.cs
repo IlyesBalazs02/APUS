@@ -1,5 +1,6 @@
 ﻿using APUS.Server.Controllers;
 using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Feature;
 using APUS.Server.Domain.DTOs.Routing;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
