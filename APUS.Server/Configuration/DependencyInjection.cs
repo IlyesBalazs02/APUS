@@ -56,6 +56,8 @@ namespace APUS.Server.Configuration
 			services.AddEndpointsApiExplorer();
 			services.AddSwaggerGen();
 			services.AddScoped<IActivityRepository, ActivityRepository>();
+			services.AddScoped<ISiteUserRepository, SiteUserRepository>();
+			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddSingleton<IStorageService, StorageService>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();

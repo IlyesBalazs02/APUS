@@ -9,6 +9,7 @@ namespace APUS.Server.Data
 	{
 		public DbSet<MainActivity> Activities { get; set; }
 		public DbSet<UserRelation> UserRelations { get; set; }
+		public DbSet<SiteUser> SiteUsers { get; set; }
 
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
