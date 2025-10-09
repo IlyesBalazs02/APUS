@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, Observable, of, switchMap } from 'rxjs';
 import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
@@ -9,16 +9,14 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './friend-search.component.html',
+  styleUrls: ['./friend-search.component.css']
 })
-
-export class FriendSearchComponent {
-  //Form control bound to the <input [formControl]="query"> in the template.
-  //Holds the current text value
+export class FriendSearchComponent implements AfterViewInit {
   query = new FormControl<string>('', { nonNullable: true });
   results$: Observable<UserMatch[]> = of([]);
-  @Output() selected = new EventEmitter<UserMatch>();
+  @ViewChild('friendInput', { static: false }) inputEl!: ElementRef<HTMLInputElement>;
 
-  constructor(private svc: FriendSearchService) {
+  constructor(private svc: FriendSearchService, private el: ElementRef) {
     this.results$ = this.query.valueChanges.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -27,5 +25,19 @@ export class FriendSearchComponent {
     );
   }
 
-  choose(user: UserMatch) { this.selected.emit(user); }
+  ngAfterViewInit() {
+    const input = this.el.nativeElement.querySelector('input');
+    if (!input) return;
+
+    const rect = input.getBoundingClientRect();
+    const root = this.el.nativeElement as HTMLElement;
+
+    root.style.setProperty('--dropdown-x', `${rect.left}px`);
+    root.style.setProperty('--dropdown-y', `${rect.bottom + 4}px`);
+    root.style.setProperty('--dropdown-width', `${rect.width}px`);
+  }
+
+  choose(user: UserMatch) {
+    console.log('Selected user:', user);
+  }
 }

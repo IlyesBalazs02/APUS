@@ -1,19 +1,17 @@
-<!-- friend-search.component.html -->
-<div class="w-full max-w-xl">
+<div class="friend-search-container">
     <label class="block text-sm mb-1" for="friend-q">Search friends</label>
     <input id="friend-q" type="text" [formControl]="query" class="w-full border rounded px-3 py-2"
         placeholder="Type a name or username…" />
 
-    <ul class="mt-2 border rounded divide-y max-h-72 overflow-auto" *ngIf="(results$ | async) as results">
-        <li *ngFor="let u of results" class="px-3 py-2 hover:bg-gray-100 cursor-pointer" (click)="choose(u)"
-            tabindex="0">
+    <ul class="dropdown" *ngIf="(results$ | async) as results">
+        <li *ngFor="let u of results" class="px-3 py-2 hover:bg-gray-100 cursor-pointer" (click)="choose(u)">
             <div class="flex items-center gap-3">
                 <img *ngIf="u.avatarUrl" [src]="u.avatarUrl" alt="" class="w-8 h-8 rounded-full" />
-                <div>
-                    <div class="font-medium">{{ u.fullName }}</div>
-                </div>
+                <div class="font-medium">{{ u.fullName }}</div>
             </div>
         </li>
-        <li *ngIf="results.length === 0" class="px-3 py-2 text-sm text-gray-500">No matches</li>
+        <li *ngIf="results.length === 0" class="px-3 py-2 text-sm text-gray-500">
+            No matches
+        </li>
     </ul>
 </div>

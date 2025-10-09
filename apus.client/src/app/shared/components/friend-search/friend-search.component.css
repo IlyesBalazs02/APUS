@@ -1,0 +1,25 @@
+.friend-search-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 250px;
+}
+
+.dropdown {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  transform: translate(
+    var(--dropdown-x, 0px),
+    var(--dropdown-y, 0px)
+  ); /* dynamic position set in TS */
+  z-index: 3000;
+
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: var(--dropdown-width, 250px);
+  max-height: 250px;
+  overflow-y: auto;
+}
