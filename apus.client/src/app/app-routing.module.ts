@@ -6,14 +6,16 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
 import { CreateRouteComponent } from './features/create-route/create-route.component';
-import { UserProfileComponent } from './features/user-profile/user-profile.component';
 import { SettingsComponent } from './features/settings/settings.component';
+import { UserProfileComponent } from './features/user-features/user-profile/user-profile.component';
+import { DisplayUsersComponent } from './features/user-features/display-users/display-users.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'createRoute', component: CreateRouteComponent, canActivate: [AuthGuard] },
   { path: 'userprofile', component: UserProfileComponent, canActivate: [AuthGuard] },
+  { path: 'displayUser', component: DisplayUsersComponent, canActivate: [AuthGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [AuthGuard] },
 
   {

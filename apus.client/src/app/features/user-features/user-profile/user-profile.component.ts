@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { profiledto } from './ProfileDto';
 import { HttpClient } from '@angular/common/http';
-import { ActivityDto } from '../activities/ActivityDto/ActivityDto';
-import { ActivityService } from '../../core/services/activityService';
+import { ActivityDto } from '../../activities/ActivityDto/ActivityDto';
+import { ActivityService } from '../../../core/services/activityService';
 
 @Component({
   selector: 'app-user-profile',
