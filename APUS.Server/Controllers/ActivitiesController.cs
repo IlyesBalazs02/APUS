@@ -60,7 +60,6 @@ namespace APUS.Server.Controllers
 				activity);
 		}
 
-		//TODO Create DTO for mainactivity
 		[HttpGet("{id}", Name = nameof(GetById))]
 		[Authorize]
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status200OK)]
@@ -106,6 +105,21 @@ namespace APUS.Server.Controllers
 			var dtos = entities.Select(MapToDto);
 			return Ok(dtos);
 		}
+
+		[HttpGet("user/{userId}")]
+		[Authorize]
+		[ProducesResponseType(typeof(IEnumerable<ActivityDto>), StatusCodes.Status200OK)]
+		public async Task<ActionResult<IEnumerable<ActivityDto>>> GetActivitiesByUserId(string userId)
+		{
+			var activities = await _activityRepository.GetActivitiesByUserIdAsync(userId);
+
+			if (activities == null || !activities.Any())
+				return Ok(new List<ActivityDto>());
+
+			var dtos = activities.Select(MapToDto).ToList();
+			return Ok(dtos);
+		}
+
 
 		[HttpPut("{id}")]
 		[Authorize]

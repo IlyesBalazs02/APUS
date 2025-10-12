@@ -1,17 +1,20 @@
-<div class="friend-search-container">
-    <label class="block text-sm mb-1" for="friend-q">Search friends</label>
-    <input id="friend-q" type="text" [formControl]="query" class="w-full border rounded px-3 py-2"
-        placeholder="Type a name or username…" />
+<mat-form-field appearance="outline" class="w-full max-w-md">
+    <mat-label>Search friends</mat-label>
 
-    <ul class="dropdown" *ngIf="(results$ | async) as results">
-        <li *ngFor="let u of results" class="px-3 py-2 hover:bg-gray-100 cursor-pointer" (click)="choose(u)">
+    <mat-select [formControl]="selectedCtrl" (openedChange)=" $event ? onOpened() : onClosed() " (closed)="onClosed()"
+        (selectionChange)="onSelect($event.value)" panelClass="friend-search-panel">
+        <!-- search box rendered as the first "option" -->
+        <mat-option>
+            <ngx-mat-select-search [formControl]="filterCtrl" placeholderLabel="Type to search…"
+                noEntriesFoundLabel="No matches">
+            </ngx-mat-select-search>
+        </mat-option>
+
+        <mat-option *ngFor="let u of results" [value]="u">
             <div class="flex items-center gap-3">
-                <img *ngIf="u.avatarUrl" [src]="u.avatarUrl" alt="" class="w-8 h-8 rounded-full" />
-                <div class="font-medium">{{ u.fullName }}</div>
+                <img *ngIf="u.avatarUrl" [src]="u.avatarUrl" alt="" class="w-6 h-6 rounded-full" />
+                <span>{{ u.fullName }}</span>
             </div>
-        </li>
-        <li *ngIf="results.length === 0" class="px-3 py-2 text-sm text-gray-500">
-            No matches
-        </li>
-    </ul>
-</div>
+        </mat-option>
+    </mat-select>
+</mat-form-field>

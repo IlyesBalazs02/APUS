@@ -21,5 +21,11 @@ export class ActivityService {
             .get<ActivityDto[]>(`${this.apiUrl}/get-user-activities`);
     }
 
+    getUserActivitiesById(id: string): Observable<ActivityDto[]> {
+        return this.http.get<ActivityDto[]>(`${this.apiUrl}/user/${id}`);
+    }
+
+
+
 
 }

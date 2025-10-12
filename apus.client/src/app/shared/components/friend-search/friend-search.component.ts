@@ -1,60 +1,80 @@
-import { Component, ElementRef, HostListener, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, filter, Observable, of, switchMap } from 'rxjs';
-import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
+import { Component, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, filter, Subscription, switchMap, of, catchError } from 'rxjs';
 import { Router } from '@angular/router';
+
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+
+import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
 
 @Component({
   selector: 'app-friend-search',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    NgxMatSelectSearchModule
+  ],
   templateUrl: './friend-search.component.html',
   styleUrls: ['./friend-search.component.css']
 })
-export class FriendSearchComponent implements AfterViewInit, OnDestroy {
-  query = new FormControl<string>('', { nonNullable: true });
-  results$: Observable<UserMatch[]> = of([]);
+export class FriendSearchComponent implements OnDestroy {
+  selectedCtrl = new FormControl<UserMatch | null>(null);
+  filterCtrl = new FormControl<string>('', { nonNullable: true });
+  results: UserMatch[] = [];
+  private sub = new Subscription();
 
-  private resizeHandler!: () => void;
+  constructor(
+    private svc: FriendSearchService,
+    private router: Router,
+    private el: ElementRef
+  ) { }
 
-  constructor(private svc: FriendSearchService, private el: ElementRef, private router: Router) {
-    this.results$ = this.query.valueChanges.pipe(
-      debounceTime(250),
-      distinctUntilChanged(),
-      filter(q => (q?.trim().length ?? 0) >= 2),
-      switchMap(q => this.svc.search(q!.trim()))
+  onOpened() {
+    // ✅ subscribe when opened
+    this.sub.add(
+      this.filterCtrl.valueChanges.pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        filter(q => (q?.trim().length ?? 0) >= 2),
+        switchMap(q =>
+          this.svc.search(q!.trim()).pipe(catchError(() => of([])))
+        )
+      ).subscribe(users => (this.results = users))
     );
+
+    // ✅ focus search input
+    queueMicrotask(() => {
+      const input: HTMLInputElement | null =
+        this.el.nativeElement.querySelector('.ngx-mat-select-search .mat-mdc-input-element');
+      input?.focus();
+    });
   }
 
-  ngAfterViewInit() {
-    this.updateDropdownPosition();
+  onClosed() {
+    // ✅ Completely reset state
+    this.filterCtrl.setValue('', { emitEvent: false });
+    this.results = [];
+    this.selectedCtrl.setValue(null, { emitEvent: false });
 
-    // Recalculate on resize or scroll
-    this.resizeHandler = () => this.updateDropdownPosition();
-    window.addEventListener('resize', this.resizeHandler);
-    window.addEventListener('scroll', this.resizeHandler, true);
+    // Unsubscribe old stream
+    this.sub.unsubscribe();
+    this.sub = new Subscription();
+  }
+
+  onSelect(user: UserMatch) {
+    this.router.navigate(['/profile', user.id]);
+    this.onClosed(); // clear after navigation
   }
 
   ngOnDestroy() {
-    window.removeEventListener('resize', this.resizeHandler);
-    window.removeEventListener('scroll', this.resizeHandler, true);
-  }
-
-  private updateDropdownPosition() {
-    const input = this.el.nativeElement.querySelector('input');
-    if (!input) return;
-
-    const rect = input.getBoundingClientRect();
-    const root = this.el.nativeElement as HTMLElement;
-
-    root.style.setProperty('--dropdown-x', `${rect.left}px`);
-    root.style.setProperty('--dropdown-y', `${rect.bottom + 4}px`);
-    root.style.setProperty('--dropdown-width', `${rect.width}px`);
-  }
-
-  choose(user: UserMatch) {
-    console.log('Selected user:', user);
-    this.router.navigate(['/profile', user.id]);
+    this.sub.unsubscribe();
   }
 }

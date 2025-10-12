@@ -1,3 +1,9 @@
+/* Keep panel roomy for the search box */
+.friend-search-panel .mat-mdc-select-panel {
+  max-height: 320px;
+}
+
+
 .friend-search-container {
   position: relative;
   display: inline-block;
