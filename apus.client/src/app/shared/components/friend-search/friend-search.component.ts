@@ -3,6 +3,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter, Observable, of, switchMap } from 'rxjs';
 import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-friend-search',
@@ -17,7 +18,7 @@ export class FriendSearchComponent implements AfterViewInit, OnDestroy {
 
   private resizeHandler!: () => void;
 
-  constructor(private svc: FriendSearchService, private el: ElementRef) {
+  constructor(private svc: FriendSearchService, private el: ElementRef, private router: Router) {
     this.results$ = this.query.valueChanges.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -54,5 +55,6 @@ export class FriendSearchComponent implements AfterViewInit, OnDestroy {
 
   choose(user: UserMatch) {
     console.log('Selected user:', user);
+    this.router.navigate(['/profile', user.id]);
   }
 }

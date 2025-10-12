@@ -4,6 +4,7 @@ using APUS.Server.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OsmSharp.API;
 using System.Security.Claims;
 
 namespace APUS.Server.Controllers
@@ -25,7 +26,7 @@ namespace APUS.Server.Controllers
 
 		[HttpGet("me")]
 		[Authorize]
-		public async Task<ActionResult<ProfileDto>> GetUsersProfile()
+		public async Task<ActionResult<ProfileDto>> GetMyProfile()
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -39,5 +40,22 @@ namespace APUS.Server.Controllers
 
 			return Ok(new ProfileDto { Name = name });
 		}
+
+		[HttpGet("{id}", Name = "GetUserProfile")]
+		[Authorize]
+		public async Task<ActionResult<ProfileDto>> GetUserProfile(string id)
+		{
+			var userId = id;
+
+			var user = await _userMgr.FindByIdAsync(userId);
+
+			if (user == null)
+				return NotFound();
+
+			var name = $"{user.FirstName} {user.LastName}";
+
+			return Ok(new ProfileDto { Name = name });
+		}
+
 	}
 }
