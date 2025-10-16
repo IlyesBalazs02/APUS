@@ -4,10 +4,10 @@
     <form [formGroup]="profileForm" (ngSubmit)="onSave()">
         <div class="setting-item">
             <div class="setting-info">
-                <label>Bio</label>
-                <p>Tell something about yourself.</p>
+                <label>Display Name</label>
+                <p>This name will appear on your profile and activities.</p>
             </div>
-            <textarea formControlName="bio" rows="4" placeholder="Write your bio..."></textarea>
+            <input type="text" formControlName="displayName" placeholder="Enter your display name" />
         </div>
 
         <div class="setting-item">
@@ -19,6 +19,14 @@
                 <img [src]="avatarPreview" alt="Avatar preview" class="avatar-preview" />
                 <input type="file" (change)="onAvatarChange($event)" accept="image/*" />
             </div>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Bio</label>
+                <p>Tell something about yourself.</p>
+            </div>
+            <textarea formControlName="bio" rows="4" placeholder="Write your bio..."></textarea>
         </div>
 
         <button type="submit" class="save-btn">Save Changes</button>

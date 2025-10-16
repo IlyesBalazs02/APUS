@@ -3,6 +3,26 @@
 .settings-container {
   @include settings-layout;
 
+  .setting-item {
+    border-bottom: 1px solid #333;
+    padding: 1rem 0;
+
+    input,
+    textarea {
+      background: #272729;
+      border: 1px solid #3a3a3c;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    textarea {
+      resize: none;
+    }
+  }
+
   .avatar-upload {
     display: flex;
     align-items: center;
@@ -18,16 +38,8 @@
 
     input[type='file'] {
       color: #ccc;
+      cursor: pointer;
     }
-  }
-
-  textarea {
-    background: #272729;
-    border: 1px solid #3a3a3c;
-    color: #fff;
-    border-radius: 6px;
-    padding: 0.6rem;
-    width: 100%;
   }
 
   .save-btn {
