@@ -28,7 +28,6 @@ import { CoreModule } from './core/core.module';
 import { UserProfileComponent } from './features/user-features/user-profile/user-profile.component';
 //refresh fix
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { SettingsComponent } from './features/settings/settings.component';
 
 
 @NgModule({
@@ -39,7 +38,6 @@ import { SettingsComponent } from './features/settings/settings.component';
     HomeComponentComponent,
     CreateRouteComponent,
     UserProfileComponent,
-    SettingsComponent,
   ],
   imports: [
     BrowserModule,
