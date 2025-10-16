@@ -25,6 +25,12 @@ const routes: Routes = [
       import('./features/activities/activities.module')
         .then(m => m.ActivitiesModule)
   },
+  {
+    path: 'settings',
+    loadChildren: () =>
+      import('./features/settings/settings.module')
+        .then(m => m.SettingsModule)
+  },
 
   { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
