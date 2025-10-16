@@ -1,0 +1,28 @@
+@import '../settings-form.scss';
+
+.settings-container {
+  @include settings-layout;
+
+  h2 {
+    color: #fff;
+  }
+
+  .setting-item {
+    border-bottom: 1px solid #333;
+    padding: 1rem 0;
+
+    input,
+    select {
+      background: #272729;
+      color: #fff;
+      border: 1px solid #3a3a3c;
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      width: 280px;
+    }
+  }
+
+  .save-btn {
+    @include save-button;
+  }
+}

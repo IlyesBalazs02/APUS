@@ -1,1 +1,44 @@
-<p>account-settings works!</p>
+<div class="settings-container">
+    <h2>Account Settings</h2>
+
+    <form [formGroup]="accountForm" (ngSubmit)="onSave()">
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Email address</label>
+                <p>Update your account email.</p>
+            </div>
+            <input type="email" formControlName="email" placeholder="Enter your email" />
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Phone number</label>
+                <p>Add or edit your phone number for recovery purposes.</p>
+            </div>
+            <input type="tel" formControlName="phoneNumber" placeholder="Enter your phone number" />
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Password</label>
+                <p>Change your password to keep your account secure.</p>
+            </div>
+            <input type="password" formControlName="password" placeholder="Enter a new password" />
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Gender</label>
+                <p>Select your gender preference.</p>
+            </div>
+            <select formControlName="gender">
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+</div>

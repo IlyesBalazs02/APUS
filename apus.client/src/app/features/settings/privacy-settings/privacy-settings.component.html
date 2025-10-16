@@ -1,1 +1,42 @@
-<p>privacy-settings works!</p>
+<div class="privacy-container">
+    <h2>Privacy Settings</h2>
+
+    <form [formGroup]="privacyForm" (ngSubmit)="onSave()">
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Allow people to follow you</label>
+                <p>Let people follow you to see your activities in their feed.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" formControlName="allowFollow" />
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Who can see your activities</label>
+                <p>Control who can view your posted activities.</p>
+            </div>
+            <select formControlName="activityVisibility">
+                <option>Everyone</option>
+                <option>Only followers</option>
+                <option>Only me</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Who can see your profile</label>
+                <p>Control who can view your profile details and stats.</p>
+            </div>
+            <select formControlName="profileVisibility">
+                <option>Everyone</option>
+                <option>Only followers</option>
+                <option>Only me</option>
+            </select>
+        </div>
+
+        <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+</div>

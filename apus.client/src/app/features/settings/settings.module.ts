@@ -9,6 +9,7 @@ import { SettingsRoutingModule } from './settings-routing.module';
 import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { ProfileSettingsComponent } from './profile-settings/profile-settings.component';
 import { PrivacySettingsComponent } from './privacy-settings/privacy-settings.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -22,6 +23,8 @@ import { PrivacySettingsComponent } from './privacy-settings/privacy-settings.co
         CommonModule,
         RouterModule,
         SettingsRoutingModule,
+        ReactiveFormsModule,
+        FormsModule
     ],
 })
 export class SettingsModule { }

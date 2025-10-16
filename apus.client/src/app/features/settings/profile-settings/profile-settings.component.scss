@@ -1,0 +1,36 @@
+@import '../settings-form.scss';
+
+.settings-container {
+  @include settings-layout;
+
+  .avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .avatar-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #3a3a3c;
+    }
+
+    input[type='file'] {
+      color: #ccc;
+    }
+  }
+
+  textarea {
+    background: #272729;
+    border: 1px solid #3a3a3c;
+    color: #fff;
+    border-radius: 6px;
+    padding: 0.6rem;
+    width: 100%;
+  }
+
+  .save-btn {
+    @include save-button;
+  }
+}

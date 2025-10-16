@@ -1,1 +1,26 @@
-<p>profile-settings works!</p>
+<div class="settings-container">
+    <h2>Profile Settings</h2>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()">
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Bio</label>
+                <p>Tell something about yourself.</p>
+            </div>
+            <textarea formControlName="bio" rows="4" placeholder="Write your bio..."></textarea>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Avatar</label>
+                <p>Choose a profile picture visible to others.</p>
+            </div>
+            <div class="avatar-upload">
+                <img [src]="avatarPreview" alt="Avatar preview" class="avatar-preview" />
+                <input type="file" (change)="onAvatarChange($event)" accept="image/*" />
+            </div>
+        </div>
+
+        <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+</div>
