@@ -73,5 +73,27 @@ namespace APUS.Server.Controllers.UserControllers
 
 			return Ok(new { message = "Password updated successfully." });
 		}
+
+		public class GenderRequest
+		{
+			public string SelectedGender { get; set; } = string.Empty;
+		}
+
+		[HttpPost("change-gender")]
+		public async Task<IActionResult> ChangeGender([FromBody] GenderRequest request)
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+				return Unauthorized("User not found.");
+
+			if (!Enum.TryParse<GenderType>(request.SelectedGender, true, out var parsedGender))
+				return BadRequest("Invalid gender value.");
+
+			user.Gender = parsedGender;
+			await _userManager.UpdateAsync(user);
+
+			return Ok(new { message = "Gender updated successfully." });
+		}
+
 	}
 }

@@ -15,4 +15,8 @@ export class AccountService {
     changePassword(currentPassword: string, newPassword: string): Observable<any> {
         return this.http.post(`${this.baseUrl}/change-password`, { currentPassword, newPassword });
     }
+
+    changeGender(selectedGender: string): Observable<any> {
+        return this.http.post(`${this.baseUrl}/change-gender`, { selectedGender });
+    }
 }

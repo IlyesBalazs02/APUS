@@ -91,20 +91,36 @@
         </div>
     </div>
 
-
     <!-- Gender Modal -->
-    <div class="modal-backdrop" *ngIf="showGenderModal">
-        <div class="modal">
+    <div class="modal-backdrop" *ngIf="showGenderModal" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
             <h3>Gender</h3>
             <p>This information may be used to improve your recommendations.</p>
-            <div class="gender-options">
-                <label><input type="radio" name="gender" (change)="saveGender('Woman')" /> Woman</label>
-                <label><input type="radio" name="gender" (change)="saveGender('Man')" /> Man</label>
-            </div>
-            <div class="modal-actions">
-                <button (click)="closeModal()">Cancel</button>
-                <button (click)="closeModal()">Save</button>
-            </div>
+
+            <form #genderForm="ngForm">
+                <div class="gender-options">
+                    <label>
+                        <input type="radio" name="gender" value="Female" [(ngModel)]="selectedGender" required />
+                        Woman
+                    </label>
+                    <label>
+                        <input type="radio" name="gender" value="Male" [(ngModel)]="selectedGender" required />
+                        Man
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+
+                    <!-- Save appears only when user actually selects a new gender -->
+                    <button type="button" *ngIf="selectedGender && selectedGender !== gender"
+                        (click)="saveGender(selectedGender)">
+                        Save
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
 </div>

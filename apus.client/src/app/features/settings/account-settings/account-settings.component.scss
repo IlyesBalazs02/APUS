@@ -126,3 +126,9 @@ input.ng-invalid.ng-touched {
   margin-bottom: 4px;
 }
 
+.gender-options input[type='radio']:checked + label,
+.gender-options label:has(input[type='radio']:checked) {
+  color: #1a73e8;
+  font-weight: 500;
+}
+

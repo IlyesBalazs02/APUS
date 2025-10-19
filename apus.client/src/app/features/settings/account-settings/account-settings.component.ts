@@ -14,6 +14,7 @@ export class AccountSettingsComponent {
   showEmailModal = false;
   showPasswordModal = false;
   showGenderModal = false;
+  selectedGender: string | null = null;
 
   constructor(private accountService: AccountService, private authService: AuthService) { }
 
@@ -68,7 +69,15 @@ export class AccountSettingsComponent {
 
   saveGender(g: string) {
     this.gender = g;
-    console.log('Gender set to:', g);
-    this.closeModal();
+    this.accountService.changeGender(g).subscribe({
+      next: (res) => {
+        console.log(res.message);
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Failed to change the gender', err.error);
+        alert(err.error || 'Something went wrong');
+      }
+    });
   }
 }

@@ -4,6 +4,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APUS.Server.Domain.Models
 {
+	public enum GenderType
+	{
+		Unspecified = 0,
+		Male = 1,
+		Female = 2
+	}
+
 	public class SiteUser : IdentityUser
 	{
 		public string FirstName { get; set; }
@@ -11,6 +18,9 @@ namespace APUS.Server.Domain.Models
 
 		//For profile picture
 		public string AvatarUrl { get; set; }
+
+		public GenderType Gender { get; set; } = GenderType.Unspecified;
+
 
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }
