@@ -53,8 +53,17 @@ export class AccountSettingsComponent {
 
   savePassword(current: string, newPass: string, confirm: string) {
     if (newPass !== confirm || !current) return;
-    console.log('Password changed');
-    this.closeModal();
+
+    this.accountService.changePassword(current, newPass).subscribe({
+      next: (res) => {
+        console.log(res.message);
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Failed to change password', err.error);
+        alert(err.error || 'Something went wrong');
+      }
+    });
   }
 
   saveGender(g: string) {

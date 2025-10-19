@@ -41,15 +41,37 @@ namespace APUS.Server.Controllers.UserControllers
 
 			// update email
 			user.Email = request.NewEmail;
-			user.UserName = request.NewEmail; // optional, if username = email
 			user.NormalizedEmail = request.NewEmail.ToUpper();
-			user.NormalizedUserName = request.NewEmail.ToUpper();
 
 			var result = await _userManager.UpdateAsync(user);
 			if (!result.Succeeded)
 				return BadRequest("Failed to update email.");
 
 			return Ok(new { message = "Email updated successfully." });
+		}
+
+		public class ChangePasswordRequest
+		{
+			public string currentPassword { get; set; } = string.Empty;
+			public string newPassword { get; set; } = string.Empty;
+		}
+
+		[HttpPost("change-password")]
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+		{
+			if (string.IsNullOrWhiteSpace(request.currentPassword) || string.IsNullOrWhiteSpace(request.newPassword))
+				return BadRequest("Both current and new passwords are required.");
+
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+				return Unauthorized("User not found.");
+
+			var result = await _userManager.ChangePasswordAsync(user, request.currentPassword, request.newPassword);
+
+			if (!result.Succeeded)
+				return BadRequest(result.Errors.FirstOrDefault()?.Description ?? "Failed to change password.");
+
+			return Ok(new { message = "Password updated successfully." });
 		}
 	}
 }

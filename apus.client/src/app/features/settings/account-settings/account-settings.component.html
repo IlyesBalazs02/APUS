@@ -58,19 +58,39 @@
 
 
     <!-- Password Modal -->
-    <div class="modal-backdrop" *ngIf="showPasswordModal">
-        <div class="modal">
+    <!-- Password Modal -->
+    <div class="modal-backdrop" *ngIf="showPasswordModal" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
             <h3>Password</h3>
-            <input type="password" placeholder="Current password" #currentPass />
-            <input type="password" placeholder="New password" #newPass />
-            <input type="password" placeholder="New password again" #confirmPass />
-            <label><input type="checkbox" /> Log me out everywhere</label>
-            <div class="modal-actions">
-                <button (click)="closeModal()">Cancel</button>
-                <button (click)="savePassword(currentPass.value, newPass.value, confirmPass.value)">Save</button>
-            </div>
+
+            <form #passwordForm="ngForm">
+                <input type="password" placeholder="Current password" name="currentPass" #currentPass="ngModel" ngModel
+                    required />
+                <div *ngIf="currentPass.invalid && currentPass.touched" class="error">
+                    Current password is required.
+                </div>
+
+                <input type="password" placeholder="New password" name="newPass" #newPass="ngModel" ngModel required />
+
+                <input type="password" placeholder="New password again" name="confirmPass" #confirmPass="ngModel"
+                    ngModel required />
+
+                <!-- Error if passwords don't match -->
+                <div *ngIf="newPass.value &&confirmPass.value &&newPass.value !== confirmPass.value" class="error">
+                    Passwords do not match.
+                </div>
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="!passwordForm.valid ||newPass.value !== confirmPass.value"
+                        (click)="savePassword(currentPass.value, newPass.value, confirmPass.value)">
+                        Save
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
 
     <!-- Gender Modal -->
     <div class="modal-backdrop" *ngIf="showGenderModal">
