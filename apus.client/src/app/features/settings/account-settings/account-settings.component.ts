@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-account-settings',
@@ -7,29 +6,42 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   templateUrl: './account-settings.component.html',
   styleUrls: ['./account-settings.component.scss']
 })
-export class AccountSettingsComponent implements OnInit {
-  accountForm!: FormGroup;
+export class AccountSettingsComponent {
+  email = 'ilyesbalazs32@gmail.com';
+  gender = '';
+  showEmailModal = false;
+  showPasswordModal = false;
+  showGenderModal = false;
 
-  constructor(private fb: FormBuilder) { }
-
-  ngOnInit(): void {
-    this.accountForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      password: [''],
-      gender: ['']
-    });
-
-    // later load user data here
-    // this.settingsService.getAccountSettings().subscribe(data => {
-    //   this.accountForm.patchValue(data);
-    // });
+  // Modal control
+  openModal(type: 'email' | 'password' | 'gender') {
+    if (type === 'email') this.showEmailModal = true;
+    if (type === 'password') this.showPasswordModal = true;
+    if (type === 'gender') this.showGenderModal = true;
   }
 
-  onSave(): void {
-    if (this.accountForm.valid) {
-      console.log('Account settings to send:', this.accountForm.value);
-      // this.settingsService.updateAccountSettings(this.accountForm.value).subscribe(...)
-    }
+  closeModal() {
+    this.showEmailModal = false;
+    this.showPasswordModal = false;
+    this.showGenderModal = false;
+  }
+
+  saveEmail(newEmail: string, password: string) {
+    if (!newEmail || !password) return;
+    console.log('Email updated:', newEmail);
+    this.email = newEmail;
+    this.closeModal();
+  }
+
+  savePassword(current: string, newPass: string, confirm: string) {
+    if (newPass !== confirm || !current) return;
+    console.log('Password changed');
+    this.closeModal();
+  }
+
+  saveGender(g: string) {
+    this.gender = g;
+    console.log('Gender set to:', g);
+    this.closeModal();
   }
 }

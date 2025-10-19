@@ -4,7 +4,7 @@ using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace APUS.Server.Controllers
+namespace APUS.Server.Controllers.UserControllers
 {
 
 	[ApiController]

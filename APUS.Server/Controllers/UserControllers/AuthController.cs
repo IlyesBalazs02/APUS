@@ -11,7 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace APUS.Server.Controllers
+namespace APUS.Server.Controllers.UserControllers
 {
 	[ApiController]
 	[Route("api/[controller]")]

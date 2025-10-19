@@ -40,5 +40,18 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  currentUserEmail(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // The email claim is stored as 'email' (from JwtRegisteredClaimNames.Email)
+      return payload.email || null;
+    } catch {
+      return null;
+    }
+  }
+
 
 }

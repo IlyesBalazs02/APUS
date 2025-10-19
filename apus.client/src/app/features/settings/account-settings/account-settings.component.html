@@ -1,44 +1,70 @@
 <div class="settings-container">
     <h2>Account Settings</h2>
 
-    <form [formGroup]="accountForm" (ngSubmit)="onSave()">
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Email address</label>
-                <p>Update your account email.</p>
-            </div>
-            <input type="email" formControlName="email" placeholder="Enter your email" />
-        </div>
+    <div class="setting-item" (click)="openModal('email')">
+        <div class="setting-label">Email address</div>
+        <div class="setting-value">{{ email }}</div>
+    </div>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Phone number</label>
-                <p>Add or edit your phone number for recovery purposes.</p>
-            </div>
-            <input type="tel" formControlName="phoneNumber" placeholder="Enter your phone number" />
-        </div>
+    <div class="setting-item">
+        <div class="setting-label">Phone Number</div>
+        <div class="setting-value text-muted">Add a phone number</div>
+    </div>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Password</label>
-                <p>Change your password to keep your account secure.</p>
-            </div>
-            <input type="password" formControlName="password" placeholder="Enter a new password" />
-        </div>
+    <div class="setting-item" (click)="openModal('password')">
+        <div class="setting-label">Password</div>
+        <div class="setting-value text-muted">Change password</div>
+    </div>
 
-        <div class="setting-item">
-            <div class="setting-info">
-                <label>Gender</label>
-                <p>Select your gender preference.</p>
-            </div>
-            <select formControlName="gender">
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-            </select>
+    <div class="setting-item" (click)="openModal('gender')">
+        <div class="setting-label">Gender</div>
+        <div class="setting-value text-muted">
+            {{ gender || 'Select gender' }}
         </div>
+    </div>
 
-        <button type="submit" class="save-btn">Save Changes</button>
-    </form>
+    <!-- Email Modal -->
+    <div class="modal-backdrop" *ngIf="showEmailModal">
+        <div class="modal">
+            <h3>Email address</h3>
+            <p>We'll send a verification email to the address you provide.</p>
+            <input type="password" placeholder="Password" #emailPassword />
+            <input type="email" placeholder="New email" #newEmail />
+            <div class="modal-actions">
+                <button (click)="closeModal()">Cancel</button>
+                <button (click)="saveEmail(newEmail.value, emailPassword.value)">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-backdrop" *ngIf="showPasswordModal">
+        <div class="modal">
+            <h3>Password</h3>
+            <input type="password" placeholder="Current password" #currentPass />
+            <input type="password" placeholder="New password" #newPass />
+            <input type="password" placeholder="New password again" #confirmPass />
+            <label><input type="checkbox" /> Log me out everywhere</label>
+            <div class="modal-actions">
+                <button (click)="closeModal()">Cancel</button>
+                <button (click)="savePassword(currentPass.value, newPass.value, confirmPass.value)">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gender Modal -->
+    <div class="modal-backdrop" *ngIf="showGenderModal">
+        <div class="modal">
+            <h3>Gender</h3>
+            <p>This information may be used to improve your recommendations.</p>
+            <div class="gender-options">
+                <label><input type="radio" name="gender" (change)="saveGender('Woman')" /> Woman</label>
+                <label><input type="radio" name="gender" (change)="saveGender('Man')" /> Man</label>
+            </div>
+            <div class="modal-actions">
+                <button (click)="closeModal()">Cancel</button>
+                <button (click)="closeModal()">Save</button>
+            </div>
+        </div>
+    </div>
 </div>

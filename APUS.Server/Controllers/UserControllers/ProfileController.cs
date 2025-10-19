@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using OsmSharp.API;
 using System.Security.Claims;
 
-namespace APUS.Server.Controllers
+namespace APUS.Server.Controllers.UserControllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
