@@ -24,18 +24,38 @@
     </div>
 
     <!-- Email Modal -->
-    <div class="modal-backdrop" *ngIf="showEmailModal">
-        <div class="modal">
+    <div class="modal-backdrop" *ngIf="showEmailModal" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
             <h3>Email address</h3>
             <p>We'll send a verification email to the address you provide.</p>
-            <input type="password" placeholder="Password" #emailPassword />
-            <input type="email" placeholder="New email" #newEmail />
-            <div class="modal-actions">
-                <button (click)="closeModal()">Cancel</button>
-                <button (click)="saveEmail(newEmail.value, emailPassword.value)">Save</button>
-            </div>
+
+            <form #emailForm="ngForm">
+                <!-- Password field (required) -->
+                <input type="password" placeholder="Password" name="emailPassword" #emailPassword="ngModel" ngModel
+                    required />
+                <div *ngIf="emailPassword.invalid && emailPassword.touched" class="error">
+                    Password is required.
+                </div>
+
+                <!-- Email field (required + regex pattern) -->
+                <input type="email" placeholder="New email" name="newEmail" #newEmail="ngModel" ngModel required
+                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" />
+                <div *ngIf="newEmail.invalid && newEmail.touched" class="error">
+                    Please enter a valid email address.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="!emailForm.valid"
+                        (click)="saveEmail(newEmail.value, emailPassword.value)">
+                        Save
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
 
     <!-- Password Modal -->
     <div class="modal-backdrop" *ngIf="showPasswordModal">

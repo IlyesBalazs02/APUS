@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { AccountService } from './account.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-account-settings',
@@ -7,11 +9,18 @@ import { Component } from '@angular/core';
   styleUrls: ['./account-settings.component.scss']
 })
 export class AccountSettingsComponent {
-  email = 'ilyesbalazs32@gmail.com';
+  email: string | null = null;
   gender = '';
   showEmailModal = false;
   showPasswordModal = false;
   showGenderModal = false;
+
+  constructor(private accountService: AccountService, private authService: AuthService) { }
+
+  ngOnInit(): void {
+    this.email = this.authService.currentUserEmail();
+  }
+
 
   // Modal control
   openModal(type: 'email' | 'password' | 'gender') {
@@ -28,9 +37,18 @@ export class AccountSettingsComponent {
 
   saveEmail(newEmail: string, password: string) {
     if (!newEmail || !password) return;
-    console.log('Email updated:', newEmail);
-    this.email = newEmail;
-    this.closeModal();
+
+    this.accountService.changeEmail(password, newEmail).subscribe({
+      next: (res) => {
+        console.log(res.message);
+        this.email = newEmail;
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Failed to change email:', err.error);
+        alert(err.error || 'Something went wrong.');
+      }
+    });
   }
 
   savePassword(current: string, newPass: string, confirm: string) {

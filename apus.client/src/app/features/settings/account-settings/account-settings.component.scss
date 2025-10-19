@@ -98,3 +98,19 @@
     transform: scale(1);
   }
 }
+
+input.ng-invalid.ng-touched {
+  border: 1px solid #ff4d4d;
+}
+
+.error {
+  color: #ff4d4d;
+  font-size: 13px;
+  margin-top: -6px;
+  margin-bottom: 4px;
+}
+
+.modal-actions button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
