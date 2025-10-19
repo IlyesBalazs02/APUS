@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace APUS.Server.Controllers.UserControllers
+namespace APUS.Server.Controllers.SettingsController
 {
 
 	[ApiController]
