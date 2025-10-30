@@ -3,12 +3,19 @@
 
     <form [formGroup]="profileForm" (ngSubmit)="onSave()">
         <div class="setting-item">
-            <div class="setting-info">
-                <label>Display Name</label>
-                <p>This name will appear on your profile and activities.</p>
+            <div class="name-fields">
+                <div class="setting-info">
+                    <label>First Name</label>
+                    <input type="text" formControlName="firstName" placeholder="Enter your first name" />
+                </div>
+
+                <div class="setting-info">
+                    <label>Last Name</label>
+                    <input type="text" formControlName="lastName" placeholder="Enter your last name" />
+                </div>
             </div>
-            <input type="text" formControlName="displayName" placeholder="Enter your display name" />
         </div>
+
 
         <div class="setting-item">
             <div class="setting-info">
@@ -24,11 +31,16 @@
         <div class="setting-item">
             <div class="setting-info">
                 <label>Bio</label>
-                <p>Tell something about yourself.</p>
+                <p>Tell something about yourself (max 300 characters).</p>
             </div>
-            <textarea formControlName="bio" rows="4" placeholder="Write your bio..."></textarea>
+            <textarea formControlName="bio" rows="4" placeholder="Write your bio..." maxlength="300"></textarea>
+            <div class="char-counter">
+                {{ profileForm.get('bio')?.value?.length || 0 }}/300
+            </div>
         </div>
 
-        <button type="submit" class="save-btn">Save Changes</button>
+        <button type="submit" class="save-btn" [disabled]="profileForm.invalid || isSaving">
+            {{ isSaving ? 'Saving…' : 'Save Changes' }}
+        </button>
     </form>
 </div>

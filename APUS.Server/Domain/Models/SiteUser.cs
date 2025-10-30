@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APUS.Server.Domain.Models
@@ -21,6 +22,8 @@ namespace APUS.Server.Domain.Models
 
 		public GenderType Gender { get; set; } = GenderType.Unspecified;
 
+		[MaxLength(300)]
+		public string Bio { get; set; }
 
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }
