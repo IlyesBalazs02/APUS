@@ -95,5 +95,16 @@ namespace APUS.Server.Controllers.SettingsController
 			return Ok(new { message = "Gender updated successfully." });
 		}
 
+		[HttpGet("get-gender")]
+		public async Task<IActionResult> GetGender()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+				return Unauthorized("User not found.");
+
+			return Ok(new { gender = user.Gender.ToString() });
+		}
+
+
 	}
 }

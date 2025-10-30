@@ -20,6 +20,18 @@ export class AccountSettingsComponent {
 
   ngOnInit(): void {
     this.email = this.authService.currentUserEmail();
+
+    this.accountService.getGender().subscribe({
+      next: (res) => {
+        if (res.gender) {
+          this.gender = res.gender;
+          this.selectedGender = res.gender; // auto-select in modal
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load gender:', err);
+      }
+    });
   }
 
 

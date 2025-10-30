@@ -19,4 +19,9 @@ export class AccountService {
     changeGender(selectedGender: string): Observable<any> {
         return this.http.post(`${this.baseUrl}/change-gender`, { selectedGender });
     }
+
+    getGender(): Observable<any> {
+        return this.http.get(`${this.baseUrl}/get-gender`);
+    }
+
 }
