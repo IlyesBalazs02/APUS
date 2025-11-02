@@ -34,6 +34,7 @@
         </div>
 
 
+
         <!-- Bio (unchanged) -->
         <div class="setting-item">
             <div class="setting-info">
@@ -59,20 +60,30 @@
             <p>Upload a new image. The previous one will be removed.</p>
 
             <div class="ps-modal-body">
-                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Current avatar" class="avatar-medium" />
+                <!-- If a new file is selected, show LOCAL preview; otherwise show server image -->
+                <img [src]="selectedAvatarPreview || avatarUrl" alt="Current avatar" class="avatar-medium" />
+
                 <input type="file" (change)="onAvatarFilePicked($event)" accept="image/*" />
             </div>
 
             <div class="ps-modal-actions">
-                <button type="button" class="danger" (click)="deleteAvatar()">Remove current</button>
+                <!-- Disable remove when the default avatar is currently displayed -->
+                <button type="button" class="danger" [disabled]="isDefaultAvatar || isUploading"
+                    (click)="deleteAvatar()">
+                    Remove current
+                </button>
+
                 <span class="spacer"></span>
+
                 <button type="button" (click)="closeAvatarModal()">Cancel</button>
+
                 <button type="button" [disabled]="!selectedAvatarFile || isUploading" (click)="saveAvatar()">
                     {{ isUploading ? 'Uploading…' : 'Save' }}
                 </button>
             </div>
         </div>
     </div>
+
 
 
 </div>

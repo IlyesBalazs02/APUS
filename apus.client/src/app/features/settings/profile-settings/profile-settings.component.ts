@@ -13,10 +13,14 @@ export class ProfileSettingsComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
+  // local preview just for the modal (not uploaded yet)
+  selectedAvatarFile: File | null = null;
+  selectedAvatarPreview: string | null = null;
   avatarUrl: string | null = null;
+  isDefaultAvatar = false; //disable the remove button if it's the default avatar
+  private readonly DEFAULT_HINTS = ['/Perm/DefaultProfile.png', '/api/Profile/default-avatar'];
 
   showAvatarModal = false;
-  selectedAvatarFile: File | null = null;
   isUploading = false;
 
   constructor(
@@ -32,23 +36,6 @@ export class ProfileSettingsComponent implements OnInit {
     });
 
     this.loadProfile();
-  }
-
-  private loadProfile(): void {
-    this.isLoading = true;
-    this.profileService.getProfile().subscribe({
-      next: (res) => {
-        this.profileForm.patchValue({
-          firstName: res.firstName || '',
-          lastName: res.lastName || '',
-          bio: res.bio || '',
-        });
-        console.log("responser!!!!!!!!!!!! " + res.avatarUrl);
-        this.avatarUrl = res.avatarUrl || null; // <- whatever backend sent (default or user)
-      },
-      error: (err) => console.error('Failed to load profile', err?.error || err),
-      complete: () => (this.isLoading = false),
-    });
   }
 
   onSave(): void {
@@ -69,46 +56,85 @@ export class ProfileSettingsComponent implements OnInit {
 
   // ===== Avatar modal handlers =====
   openAvatarModal(): void {
-    console.log('[avatar] openAvatarModal()');   // debug
     this.selectedAvatarFile = null;
+    this.selectedAvatarPreview = null;   // clear any stale preview
     this.showAvatarModal = true;
   }
 
   closeAvatarModal(): void {
     this.showAvatarModal = false;
     this.selectedAvatarFile = null;
+    this.selectedAvatarPreview = null;
   }
 
   onAvatarFilePicked(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.selectedAvatarFile = input.files?.[0] ?? null;
+
+    this.selectedAvatarPreview = null;
+    if (this.selectedAvatarFile) {
+      const reader = new FileReader();
+      reader.onload = () => (this.selectedAvatarPreview = reader.result as string);
+      reader.readAsDataURL(this.selectedAvatarFile);
+    }
   }
 
   saveAvatar(): void {
     if (!this.selectedAvatarFile) return;
-
     this.isUploading = true;
+
     this.profileService.uploadAvatar(this.selectedAvatarFile).subscribe({
       next: () => {
-        // Always reload from server so we never use local preview
         this.loadProfile();
         this.closeAvatarModal();
       },
-      error: (err) => {
-        console.error('Avatar upload failed', err?.error || err);
-      },
+      error: (err) => console.error('Avatar upload failed', err?.error || err),
       complete: () => (this.isUploading = false),
     });
   }
-
   deleteAvatar(): void {
     this.profileService.deleteAvatar().subscribe({
       next: () => {
-        this.loadProfile();
+        this.loadProfile();            // server will now return default
         this.closeAvatarModal();
       },
       error: (err) => console.error('Delete avatar failed', err?.error || err),
     });
+  }
+
+  private loadProfile(): void {
+    this.isLoading = true;
+    this.profileService.getProfile().subscribe({
+      next: (res) => {
+        this.profileForm.patchValue({
+          firstName: res.firstName || '',
+          lastName: res.lastName || '',
+          bio: res.bio || '',
+        });
+        this.avatarUrl = res.avatarUrl || null;
+
+        // mark if the backend sent the default
+        this.markDefaultFlag(this.avatarUrl);
+      },
+      error: (err) => console.error('Failed to load profile', err?.error || err),
+      complete: () => (this.isLoading = false),
+    });
+  }
+
+  private markDefaultFlag(url: string | null) {
+    const path = this.getPathname(url);
+    this.isDefaultAvatar = path.endsWith("/perm/defaultprofile.png");
+  }
+
+  //to disable or enable the remove button
+  private getPathname(url: string | null): string {
+    if (!url) return "";
+    try {
+      const u = new URL(url, window.location.origin);
+      return u.pathname.toLowerCase();
+    } catch {
+      return (url || "").toLowerCase();
+    }
   }
 
 }
