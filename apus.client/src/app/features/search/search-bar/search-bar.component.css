@@ -29,3 +29,12 @@
   max-height: 250px;
   overflow-y: auto;
 }
+
+.prefix-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  opacity: 0.8;
+}
+
+
