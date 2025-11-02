@@ -9,10 +9,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
-import { FriendSearchService, UserMatch } from '../../../shared/services/friend-search.service';
+import { FriendSearchService, UserMatch } from './search-bar.service';
 
 @Component({
-  selector: 'app-friend-search',
+  selector: 'app-search-bar',
   standalone: true,
   imports: [
     CommonModule,
@@ -22,10 +22,10 @@ import { FriendSearchService, UserMatch } from '../../../shared/services/friend-
     MatOptionModule,
     NgxMatSelectSearchModule
   ],
-  templateUrl: './friend-search.component.html',
-  styleUrls: ['./friend-search.component.css']
+  templateUrl: './search-bar.component.html',
+  styleUrls: ['./search-bar.component.css']
 })
-export class FriendSearchComponent implements OnDestroy {
+export class SearchBarComponent implements OnDestroy {
   selectedCtrl = new FormControl<UserMatch | null>(null);
   filterCtrl = new FormControl<string>('', { nonNullable: true });
   results: UserMatch[] = [];
@@ -38,7 +38,6 @@ export class FriendSearchComponent implements OnDestroy {
   ) { }
 
   onOpened() {
-    // ✅ subscribe when opened
     this.sub.add(
       this.filterCtrl.valueChanges.pipe(
         debounceTime(250),
@@ -50,7 +49,6 @@ export class FriendSearchComponent implements OnDestroy {
       ).subscribe(users => (this.results = users))
     );
 
-    // ✅ focus search input
     queueMicrotask(() => {
       const input: HTMLInputElement | null =
         this.el.nativeElement.querySelector('.ngx-mat-select-search .mat-mdc-input-element');
@@ -59,19 +57,17 @@ export class FriendSearchComponent implements OnDestroy {
   }
 
   onClosed() {
-    // ✅ Completely reset state
     this.filterCtrl.setValue('', { emitEvent: false });
     this.results = [];
     this.selectedCtrl.setValue(null, { emitEvent: false });
 
-    // Unsubscribe old stream
     this.sub.unsubscribe();
     this.sub = new Subscription();
   }
 
   onSelect(user: UserMatch) {
     this.router.navigate(['/profile', user.id]);
-    this.onClosed(); // clear after navigation
+    this.onClosed();
   }
 
   ngOnDestroy() {
