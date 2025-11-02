@@ -9,7 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
-import { FriendSearchService, UserMatch } from '../../services/friend-search.service';
+import { FriendSearchService, UserMatch } from '../../../shared/services/friend-search.service';
 
 @Component({
   selector: 'app-friend-search',

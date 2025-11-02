@@ -38,7 +38,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     LoginComponent,
     HomeComponentComponent,
     CreateRouteComponent,
-    UserProfileComponent,
+    UserProfileComponent
   ],
   imports: [
     BrowserModule,

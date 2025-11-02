@@ -4,7 +4,7 @@ import { NavigationComponent } from "./components/navigation/navigation.componen
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { ActivityCardComponent } from "./activity-card/activity-card.component";
-import { FriendSearchComponent } from "./components/friend-search/friend-search.component";
+import { FriendSearchComponent } from "../features/search/search-bar/friend-search.component";
 
 @NgModule({
     declarations: [

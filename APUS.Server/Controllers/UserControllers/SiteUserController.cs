@@ -10,11 +10,11 @@ namespace APUS.Server.Controllers.UserControllers
 	[ApiController]
 	[Route("api/[controller]")]
 	[Authorize]
-	public class FriendsController : ControllerBase
+	public class SiteUserController : ControllerBase
 	{
 		private readonly ISearchUsersService _searchUsersService;
 
-		public FriendsController(ISearchUsersService searchUsersService)
+		public SiteUserController(ISearchUsersService searchUsersService)
 		{
 			_searchUsersService = searchUsersService;
 		}
@@ -23,7 +23,7 @@ namespace APUS.Server.Controllers.UserControllers
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(typeof(IEnumerable<UserMatchDto>), StatusCodes.Status200OK)]
-		public async Task<ActionResult<IEnumerable<UserMatchDto>>> GetActivities()
+		public async Task<ActionResult<IEnumerable<UserMatchDto>>> GetAllUser()
 		{
 			var entities = await _searchUsersService.GetAllUser();
 

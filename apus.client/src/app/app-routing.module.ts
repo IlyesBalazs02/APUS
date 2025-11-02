@@ -31,6 +31,12 @@ const routes: Routes = [
       import('./features/settings/settings.module')
         .then(m => m.SettingsModule)
   },
+  {
+    path: 'search',
+    loadChildren: () =>
+      import('./features/search/search.module')
+        .then(m => m.SearchModule)
+  },
 
   { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },
