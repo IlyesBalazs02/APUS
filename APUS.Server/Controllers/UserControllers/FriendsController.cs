@@ -32,8 +32,7 @@ namespace APUS.Server.Controllers.UserControllers
 			var dtos = entities.Select(u => new UserMatchDto
 			{
 				Id = u.Id.ToString(),
-				FullName = u.FirstName + u.LastName,
-				AvatarUrl = u.AvatarUrl
+				FullName = u.FirstName + u.LastName
 			});
 
 			return Ok(dtos);

@@ -17,8 +17,6 @@ namespace APUS.Server.Domain.Models
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 
-		//For profile picture
-		public string AvatarUrl { get; set; }
 
 		public GenderType Gender { get; set; } = GenderType.Unspecified;
 
@@ -35,6 +33,8 @@ namespace APUS.Server.Domain.Models
 		public virtual ICollection<UserRelation> FriendRequestInitiated { get; set; } = new List<UserRelation>();
 		// Friendships this user received (incoming requests)
 		public virtual ICollection<UserRelation> FriendRequestReceived { get; set; } = new List<UserRelation>();
+		// For privacy settings
+		public virtual PrivacySettings Privacy { get; set; }
 
 		public SiteUser()
 		{

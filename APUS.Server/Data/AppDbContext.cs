@@ -10,6 +10,7 @@ namespace APUS.Server.Data
 		public DbSet<MainActivity> Activities { get; set; }
 		public DbSet<UserRelation> UserRelations { get; set; }
 		public DbSet<SiteUser> SiteUsers { get; set; }
+		public DbSet<PrivacySettings> PrivacySettings { get; set; }
 
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
@@ -85,6 +86,18 @@ namespace APUS.Server.Data
 				t.HasIndex(f => new { f.UserId, f.Status, f.FriendId });
 				t.HasIndex(f => new { f.FriendId, f.Status, f.UserId });
 			});
+
+
+			// 1:1 SiteUser <-> PrivacySettings with unique FK
+			modelBuilder.Entity<PrivacySettings>()
+				.HasIndex(p => p.UserId)
+				.IsUnique();
+
+			modelBuilder.Entity<PrivacySettings>()
+				.HasOne(p => p.User)
+				.WithOne(u => u.Privacy)
+				.HasForeignKey<PrivacySettings>(p => p.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
 
 
 
