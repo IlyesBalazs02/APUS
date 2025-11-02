@@ -19,6 +19,8 @@ const PROXY_CONFIG = [
       "Friends/**",
       "Account/**",
       "Account/**",
+      "privacy/**",
+      "Privacy/**",
       "/Activities/**",
       "/Users/**",
       "/Perm/**"

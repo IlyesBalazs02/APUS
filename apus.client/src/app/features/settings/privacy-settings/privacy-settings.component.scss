@@ -63,6 +63,11 @@
       transform: translateX(20px);
     }
   }
+  
+.setting-item.is-disabled {
+  opacity: 0.6;
+  pointer-events: none; // prevents UI interaction while disabled
+}
 
   .save-btn {
     @include save-button;
