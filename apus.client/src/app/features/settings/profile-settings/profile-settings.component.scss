@@ -1,5 +1,6 @@
 @import '../settings-form.scss';
 
+/* ===== keep your original styles ===== */
 .settings-container {
   @include settings-layout;
 
@@ -29,11 +30,12 @@
     gap: 1rem;
 
     .avatar-preview {
-      width: 64px;
+      width: 64px;           /* your original size */
       height: 64px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid #3a3a3c;
+      background: #0e0e0e;
     }
 
     input[type='file'] {
@@ -45,4 +47,215 @@
   .save-btn {
     @include save-button;
   }
+}
+
+/* ===== additions: nicer row layout + larger avatar option ===== */
+
+/* Make whole row clickable if desired */
+.setting-item.clickable { cursor: pointer; }
+
+/* Right-side inline block: big circle + action */
+.avatar-inline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto; /* push to the right */
+}
+
+/* Bigger avatar for the row (use this class in the row image) */
+.avatar-lg {
+  width: 72px;       /* bump size; change to 80–96px if you want bigger */
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid #3a3a3c;
+  background: #0e0e0e;
+}
+
+/* Link-styled button on the row */
+.link-btn {
+  background: transparent;
+  color: #a8c4ff;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+.link-btn:hover { text-decoration: underline; }
+
+/* Optional counter below BIO */
+.char-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 6px;
+}
+
+/* Name fields side-by-side (kept conservative; remove if already done globally) */
+.name-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .setting-info { display: flex; flex-direction: column; gap: 8px; }
+}
+@media (max-width: 720px) {
+  .name-fields { grid-template-columns: 1fr; }
+}
+
+/* ===== modal (account-style) with bulletproof stacking ===== */
+
+.modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.55) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2147483646 !important; /* beneath modal card */
+}
+
+/* modal card */
+.modal {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 2147483647 !important; /* top of everything */
+  width: 100% !important;
+  max-width: 560px !important;
+  background: #121212 !important;
+  color: #fff !important;
+  border-radius: 14px !important;
+  padding: 22px !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.65) !important;
+  outline: none !important;
+}
+
+.close-btn {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Modal content layout: server-rendered avatar + file input */
+.avatar-modal-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 12px 0 20px;
+
+  /* bigger circle in modal */
+  .avatar-medium {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #3a3a3c;
+    background: #0e0e0e;
+  }
+
+  input[type='file'] { font-size: 14px; }
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modal-actions .spacer { flex: 1; }
+
+button.danger {
+  color: #ff8a8a;
+  background: transparent;
+  border: 1px solid rgba(255,138,138,0.35);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* ===== profile-settings modal (Bootstrap-safe) ===== */
+
+.ps-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.55) !important;
+  display: flex !important;               /* force visible */
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2147483646 !important;         /* under the card */
+}
+
+.ps-modal {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: block !important;              /* override any global 'display:none' */
+  z-index: 2147483647 !important;         /* above everything */
+  width: 100% !important;
+  max-width: 560px !important;
+  background: #121212 !important;
+  color: #fff !important;
+  border-radius: 14px !important;
+  padding: 22px !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.65) !important;
+  outline: none !important;
+}
+
+.ps-close {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ps-modal-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 12px 0 20px;
+
+  .avatar-medium {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #3a3a3c;
+    background: #0e0e0e;
+  }
+}
+
+.ps-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ps-modal-actions .spacer { flex: 1; }
+
+/* safety: avoid parent stacking traps */
+:host, app-profile-settings, .settings-container {
+  transform: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+
+/* ===== safety overrides: avoid parent stacking/overflow traps ===== */
+/* If any parent uses transform/filter/opacity/overflow, it can trap the modal.
+   These keep the modal visible without you having to hunt those down. */
+:host, app-profile-settings, .settings-container {
+  transform: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  overflow: visible !important;
 }

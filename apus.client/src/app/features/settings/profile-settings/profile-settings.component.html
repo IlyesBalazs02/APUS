@@ -2,6 +2,8 @@
     <h2>Profile Settings</h2>
 
     <form [formGroup]="profileForm" (ngSubmit)="onSave()">
+
+        <!-- Name fields -->
         <div class="setting-item">
             <div class="name-fields">
                 <div class="setting-info">
@@ -16,18 +18,25 @@
             </div>
         </div>
 
-
-        <div class="setting-item">
+        <!-- Avatar row -->
+        <div class="setting-item clickable" (click)="openAvatarModal()">
             <div class="setting-info">
                 <label>Avatar</label>
                 <p>Choose a profile picture visible to others.</p>
             </div>
-            <div class="avatar-upload">
-                <img [src]="avatarPreview" alt="Avatar preview" class="avatar-preview" />
-                <input type="file" (change)="onAvatarChange($event)" accept="image/*" />
+
+            <div class="avatar-inline">
+                <!-- larger, circular thumbnail -->
+                <img [src]="avatarPreview || '/Perm/DefaultProfile.png'" alt="Avatar" class="avatar-lg"
+                    loading="lazy" />
+                <button type="button" class="link-btn" (click)="$event.stopPropagation(); openAvatarModal()">
+                    Change avatar
+                </button>
             </div>
         </div>
 
+
+        <!-- Bio (unchanged) -->
         <div class="setting-item">
             <div class="setting-info">
                 <label>Bio</label>
@@ -43,4 +52,29 @@
             {{ isSaving ? 'Saving…' : 'Save Changes' }}
         </button>
     </form>
+
+    <!-- Avatar Modal -->
+    <div class="ps-backdrop" *ngIf="showAvatarModal" (click)="closeAvatarModal()">
+        <div class="ps-modal" (click)="$event.stopPropagation()" (keyup.escape)="closeAvatarModal()" tabindex="0">
+            <span class="ps-close" (click)="closeAvatarModal()">×</span>
+            <h3>Change avatar</h3>
+            <p>Upload a new image. The previous one will be removed.</p>
+
+            <div class="ps-modal-body">
+                <img [src]="avatarPreview || '/Perm/DefaultProfile.png'" alt="Current avatar" class="avatar-medium" />
+                <input type="file" (change)="onAvatarFilePicked($event)" accept="image/*" />
+            </div>
+
+            <div class="ps-modal-actions">
+                <button type="button" class="danger" (click)="deleteAvatar()">Remove current</button>
+                <span class="spacer"></span>
+                <button type="button" (click)="closeAvatarModal()">Cancel</button>
+                <button type="button" [disabled]="!selectedAvatarFile || isUploading" (click)="saveAvatar()">
+                    {{ isUploading ? 'Uploading…' : 'Save' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+
 </div>

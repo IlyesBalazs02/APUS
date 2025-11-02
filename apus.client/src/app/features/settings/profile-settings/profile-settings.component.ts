@@ -10,12 +10,22 @@ import { ProfileDto, ProfileService } from './Profile.service';
 })
 export class ProfileSettingsComponent implements OnInit {
   profileForm!: FormGroup;
-  avatarPreview = '';
   isLoading = false;
   isSaving = false;
 
-  constructor(private fb: FormBuilder,
-    private profileService: ProfileService) { }
+  // Avatar
+  avatarPreview = '/Perm/DefaultProfile.png'; // default small circle
+  private currentAvatarUrl: string | null | undefined;
+
+  // Modal state (like account settings)
+  showAvatarModal = false;
+  selectedAvatarFile: File | null = null;
+  isUploading = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private profileService: ProfileService
+  ) { }
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
@@ -36,40 +46,78 @@ export class ProfileSettingsComponent implements OnInit {
           lastName: res.lastName || '',
           bio: res.bio || '',
         });
+        this.currentAvatarUrl = res.avatarUrl || null;
+        this.avatarPreview = this.currentAvatarUrl || '/Perm/DefaultProfile.png';
       },
       error: (err) => {
         console.error('Failed to load profile', err?.error || err);
       },
-      complete: () => (this.isLoading = false)
+      complete: () => (this.isLoading = false),
     });
-  }
-
-  onAvatarChange(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.profileForm.patchValue({ avatar: file });
-      const reader = new FileReader();
-      reader.onload = () => (this.avatarPreview = reader.result as string);
-      reader.readAsDataURL(file);
-    }
   }
 
   onSave(): void {
     if (this.profileForm.invalid) return;
-
-    const payload: ProfileDto = this.profileForm.value;
     this.isSaving = true;
+    const payload = this.profileForm.value as Pick<ProfileDto, 'firstName' | 'lastName' | 'bio'>;
 
     this.profileService.updateProfile(payload).subscribe({
       next: (res) => {
         console.log(res.message);
-        // optional: show success toast
       },
       error: (err) => {
         console.error('Failed to update profile', err?.error || err);
-        // optional: show error toast
       },
-      complete: () => (this.isSaving = false)
+      complete: () => (this.isSaving = false),
     });
   }
+
+  // ===== Avatar modal handlers =====
+  openAvatarModal(): void {
+    console.log('[avatar] openAvatarModal()');   // debug
+    this.selectedAvatarFile = null;
+    this.showAvatarModal = true;
+  }
+
+  closeAvatarModal(): void {
+    this.showAvatarModal = false;
+    this.selectedAvatarFile = null;
+  }
+
+  onAvatarFilePicked(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedAvatarFile = input.files?.[0] ?? null;
+  }
+
+  saveAvatar(): void {
+    if (!this.selectedAvatarFile) return;
+
+    this.isUploading = true;
+    this.profileService.uploadAvatar(this.selectedAvatarFile).subscribe({
+      next: () => {
+        // Always reload from server so we never use local preview
+        this.loadProfile();
+        this.closeAvatarModal();
+      },
+      error: (err) => {
+        console.error('Avatar upload failed', err?.error || err);
+      },
+      complete: () => (this.isUploading = false),
+    });
+  }
+
+  deleteAvatar(): void {
+    this.profileService.deleteAvatar().subscribe({
+      next: () => {
+        this.currentAvatarUrl = null;
+        this.avatarPreview = ''; // server will give default on next load
+        this.loadProfile();
+        this.closeAvatarModal();
+      },
+      error: (err) => {
+        console.error('Delete avatar failed', err?.error || err);
+      }
+    });
+  }
+
 }

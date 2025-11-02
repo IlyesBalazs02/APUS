@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using APUS.Server.Services.Implementations.UserServices;
 
 namespace APUS.Server.Configuration
 {
@@ -59,6 +60,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<ISiteUserRepository, SiteUserRepository>();
 			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddSingleton<IStorageService, StorageService>();
+			services.AddScoped<IProfilePictureService, ProfilePictureService>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
 			services.AddTransient<IRouteService, RouteService>();

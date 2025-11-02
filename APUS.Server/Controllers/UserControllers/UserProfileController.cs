@@ -11,13 +11,13 @@ namespace APUS.Server.Controllers.UserControllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class ProfileController : ControllerBase
+	public class UserProfileController : ControllerBase
 	{
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
 		private readonly UserManager<SiteUser> _userMgr;
 
-		public ProfileController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository, UserManager<SiteUser> userMgr)
+		public UserProfileController(ILogger<ActivitiesController> logger, IActivityRepository activityRepository, UserManager<SiteUser> userMgr)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;

@@ -20,7 +20,8 @@ const PROXY_CONFIG = [
       "Account/**",
       "Account/**",
       "/Activities/**",
-      "/Users/**"
+      "/Users/**",
+      "/Perm/**"
     ],
     target,
     secure: false

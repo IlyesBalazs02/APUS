@@ -7,6 +7,7 @@ export interface ProfileDto {
     firstName: string;
     lastName: string;
     bio: string;
+    avatarUrl?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,5 +22,15 @@ export class ProfileService {
 
     updateProfile(payload: ProfileDto): Observable<{ message: string }> {
         return this.http.post<{ message: string }>(`${this.baseUrl}/update-profile`, payload);
+    }
+
+    uploadAvatar(file: File): Observable<{ url: string }> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<{ url: string }>(`${this.baseUrl}/upload-avatar`, formData);
+    }
+
+    deleteAvatar(): Observable<{ message: string }> {
+        return this.http.delete<{ message: string }>(`${this.baseUrl}/delete-avatar`);
     }
 }
