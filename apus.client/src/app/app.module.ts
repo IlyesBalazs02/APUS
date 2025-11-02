@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +28,7 @@ import { CoreModule } from './core/core.module';
 import { UserProfileComponent } from './features/user-features/user-profile/user-profile.component';
 //refresh fix
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 
 @NgModule({
@@ -56,7 +57,10 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
     MatCardModule,
 
   ],
-  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }], //ONLY TEMPORARY FIX
+  providers: [
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+  ], //ONLY TEMPORARY FIX
   bootstrap: [AppComponent]
 })
 export class AppModule { }
