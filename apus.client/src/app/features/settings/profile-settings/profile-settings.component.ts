@@ -13,11 +13,8 @@ export class ProfileSettingsComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
-  // Avatar
-  avatarPreview = '/Perm/DefaultProfile.png'; // default small circle
-  private currentAvatarUrl: string | null | undefined;
+  avatarUrl: string | null = null;
 
-  // Modal state (like account settings)
   showAvatarModal = false;
   selectedAvatarFile: File | null = null;
   isUploading = false;
@@ -40,18 +37,16 @@ export class ProfileSettingsComponent implements OnInit {
   private loadProfile(): void {
     this.isLoading = true;
     this.profileService.getProfile().subscribe({
-      next: (res: ProfileDto) => {
+      next: (res) => {
         this.profileForm.patchValue({
           firstName: res.firstName || '',
           lastName: res.lastName || '',
           bio: res.bio || '',
         });
-        this.currentAvatarUrl = res.avatarUrl || null;
-        this.avatarPreview = this.currentAvatarUrl || '/Perm/DefaultProfile.png';
+        console.log("responser!!!!!!!!!!!! " + res.avatarUrl);
+        this.avatarUrl = res.avatarUrl || null; // <- whatever backend sent (default or user)
       },
-      error: (err) => {
-        console.error('Failed to load profile', err?.error || err);
-      },
+      error: (err) => console.error('Failed to load profile', err?.error || err),
       complete: () => (this.isLoading = false),
     });
   }
@@ -109,14 +104,10 @@ export class ProfileSettingsComponent implements OnInit {
   deleteAvatar(): void {
     this.profileService.deleteAvatar().subscribe({
       next: () => {
-        this.currentAvatarUrl = null;
-        this.avatarPreview = ''; // server will give default on next load
         this.loadProfile();
         this.closeAvatarModal();
       },
-      error: (err) => {
-        console.error('Delete avatar failed', err?.error || err);
-      }
+      error: (err) => console.error('Delete avatar failed', err?.error || err),
     });
   }
 

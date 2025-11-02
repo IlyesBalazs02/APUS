@@ -25,6 +25,8 @@ namespace APUS.Server.Services.Implementations
 		{
 			var path = Path.Combine(_uploadsRoot, userId, "Activities");
 			Directory.CreateDirectory(path);
+			path = Path.Combine(_uploadsRoot, userId, "Avatar");
+			Directory.CreateDirectory(path);
 		}
 
 		public void CreateActivityFolder(string activityId, string userId)

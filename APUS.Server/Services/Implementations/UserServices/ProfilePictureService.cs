@@ -24,48 +24,42 @@ namespace APUS.Server.Services.Implementations.UserServices
 
 		public async Task<string> GetProfilePictureUrlAsync(string userId)
 		{
+			// Optional: ensure user exists
 			var user = await _userMgr.FindByIdAsync(userId);
 			if (user == null) throw new InvalidOperationException("User not found.");
 
-			return string.IsNullOrWhiteSpace(user.AvatarUrl)
-				? DefaultAvatarUrl
-				: user.AvatarUrl;
-
+			var (physical, web) = GetMostRecentAvatar(userId);
+			return physical is null ? DefaultAvatarUrl : web!;
 		}
 
 		public async Task<string> UploadProfilePictureAsync(string userId, IFormFile file)
 		{
-			if (file == null || file.Length == 0) throw new ArgumentException("No file provided.", nameof(file));
+			if (file == null || file.Length == 0)
+				throw new ArgumentException("No file provided.", nameof(file));
 
 			var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
 			var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-			if (!allowed.Contains(ext)) throw new InvalidOperationException("Invalid file type.");
-
-			// Normalize a deterministic file name, 1 file per user
-			var fileName = $"avatar{ext}";
-
-			var userFolderPhysical = Path.Combine(_webRootPath, "Users", userId);
-
-			// Clean old avatar file for this user
-			foreach (var old in Directory.GetFiles(userFolderPhysical, "avatar.*"))
-				System.IO.File.Delete(old);
-
-			var destinationPhysical = Path.Combine(userFolderPhysical, fileName);
-
-
-			await WriteFileAsync(file, destinationPhysical).ConfigureAwait(false);
+			if (!allowed.Contains(ext))
+				throw new InvalidOperationException("Invalid file type.");
 
 			var user = await _userMgr.FindByIdAsync(userId)
-			   ?? throw new InvalidOperationException("User not found.");
+				?? throw new InvalidOperationException("User not found.");
 
-			var publicUrl = $"/Users/{userId}/{fileName}".Replace('\\', '/');
-			user.AvatarUrl = publicUrl;
+			// Folder: /wwwroot/Users/{userId}/Avatar
+			var avatarDir = Path.Combine(_webRootPath, "Users", userId, "Avatar");
 
-			var result = await _userMgr.UpdateAsync(user);
-			if (!result.Succeeded)
-				throw new InvalidOperationException("Failed to update user with avatar URL.");
+			// Wipe previous files (ensure only the newest stays)
+			foreach (var old in Directory.GetFiles(avatarDir))
+				System.IO.File.Delete(old);
 
-			return publicUrl;
+			// Save as deterministic name: avatar{ext}
+			var fileName = $"avatar{ext}";
+			var destinationPhysical = Path.Combine(avatarDir, fileName);
+
+			await WriteFileAsync(file, destinationPhysical);
+
+			var web = $"/Users/{userId}/Avatar/{fileName}".Replace('\\', '/');
+			return web;
 		}
 
 		public async Task DeleteProfilePictureAsync(string userId)
@@ -73,17 +67,12 @@ namespace APUS.Server.Services.Implementations.UserServices
 			var user = await _userMgr.FindByIdAsync(userId)
 				?? throw new InvalidOperationException("User not found.");
 
-			// Delete physical file(s)
-			var userFolderPhysical = Path.Combine(_webRootPath, "Users", userId);
-			if (Directory.Exists(userFolderPhysical))
+			var avatarDir = Path.Combine(_webRootPath, "Users", userId, "Avatar");
+			if (Directory.Exists(avatarDir))
 			{
-				foreach (var f in Directory.GetFiles(userFolderPhysical, "avatar.*"))
+				foreach (var f in Directory.GetFiles(avatarDir))
 					System.IO.File.Delete(f);
 			}
-
-			// Reset to default
-			user.AvatarUrl = null;
-			await _userMgr.UpdateAsync(user);
 		}
 
 		private static async Task WriteFileAsync(IFormFile file, string destination)
@@ -98,6 +87,31 @@ namespace APUS.Server.Services.Implementations.UserServices
 			);
 
 			await file.CopyToAsync(stream).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Returns (physicalPath, webPath) of the most recently modified file inside the avatar folder,
+		/// or (null, null) if none exist.
+		/// </summary>
+		private (string? physical, string? web) GetMostRecentAvatar(string userId)
+		{
+			var avatarDir = Path.Combine(_webRootPath, "Users", userId, "Avatar");
+			if (!Directory.Exists(avatarDir)) return (null, null);
+
+			var files = Directory.GetFiles(avatarDir);
+			if (files.Length == 0) return (null, null);
+
+			var newest = files
+				.Select(p => new FileInfo(p))
+				.OrderByDescending(fi => fi.LastWriteTimeUtc)
+				.First();
+
+			var relative = newest.FullName
+				.Replace(_webRootPath, string.Empty)
+				.Replace(Path.DirectorySeparatorChar, '/');
+
+			var web = relative.StartsWith("/") ? relative : "/" + relative;
+			return (newest.FullName, web);
 		}
 	}
 }

@@ -26,9 +26,7 @@
             </div>
 
             <div class="avatar-inline">
-                <!-- larger, circular thumbnail -->
-                <img [src]="avatarPreview || '/Perm/DefaultProfile.png'" alt="Avatar" class="avatar-lg"
-                    loading="lazy" />
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-lg" loading="lazy" />
                 <button type="button" class="link-btn" (click)="$event.stopPropagation(); openAvatarModal()">
                     Change avatar
                 </button>
@@ -61,7 +59,7 @@
             <p>Upload a new image. The previous one will be removed.</p>
 
             <div class="ps-modal-body">
-                <img [src]="avatarPreview || '/Perm/DefaultProfile.png'" alt="Current avatar" class="avatar-medium" />
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Current avatar" class="avatar-medium" />
                 <input type="file" (change)="onAvatarFilePicked($event)" accept="image/*" />
             </div>
 
