@@ -5,5 +5,6 @@ namespace APUS.Server.Data.Repositories.Interfaces
 	public interface ISiteUserRepository
 	{
 		Task<List<SiteUser>> ReadAllAsync();
+		Task<List<SiteUser>> SearchByNameAsync(string? term);
 	}
 }

@@ -27,7 +27,7 @@
         Settings
     </button>
 
-    <div class="search-bar">
+    <div class="search-bar" *ngIf="(loggedIn$ | async)">
         <app-search-bar></app-search-bar>
     </div>
 
