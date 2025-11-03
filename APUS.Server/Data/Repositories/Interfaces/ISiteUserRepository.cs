@@ -6,5 +6,6 @@ namespace APUS.Server.Data.Repositories.Interfaces
 	{
 		Task<List<SiteUser>> ReadAllAsync();
 		Task<List<SiteUser>> SearchByNameAsync(string? term);
+		Task<List<SiteUser>> SearchByNamePagedAsync(string? term, int skip, int takePlusOne);
 	}
 }

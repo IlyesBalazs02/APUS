@@ -21,21 +21,50 @@ namespace APUS.Server.Services.Implementations
 			return await _siteUserRepository.ReadAllAsync();
 		}
 
-		//Search all user with the same name
 		public async Task<IEnumerable<UserSearchDto>> SearchUsersAsync(string? query)
 		{
 			var users = await _siteUserRepository.SearchByNameAsync(query);
 
-			var tasks = users.Select(async u => new UserSearchDto
+			var result = new List<UserSearchDto>(users.Count);
+			foreach (var u in users)
 			{
-				Id = u.Id,
-				FullName = $"{u.FirstName} {u.LastName}".Trim(),
-				UserName = u.UserName,
-				AvatarUrl = await _profilePictureService.GetProfilePictureUrlAsync(u.Id)
-			});
-
-			return await Task.WhenAll(tasks); //This runs all _profilePictureService.GetProfilePictureUrlAsync calls concurrently — much faster when searching many users.
+				result.Add(new UserSearchDto
+				{
+					Id = u.Id,
+					FullName = $"{u.FirstName} {u.LastName}".Trim(),
+					UserName = u.UserName,
+					AvatarUrl = await _profilePictureService.GetProfilePictureUrlAsync(u.Id)
+				});
+			}
+			return result;
 		}
+
+		// Returns a paginated list of users as DTOs
+		public async Task<PagedResponse<UserSearchDto>> SearchUsersPagedAsync(string? query, int skip, int take)
+		{
+			// Fetch users from repository (+1 to detect "has more")
+			var users = await _siteUserRepository.SearchByNamePagedAsync(query, skip, take + 1);
+
+			var hasMore = users.Count > take;
+			if (hasMore) users.RemoveAt(users.Count - 1);
+
+			// Map SiteUser entities to UserSearchDto
+			var items = new List<UserSearchDto>(users.Count);
+			foreach (var u in users)
+			{
+				items.Add(new UserSearchDto
+				{
+					Id = u.Id,
+					FullName = $"{u.FirstName} {u.LastName}".Trim(),
+					UserName = u.UserName,
+					AvatarUrl = await _profilePictureService.GetProfilePictureUrlAsync(u.Id)
+				});
+			}
+
+			return new PagedResponse<UserSearchDto> { Items = items, HasMore = hasMore };
+		}
+
+
 
 
 	}
