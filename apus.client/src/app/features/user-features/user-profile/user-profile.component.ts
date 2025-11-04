@@ -27,7 +27,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.route.paramMap.subscribe(params => {
         const userId = params.get('id');
-        const profileUrl = userId ? `/api/profile/${userId}` : `/api/profile/me`;
+        const profileUrl = userId ? `/api/profile/${userId}` : `/api/userprofile/me`;
 
         // Load profile
         this.http.get<profiledto>(profileUrl).subscribe({

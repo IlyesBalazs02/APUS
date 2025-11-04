@@ -20,4 +20,8 @@ export class FriendRequestsApi {
     reject(fromUserId: string) {
         return this.http.post<void>(`/api/friends/requests/${fromUserId}/reject`, {});
     }
+
+    getIncomingCount() {
+        return this.http.get<number>('/api/friends/requests/count');
+    }
 }

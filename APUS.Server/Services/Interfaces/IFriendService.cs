@@ -1,6 +1,6 @@
 ﻿using APUS.Server.Domain.DTOs.Feature.Search;
 
-namespace APUS.Server.Services.Implementations.UserServices
+namespace APUS.Server.Services.Interfaces
 {
 	public interface IFriendService
 	{
@@ -10,5 +10,7 @@ namespace APUS.Server.Services.Implementations.UserServices
 		Task<Dictionary<string, FriendStatusDto>> GetStatusesAsync(string me, IEnumerable<string> targets, CancellationToken ct = default);
 		Task<bool> RejectAsync(string me, string from, CancellationToken ct = default);
 		Task<bool> SendRequestAsync(string me, string to, CancellationToken ct = default);
+		Task<int> GetIncomingCountAsync(string currentUserId, CancellationToken ct = default);
+
 	}
 }

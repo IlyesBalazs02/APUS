@@ -31,6 +31,13 @@
         <app-search-bar></app-search-bar>
     </div>
 
+    <!--
+    <button mat-button [routerLink]="['/friends/requests']" [matBadge]="count$ | async" matBadgeColor="primary"
+        [matBadgeHidden]="!(count$ | async)" *ngIf="(loggedIn$ | async)">
+        Friend Requests
+    </button>
+    -->
+
     <!-- Authentication -->
     <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
         Register

@@ -1,6 +1,7 @@
 ﻿using APUS.Server.Data;
 using APUS.Server.Domain.DTOs.Feature.Search;
 using APUS.Server.Domain.Models;
+using APUS.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace APUS.Server.Services.Implementations.UserServices
@@ -141,5 +142,14 @@ namespace APUS.Server.Services.Implementations.UserServices
 			await _db.SaveChangesAsync(ct);
 			return true;
 		}
+
+		// For FriendService.cs
+		public async Task<int> GetIncomingCountAsync(string me, CancellationToken ct = default)
+		{
+			return await _db.UserRelations
+				.Where(r => r.FriendId == me && r.Status == UserRelationStatus.Pending)
+				.CountAsync(ct);
+		}
+
 	}
 }

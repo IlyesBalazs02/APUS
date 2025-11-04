@@ -5,6 +5,8 @@ import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { ActivityCardComponent } from "./activity-card/activity-card.component";
 import { SearchBarComponent } from "../features/search/search-bar/search-bar.component";
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
     declarations: [
@@ -16,6 +18,8 @@ import { SearchBarComponent } from "../features/search/search-bar/search-bar.com
         CommonModule,
         RouterModule,
         SearchBarComponent,
+        MatBadgeModule,
+        MatButtonModule
     ],
     exports: [
         CommonModule,
