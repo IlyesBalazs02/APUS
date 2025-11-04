@@ -3,7 +3,7 @@ import { FriendStatusDto, UserSearchApi, UserSearchDto } from './user-search.ser
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-search',
@@ -55,6 +55,7 @@ export class UserSearchComponent implements OnInit {
       tap(value => {
         const term = (value ?? '').trim();
         // Only search if at least 3 characters
+
         if (term.length >= 3) {
           this.currentQuery = term.toLowerCase();
           this.requestToken++;   // invalidate older requests

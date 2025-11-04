@@ -18,11 +18,12 @@
     </form>
 
     <nav class="search-nav">
-        <a routerLink="users" routerLinkActive="active">Users</a>
-        <a routerLink="friends" routerLinkActive="active">Friends</a>
-        <a routerLink="groups" routerLinkActive="active">Groups</a>
-        <a routerLink="requests" routerLinkActive="active">Friend Requests</a>
+        <a routerLink="users" routerLinkActive="active" [queryParamsHandling]="'merge'">Users</a>
+        <a routerLink="friends" routerLinkActive="active" [queryParamsHandling]="'merge'">Friends</a>
+        <a routerLink="groups" routerLinkActive="active" [queryParamsHandling]="'merge'">Groups</a>
+        <a routerLink="requests" routerLinkActive="active" [queryParamsHandling]="'merge'">Friend Requests</a>
     </nav>
+
 
     <section class="search-content">
         <router-outlet></router-outlet>

@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FriendDto, UserSearchApi } from '../user-search/user-search.service';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -31,7 +31,7 @@ export class FriendSearchComponent implements OnInit {
   constructor(
     private api: UserSearchApi,
     private destroyRef: DestroyRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
@@ -56,6 +56,7 @@ export class FriendSearchComponent implements OnInit {
       distinctUntilChanged(),     // ignore duplicates
       tap(value => {
         const term = (value ?? '').trim();
+
         if (term.length >= 3) {
           this.currentQuery = term.toLowerCase();
           this.requestToken++;

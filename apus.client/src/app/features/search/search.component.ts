@@ -33,7 +33,8 @@ export class SearchComponent implements OnInit {
 
         // navigate to the same tab with the new q
         this.router.navigate(['/search', currentTab], {
-            queryParams: { q: query }
+            queryParams: { q: query || null },
+            queryParamsHandling: 'merge'
         });
     }
 }
