@@ -23,7 +23,10 @@ namespace APUS.Server.Configuration
 			services.AddControllers()
 				.AddNewtonsoftJson(options =>
 				{
-					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+					options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+					options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
+					options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ← this stops $type / $values
+					options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
 				});
 
 
@@ -62,6 +65,7 @@ namespace APUS.Server.Configuration
 			services.AddSingleton<IStorageService, StorageService>();
 			services.AddScoped<IProfilePictureService, ProfilePictureService>();
 			services.AddScoped<IFriendService, FriendService>();
+			services.AddScoped<IUserRelationRepository, UserRelationRepository>();
 			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();

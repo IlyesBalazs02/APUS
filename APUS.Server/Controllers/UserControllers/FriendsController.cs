@@ -52,18 +52,26 @@ namespace APUS.Server.Controllers.UserControllers
 			return ok ? Ok() : BadRequest();
 		}
 
-		[HttpPost("requests/{toUserId}/cancel")]
-		public async Task<IActionResult> Cancel([FromRoute] string toUserId, CancellationToken ct)
-		{
-			var ok = await _svc.CancelAsync(CurrentUserId, toUserId, ct);
-			return ok ? Ok() : BadRequest();
-		}
-
 		[HttpGet("requests/count")]
 		public async Task<ActionResult<int>> IncomingCount(CancellationToken ct)
 		{
 			var n = await _svc.GetIncomingCountAsync(CurrentUserId, ct);
 			return Ok(n);
+		}
+
+		[HttpGet("list")]
+		[ProducesResponseType(typeof(PagedResponse<UserSearchDto>), StatusCodes.Status200OK)]
+		public async Task<IActionResult> GetFriendsPaged(
+		[FromQuery] string? query,
+		[FromQuery] int skip = 0,
+		[FromQuery] int take = 30,
+		CancellationToken ct = default)
+		{
+			if (take is < 1 or > 100)
+				take = 30;
+
+			var result = await _svc.GetFriendsPagedAsync(CurrentUserId, query, skip, take, ct);
+			return Ok(result);
 		}
 
 	}

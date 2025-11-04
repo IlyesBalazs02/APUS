@@ -76,8 +76,5 @@ namespace APUS.Server.Services.Implementations
 			return new PagedResponse<UserSearchDto> { Items = items, HasMore = hasMore };
 		}
 
-
-
-
 	}
 }

@@ -8,5 +8,6 @@ namespace APUS.Server.Services.Interfaces
 		Task<List<SiteUser>> GetAllUser();
 		Task<IEnumerable<UserSearchDto>> SearchUsersAsync(string? query);
 		Task<PagedResponse<UserSearchDto>> SearchUsersPagedAsync(string? query, int skip, int take);
+
 	}
 }

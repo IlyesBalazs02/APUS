@@ -31,5 +31,6 @@ namespace APUS.Server.Controllers.UserControllers
 
 			return Ok(result);
 		}
+
 	}
 }

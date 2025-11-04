@@ -14,7 +14,6 @@ export interface PagedUsers {
     hasMore: boolean;
 }
 
-
 export interface FriendStatusDto {
     userId: string;
     canRequest: boolean;
@@ -23,11 +22,19 @@ export interface FriendStatusDto {
     direction?: 'Outgoing' | 'Incoming' | null;
 }
 
+export interface FriendDto {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+}
+
 // for paged responses
 export interface PagedResponse<T> {
     items: T[];
     hasMore: boolean;
 }
+
+
 
 @Injectable({ providedIn: 'root' })
 export class UserSearchApi {
@@ -63,5 +70,11 @@ export class UserSearchApi {
         return this.http.post<void>(`/api/friends/request/${toUserId}`, {});
     }
 
+    searchFriends(query: string, skip: number, take: number) {
+        const q = (query ?? '').trim(); // empty -> backend returns ALL friends
+        let params = new HttpParams().set('skip', skip).set('take', take);
+        if (q.length) params = params.set('query', q);
 
+        return this.http.get<PagedResponse<FriendDto>>('/api/friends/list', { params });
+    }
 }

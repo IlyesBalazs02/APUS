@@ -9,6 +9,15 @@ import { SearchComponent } from "./search.component";
 import { SearchRoutingModule } from "./search-routing.module";
 import { FriendRequestsComponent } from "./friend-requests/friend-requests.component";
 
+//angular material
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+
 @NgModule({
     declarations: [
         SearchComponent,
@@ -22,7 +31,13 @@ import { FriendRequestsComponent } from "./friend-requests/friend-requests.compo
         RouterModule,
         SearchRoutingModule,
         ReactiveFormsModule,
-        FormsModule
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatIconModule,
+        MatCardModule,
+        MatButtonModule,
+        MatProgressSpinnerModule
     ],
 })
 
