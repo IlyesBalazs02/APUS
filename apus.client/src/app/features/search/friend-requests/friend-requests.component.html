@@ -1,0 +1,20 @@
+<div *ngIf="loading" class="py-6 text-center text-sm text-gray-500">Loading…</div>
+
+<div *ngIf="!loading && items.length === 0" class="py-6 text-center text-sm text-gray-500">
+    No pending requests.
+</div>
+
+<div class="space-y-4" *ngIf="!loading && items.length">
+    <div *ngFor="let r of items"
+        class="flex items-center justify-between rounded-xl border border-gray-200/20 p-4 dark:border-white/10">
+        <div class="min-w-0">
+            <div class="font-semibold truncate">{{ r.fromFullName }}</div>
+        </div>
+        <div class="flex gap-2">
+            <button (click)="reject(r.fromUserId)" [disabled]="acting.has(r.fromUserId)"
+                class="px-3 py-2 rounded-lg border border-gray-300/40 text-sm">Reject</button>
+            <button (click)="accept(r.fromUserId)" [disabled]="acting.has(r.fromUserId)"
+                class="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm">Accept</button>
+        </div>
+    </div>
+</div>

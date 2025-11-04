@@ -23,9 +23,12 @@
                 class="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300/40 hover:bg-white/10 transition">
                 View
             </button>
-            <button type="button"
-                class="flex-1 px-3 py-2 text-sm rounded-xl bg-blue-600 text-white hover:opacity-90 transition">
-                Add friend
+
+            <button type="button" (click)="addFriend(u.id)" [disabled]="!canAdd(u.id)"
+                class="flex-1 px-3 py-2 text-sm rounded-xl" [ngClass]="canAdd(u.id)
+            ? 'bg-blue-600 text-white hover:opacity-90'
+            : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed'">
+                {{ statusLabel(u.id) || 'Add friend' }}
             </button>
         </div>
     </div>

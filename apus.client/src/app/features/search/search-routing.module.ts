@@ -5,6 +5,7 @@ import { UserSearchComponent } from "./user-search/user-search.component";
 import { FriendSearchComponent } from "./friend-search/friend-search.component";
 import { GroupSearchComponent } from "./group-search/group-search.component";
 import { NgModule } from "@angular/core";
+import { FriendRequestsComponent } from "./friend-requests/friend-requests.component";
 
 const routes: Routes = [
     {
@@ -15,6 +16,7 @@ const routes: Routes = [
             { path: 'users', component: UserSearchComponent },
             { path: 'friends', component: FriendSearchComponent },
             { path: 'groups', component: GroupSearchComponent },
+            { path: 'requests', component: FriendRequestsComponent },
             { path: '', redirectTo: 'users', pathMatch: 'full' },
         ],
     },

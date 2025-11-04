@@ -21,7 +21,7 @@ namespace APUS.Server.Domain.Models
 		public GenderType Gender { get; set; } = GenderType.Unspecified;
 
 		[MaxLength(300)]
-		public string Bio { get; set; }
+		public string? Bio { get; set; }
 
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }

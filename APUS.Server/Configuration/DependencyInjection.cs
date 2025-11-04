@@ -61,6 +61,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddSingleton<IStorageService, StorageService>();
 			services.AddScoped<IProfilePictureService, ProfilePictureService>();
+			services.AddScoped<IFriendService, FriendService>();
 			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();

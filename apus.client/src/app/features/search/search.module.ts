@@ -7,13 +7,15 @@ import { RouterModule } from "@angular/router";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { SearchComponent } from "./search.component";
 import { SearchRoutingModule } from "./search-routing.module";
+import { FriendRequestsComponent } from "./friend-requests/friend-requests.component";
 
 @NgModule({
     declarations: [
         SearchComponent,
         FriendSearchComponent,
         UserSearchComponent,
-        GroupSearchComponent
+        GroupSearchComponent,
+        FriendRequestsComponent
     ],
     imports: [
         CommonModule,

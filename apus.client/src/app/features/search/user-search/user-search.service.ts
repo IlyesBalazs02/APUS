@@ -9,6 +9,20 @@ export interface UserSearchDto {
     avatarUrl: string | null;
 }
 
+export interface PagedUsers {
+    items: UserSearchDto[];
+    hasMore: boolean;
+}
+
+
+export interface FriendStatusDto {
+    userId: string;
+    canRequest: boolean;
+    reason?: string | null;
+    existingStatus?: 'Pending' | 'Accepted' | 'Blocked' | null;
+    direction?: 'Outgoing' | 'Incoming' | null;
+}
+
 // for paged responses
 export interface PagedResponse<T> {
     items: T[];
@@ -38,6 +52,15 @@ export class UserSearchApi {
                 return { items, hasMore } as PagedResponse<UserSearchDto>;
             })
         );
+    }
+
+
+    getFriendStatuses(userIds: string[]) {
+        return this.http.post<Record<string, FriendStatusDto>>(`/api/friends/status`, userIds);
+    }
+
+    sendFriendRequest(toUserId: string) {
+        return this.http.post<void>(`/api/friends/request/${toUserId}`, {});
     }
 
 

@@ -1,4 +1,6 @@
-﻿using APUS.Server.Domain.DTOs.Auth;
+﻿using APUS.Server.Data.Repositories.Implementations;
+using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Auth;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -20,16 +22,18 @@ namespace APUS.Server.Controllers.UserControllers
 		private readonly IConfiguration _config;
 		private readonly UserManager<SiteUser> _userMgr;
 		private readonly SignInManager<SiteUser> _signInMgr;
-		private readonly IStorageService _storageService;
-		public record TokenResponseDto(string Token);
+		private readonly ISiteUserRepository _siteUserRepository;
 
-		public AuthController(IConfiguration config, UserManager<SiteUser> userMgr, SignInManager<SiteUser> signInMgr, IStorageService storageService)
+		public AuthController(IConfiguration config, UserManager<SiteUser> userMgr, SignInManager<SiteUser> signInMgr, ISiteUserRepository siteUserRepository)
 		{
 			_config = config;
 			_userMgr = userMgr;
 			_signInMgr = signInMgr;
-			_storageService = storageService;
+			_siteUserRepository = siteUserRepository;
 		}
+
+		public record TokenResponseDto(string Token);
+
 
 		[HttpPost("register")]
 		[AllowAnonymous]
@@ -44,13 +48,13 @@ namespace APUS.Server.Controllers.UserControllers
 				return ValidationProblem(ModelState);
 			}
 
-			var user = new SiteUser { FirstName = dto.FirstName, LastName = dto.LastName, UserName = dto.Email, Email = dto.Email };
-			var result = await _userMgr.CreateAsync(user, dto.Password);
+
+
+			var result = await _siteUserRepository.CreaterAsync(dto.FirstName, dto.LastName, dto.Email, dto.Email, dto.Password);
 
 			if (!result.Succeeded)
 				return BadRequest(result.Errors);
 
-			_storageService.CreateUserFolder(user.Id);
 			return Ok();
 		}
 

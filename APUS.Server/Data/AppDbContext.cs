@@ -66,6 +66,11 @@ namespace APUS.Server.Data
 						j.HasKey("LikedByUsersId", "LikedPostsId");
 					});
 
+			modelBuilder.Entity<SiteUser>()
+				.Property(u => u.Bio)
+				.HasDefaultValue(string.Empty);
+
+
 
 			modelBuilder.Entity<UserRelation>(t =>
 			{
