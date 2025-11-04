@@ -98,6 +98,7 @@ export class UserSearchComponent implements OnInit {
     this.api.search(term, this.skip, this.pageSize).pipe(
       tap(res => {
         if (myToken !== this.requestToken) return;
+        if (term.length < 3) return;
 
         console.log('search result', res);
         this.users = [...this.users, ...res.items];
