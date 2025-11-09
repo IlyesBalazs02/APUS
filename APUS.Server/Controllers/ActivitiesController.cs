@@ -210,6 +210,8 @@ namespace APUS.Server.Controllers
 		private TDto CopyBaseProps<TDto>(MainActivity activity)
 			where TDto : ActivityDto, new()
 		{
+			var avatarUrl  = $"{Request.Scheme}://{Request.Host}{activity.User?.AvatarUrl}" ?? "/Perm/DefaultProfile.png";
+
 			return new TDto
 			{
 				Id = activity.Id,
@@ -221,7 +223,11 @@ namespace APUS.Server.Controllers
 				TotalCalories = activity.Calories,
 				Type = activity.GetType().Name,
 				DisplayName = activity.DisplayName,
-				LikesCount = activity.LikedBy.Count()
+				LikesCount = activity.LikedBy.Count(),
+				UserFullName = activity.User != null
+			? $"{activity.User.FirstName} {activity.User.LastName}"
+			: "Unknown",
+				avatarUrl = avatarUrl
 
 			};
 		}

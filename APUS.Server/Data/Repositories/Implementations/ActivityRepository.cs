@@ -21,6 +21,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 		public async Task<IEnumerable<MainActivity>> ReadAllAsync()
 		{
 			return await _context.Activities
+				.Include(a => a.User)
 				.AsNoTracking()
 				.ToListAsync();
 		}
@@ -28,6 +29,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 		public async Task<MainActivity?> ReadByIdAsync(string id)
 		{
 			return await _context.Activities
+				.Include(a => a.User)
 				.AsNoTracking()
 				.FirstOrDefaultAsync(a => a.Id == id);
 		}
@@ -35,6 +37,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 		public async Task<IEnumerable<MainActivity>> GetActivitiesByUserIdAsync(string userId)
 		{
 			return await _context.Activities
+				.Include(a => a.User)
 				.Where(a => a.UserId == userId)
 				.ToListAsync();
 		}

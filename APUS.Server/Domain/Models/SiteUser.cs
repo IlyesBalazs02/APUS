@@ -23,6 +23,8 @@ namespace APUS.Server.Domain.Models
 		[MaxLength(300)]
 		public string? Bio { get; set; }
 
+		public string AvatarUrl { get; set; }
+
 		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }
 
@@ -40,6 +42,7 @@ namespace APUS.Server.Domain.Models
 		{
 			Activities = new List<MainActivity>();
 			LikedPosts = new List<MainActivity>();
+			AvatarUrl = "/Perm/DefaultProfile.png";
 		}
 	}
 }

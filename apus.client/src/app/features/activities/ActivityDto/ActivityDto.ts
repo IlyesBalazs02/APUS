@@ -15,6 +15,9 @@ export interface ActivityDto {
     pace?: number;
 
     likescount?: number;
+
+    userFullName: string;
+    avatarUrl?: string;
 }
 
 export interface DisplayProp {

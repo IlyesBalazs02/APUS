@@ -12,6 +12,10 @@
 		public string Type { get; set; }
 		public string? DisplayName { get; set; }
 		public int? LikesCount { get; set; }
+
+		//owner information
+		public string UserFullName { get; set; }
+		public string avatarUrl { get; set; }
 	}
 
 	public record GpsActivityDto : ActivityDto

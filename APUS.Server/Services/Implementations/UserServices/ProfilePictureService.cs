@@ -59,6 +59,12 @@ namespace APUS.Server.Services.Implementations.UserServices
 			await WriteFileAsync(file, destinationPhysical);
 
 			var web = $"/Users/{userId}/Avatar/{fileName}".Replace('\\', '/');
+
+			user.AvatarUrl = web;
+			var updateRes = await _userMgr.UpdateAsync(user);
+			if (!updateRes.Succeeded)
+				throw new InvalidOperationException("Failed to reset user avatar URL.");
+
 			return web;
 		}
 
@@ -73,6 +79,11 @@ namespace APUS.Server.Services.Implementations.UserServices
 				foreach (var f in Directory.GetFiles(avatarDir))
 					System.IO.File.Delete(f);
 			}
+
+			user.AvatarUrl = "/Perm/DefaultProfile.png";
+			var updateRes = await _userMgr.UpdateAsync(user);
+			if (!updateRes.Succeeded)
+				throw new InvalidOperationException("Failed to reset user avatar URL.");
 		}
 
 		private static async Task WriteFileAsync(IFormFile file, string destination)
