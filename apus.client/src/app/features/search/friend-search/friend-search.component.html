@@ -1,40 +1,18 @@
-<!-- Grid of friend cards (same structure/style as user-search) -->
-<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="friends.length > 0">
-    <div *ngFor="let f of friends; trackBy: trackById" class="rounded-2xl border border-gray-200/20 bg-white/5 p-5 hover:shadow-lg transition
-              dark:border-white/10 dark:bg-white/5">
-        <!-- Avatar + name row -->
-        <div class="flex items-center gap-4">
-            <div class="relative flex-shrink-0">
-                <img [src]="f.avatarUrl || '/Perm/DefaultProfile.png'" class="user-avatar" />
+<div *ngIf="friends.length > 0" class="mt-4">
+    <div class="cards">
+        <div *ngFor="let f of friends; trackBy: trackById" class="user-card">
+            <div class="flex items-center gap-3 min-w-0">
+                <img [src]="f.avatarUrl || '/Perm/DefaultProfile.png'" class="user-avatar" alt="avatar" />
+                <div class="min-w-0">
+                    <a [routerLink]="['/profile', f.id]" class="text-sky-500 hover:underline font-medium truncate">
+                        {{ f.fullName }}
+                    </a>
+                    <div *ngIf="f.fullName" class="text-xs text-gray-400 truncate">
+                        {{ '@' + f.fullName }}
+                    </div>
+                </div>
             </div>
-
-            <div class="min-w-0">
-                <div class="text-lg font-semibold truncate leading-tight">{{ f.fullName }}</div>
-                <!-- No username line for friends -->
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="mt-5 flex gap-2">
-            <button type="button"
-                class="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300/40 hover:bg-white/10 transition"
-                [routerLink]="['/profile', f.id]">
-                View
-            </button>
+            <!-- actions -->
         </div>
     </div>
-</div>
-
-<div class="text-center text-sm text-gray-500 py-6" *ngIf="!friends.length && !loading">
-    No results yet. Try typing above.
-</div>
-
-<div class="py-4 flex justify-center" *ngIf="loading">
-    <span>Loading…</span>
-</div>
-
-<div #sentinel style="height: 1px;"></div>
-
-<div class="text-center text-sm text-gray-500 py-4" *ngIf="!hasMore && friends.length > 0">
-    You’ve reached the end.
 </div>
