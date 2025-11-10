@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { PagedResponse } from '../../../shared/DTOs/PagedResponse';
 
 export interface UserSearchDto {
     id: string;
@@ -27,13 +28,6 @@ export interface FriendDto {
     fullName: string;
     avatarUrl: string | null;
 }
-
-// for paged responses
-export interface PagedResponse<T> {
-    items: T[];
-    hasMore: boolean;
-}
-
 
 
 @Injectable({ providedIn: 'root' })

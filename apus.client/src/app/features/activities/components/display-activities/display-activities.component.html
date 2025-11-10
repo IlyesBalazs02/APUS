@@ -1,4 +1,10 @@
-<div class="activities-list">
-    <app-activity-card *ngFor="let activity of activities" [activity]="activity">
-    </app-activity-card>
+<div class="activities">
+    <app-activity-card *ngFor="let a of activities" [activity]="a"></app-activity-card>
+</div>
+
+<div #sentinel class="sentinel" aria-hidden="true"></div>
+
+<div *ngIf="loading" class="loading">Loading…</div>
+<div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
+    No activities to show.
 </div>

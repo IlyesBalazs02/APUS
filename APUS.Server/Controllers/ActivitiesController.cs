@@ -1,11 +1,13 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Domain.DTOs.Feature;
+using APUS.Server.Domain.DTOs.Feature.Search;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Newtonsoft.Json;
+using OsmSharp.API;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -73,6 +75,70 @@ namespace APUS.Server.Controllers
 			var dto = MapToDto(act);
 			return Ok(dto);
 		}
+
+		#region pagedLoading
+
+		[HttpGet("paged")]
+		[Authorize]
+		public async Task<ActionResult<PagedResponse<ActivityDto>>> GetFeedPaged([FromQuery] int skip = 0, [FromQuery] int take = 10)
+		{
+			if (take < 1 || take > 50) take = 10;
+
+			var me = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var list = await _activityRepository.GetFeedPagedAsync(me, skip, take + 1);
+			var hasMore = list.Count > take;
+			if (hasMore) list.RemoveAt(list.Count - 1);
+
+			var items = list.Select(MapToDto).ToList();
+			return Ok(new PagedResponse<ActivityDto> { Items = items, HasMore = hasMore });
+		}
+
+
+		[HttpGet("me/paged")]
+		[Authorize]
+		[ProducesResponseType(typeof(PagedResponse<ActivityDto>), StatusCodes.Status200OK)]
+		public async Task<ActionResult<PagedResponse<ActivityDto>>> GetMyActivitiesPaged([FromQuery] int skip = 0, [FromQuery] int take = 10)
+		{
+			if (take < 1 || take > 50) take = 10;
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+			var list = await _activityRepository.GetByUserIdPagedAsync(userId, skip, take + 1);
+
+			bool hasMore = list.Count > take;
+			if (hasMore) list.RemoveAt(list.Count - 1);
+
+			var items = list.Select(MapToDto).ToList();
+
+			return Ok(new PagedResponse<ActivityDto>
+			{
+				Items = items,
+				HasMore = hasMore
+			});
+		}
+
+		[HttpGet("user/{userId}/paged")]
+		[Authorize]
+		[ProducesResponseType(typeof(PagedResponse<ActivityDto>), StatusCodes.Status200OK)]
+		public async Task<ActionResult<PagedResponse<ActivityDto>>> GetUserActivitiesPaged([FromRoute] string userId, [FromQuery] int skip = 0, [FromQuery] int take = 10)
+		{
+			if (take < 1 || take > 50) take = 10;
+
+			var list = await _activityRepository.GetByUserIdPagedAsync(userId, skip, take + 1);
+
+			bool hasMore = list.Count > take;
+			if (hasMore) list.RemoveAt(list.Count - 1);
+
+			var items = list.Select(MapToDto).ToList();
+
+			return Ok(new PagedResponse<ActivityDto>
+			{
+				Items = items,
+				HasMore = hasMore
+			});
+		}
+
+		#endregion
 
 		//ToDo: Pages
 		[HttpGet("get-activities")]

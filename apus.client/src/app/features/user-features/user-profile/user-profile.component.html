@@ -1,6 +1,15 @@
 <p *ngIf="profile">{{ profile.name }}</p>
 
-<div *ngIf="activities" class="activities-list">
+<div class="activities-list">
     <app-activity-card *ngFor="let activity of activities" [activity]="activity">
     </app-activity-card>
+</div>
+
+<!-- Infinite-scroll sentinel -->
+<div #sentinel class="sentinel" aria-hidden="true"></div>
+
+<!-- UI states -->
+<div *ngIf="loading" class="loading">Loading…</div>
+<div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
+    No activities to show.
 </div>

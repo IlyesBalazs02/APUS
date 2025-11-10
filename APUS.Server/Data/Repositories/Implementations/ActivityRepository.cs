@@ -77,7 +77,53 @@ namespace APUS.Server.Data.Repositories.Implementations
 			await _context.SaveChangesAsync();
 		}
 
+		// Paged loading
+		public async Task<List<MainActivity>> GetPagedAsync(int skip, int takePlusOne)
+		{
+			return await _context.Activities
+				.Include(a => a.User)
+				.AsNoTracking()
+				.OrderByDescending(a => a.Date)
+				.ThenByDescending(a => a.Id)
+				.Skip(skip)
+				.Take(takePlusOne)
+				.ToListAsync();
+		}
+
+		public async Task<List<MainActivity>> GetFeedPagedAsync(string me, int skip, int takePlusOne)
+		{
+			// Subquery of my friends' IDs (model stores one row per accepted relation, either direction)
+			var friendIds = _context.UserRelations
+				.Where(r => r.Status == UserRelationStatus.Accepted &&
+						   (r.UserId == me || r.FriendId == me))
+				.Select(r => r.UserId == me ? r.FriendId : r.UserId);
+
+			return await _context.Activities
+				.Include(a => a.User)
+				.AsNoTracking()
+				.Where(a => a.UserId == me || friendIds.Contains(a.UserId))   // me + friends
+				.OrderByDescending(a => a.Date)
+				.ThenByDescending(a => a.Id)
+				.Skip(skip)
+				.Take(takePlusOne)
+				.ToListAsync();
+		}
+
+		public async Task<List<MainActivity>> GetByUserIdPagedAsync(string userId, int skip, int takePlusOne)
+		{
+			return await _context.Activities
+				.Include(a => a.User)
+				.Where(a => a.UserId == userId)
+				.AsNoTracking()
+				.OrderByDescending(a => a.Date)
+				.ThenByDescending(a => a.Id)
+				.Skip(skip)
+				.Take(takePlusOne)
+				.ToListAsync();
+		}
+
+
 
 	}
-	
+
 }
