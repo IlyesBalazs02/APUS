@@ -37,6 +37,12 @@ const routes: Routes = [
       import('./features/search/search.module')
         .then(m => m.SearchModule)
   },
+  {
+    path: 'groups',
+    loadChildren: () =>
+      import('./features/groups/groups.module')
+        .then(m => m.GroupsModule)
+  },
 
   { path: '', component: HomeComponentComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' },

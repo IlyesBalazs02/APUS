@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using APUS.Server.Services.Implementations.UserServices;
+using APUS.Server.Services.Implementations.GroupServices;
 
 namespace APUS.Server.Configuration
 {
@@ -70,6 +71,8 @@ namespace APUS.Server.Configuration
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
 			services.AddTransient<IRouteService, RouteService>();
+			services.AddScoped<IGroupRepository, GroupRepository>();
+			services.AddScoped<IGroupService, GroupService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

@@ -1,0 +1,45 @@
+<div class="page">
+    <section class="toolbar">
+        <input type="text" class="search-input" [(ngModel)]="q" (ngModelChange)="onSearchChange($event)"
+            placeholder="Search groups..." />
+    </section>
+
+    <section class="create">
+        <h3>Create group</h3>
+
+        <div class="form-grid">
+            <input class="input" placeholder="Name" [(ngModel)]="newGroup.name" />
+
+            <label class="row">
+                <input type="checkbox" [(ngModel)]="newGroup.isOpen" />
+                <span>Open to join</span>
+            </label>
+
+            <textarea class="textarea" placeholder="Description" [(ngModel)]="newGroup.description"></textarea>
+
+            <div class="row">
+                <button class="btn" (click)="create()" [disabled]="creating || !newGroup.name?.trim()">
+                    Create
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="list">
+        <a *ngFor="let g of groups" class="group-card" [routerLink]="['/groups', g.id]">
+            <h4>{{ g.name }}</h4>
+            <p class="desc">{{ g.description || '—' }}</p>
+            <div class="meta">
+                <span>Members: {{ g.memberCount }}</span>
+                <span>Created: {{ g.createdAtUtc | date: 'medium' }}</span>
+                <span>{{ g.isOpen ? 'Open' : 'Closed' }}</span>
+            </div>
+        </a>
+
+        <div class="load-more">
+            <button class="btn" *ngIf="hasMore && !loading" (click)="loadMore()">Load more</button>
+            <div *ngIf="loading">Loading…</div>
+            <div *ngIf="!hasMore && groups.length">No more groups</div>
+        </div>
+    </section>
+</div>

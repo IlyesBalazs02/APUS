@@ -1,0 +1,25 @@
+<ng-container *ngIf="group as g">
+    <header class="group-header">
+        <div>
+            <h2>{{ g.name }}</h2>
+            <p>{{ g.description || '—' }}</p>
+            <small>Members: {{ g.memberCount }} • Created: {{ g.createdAtUtc | date:'medium' }} • {{ g.isOpen ? 'Open' :
+                'Closed' }}</small>
+        </div>
+        <div class="actions">
+            <button (click)="join()" [disabled]="joining">Join</button>
+            <button (click)="leave()" [disabled]="leaving">Leave</button>
+            <!-- Update button can be added when you expose admin role info -->
+        </div>
+    </header>
+
+    <!-- Tab nav (routes already wired, components are placeholders) -->
+    <nav class="tabs">
+        <a routerLink="posts" routerLinkActive="active">Posts</a>
+        <a routerLink="events" routerLinkActive="active">Events</a>
+        <a routerLink="requests" routerLinkActive="active">Requests</a>
+        <a routerLink="settings" routerLinkActive="active">Settings</a>
+    </nav>
+
+    <router-outlet></router-outlet>
+</ng-container>

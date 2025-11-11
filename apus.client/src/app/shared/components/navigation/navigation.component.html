@@ -27,6 +27,11 @@
         Settings
     </button>
 
+    <button class="btn btn-primary submit-button" routerLink="/groups" routerLinkActive="active"
+        *ngIf="(loggedIn$ | async)">
+        Groups
+    </button>
+
     <div class="search-bar" *ngIf="(loggedIn$ | async)">
         <app-search-bar></app-search-bar>
     </div>

@@ -1,4 +1,5 @@
-﻿using APUS.Server.Domain.Models;
+﻿using APUS.Server.Domain.Entities.Groups;
+using APUS.Server.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,11 @@ namespace APUS.Server.Data
 		public DbSet<UserRelation> UserRelations { get; set; }
 		public DbSet<SiteUser> SiteUsers { get; set; }
 		public DbSet<PrivacySettings> PrivacySettings { get; set; }
+
+		//groups
+		public DbSet<Group> Groups { get; set; }
+		public DbSet<GroupMembership> GroupMemberships { get; set; }
+		public DbSet<GroupJoinRequest> GroupJoinRequests { get; set; }
 
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
@@ -104,6 +110,62 @@ namespace APUS.Server.Data
 				.HasForeignKey<PrivacySettings>(p => p.UserId)
 				.OnDelete(DeleteBehavior.Cascade);
 
+
+			// Groups 
+			modelBuilder.Entity<Group>(b =>
+			{
+				b.ToTable("Groups", schema: "Social");
+				b.HasKey(x => x.Id);
+				b.Property(x => x.Name).IsRequired().HasMaxLength(128);
+				b.Property(x => x.Description).HasMaxLength(2000);
+				b.Property(x => x.IsOpen).HasDefaultValue(true);
+				b.HasIndex(x => x.Name);
+
+				b.HasOne(x => x.CreatedByUser)
+				 .WithMany()
+				 .HasForeignKey(x => x.CreatedByUserId)
+				 .OnDelete(DeleteBehavior.Restrict);
+			});
+
+			modelBuilder.Entity<GroupMembership>(b =>
+			{
+				b.ToTable("GroupMemberships", "Social");
+				b.HasKey(x => new { x.GroupId, x.UserId });
+				b.Property(x => x.Role).HasConversion<int>();
+				b.Property(x => x.JoinedAtUtc).IsRequired();
+
+				b.HasOne(x => x.Group)
+				 .WithMany(g => g.Members)
+				 .HasForeignKey(x => x.GroupId)
+				 .OnDelete(DeleteBehavior.Cascade);
+
+				b.HasOne(x => x.User)
+				 .WithMany()
+				 .HasForeignKey(x => x.UserId)
+				 .OnDelete(DeleteBehavior.Restrict);
+
+				b.HasIndex(x => new { x.GroupId, x.Role });
+			});
+
+			modelBuilder.Entity<GroupJoinRequest>(b =>
+			{
+				b.ToTable("GroupJoinRequests", "Social");
+				b.HasKey(x => x.Id);
+				b.Property(x => x.Status).HasConversion<int>();
+				b.Property(x => x.CreatedAtUtc).IsRequired();
+
+				b.HasOne(x => x.Group)
+				 .WithMany(g => g.JoinRequests)
+				 .HasForeignKey(x => x.GroupId)
+				 .OnDelete(DeleteBehavior.Cascade);
+
+				b.HasOne(x => x.RequesterUser)
+				 .WithMany()
+				 .HasForeignKey(x => x.RequesterUserId)
+				 .OnDelete(DeleteBehavior.Restrict);
+
+				b.HasIndex(x => new { x.GroupId, x.RequesterUserId }).IsUnique();
+			});
 
 
 		}
