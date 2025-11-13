@@ -17,6 +17,7 @@ namespace APUS.Server.Data
 		public DbSet<Group> Groups { get; set; }
 		public DbSet<GroupMembership> GroupMemberships { get; set; }
 		public DbSet<GroupJoinRequest> GroupJoinRequests { get; set; }
+		public DbSet<GroupPost> GroupPosts { get; set; }
 
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
@@ -37,10 +38,21 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
 
 
-			// Add index to UserId
-			modelBuilder.Entity<MainActivity>()
-				.HasIndex(a => a.UserId)
-				.HasDatabaseName("IX_MainActivities_UserId");
+			// Add indexes for UserId and paging
+			// affected emthods: GetByUserIdPagedAsync (UserId, Date, Id) ; GetPagedAsync (Date, Id) ; GetFeedPagedAsync (Date, Id)
+			modelBuilder.Entity<MainActivity>(b =>
+			{
+				b.HasIndex(a => a.UserId)
+				 .HasDatabaseName("IX_MainActivities_UserId");
+
+				// user profile listing: WHERE UserId = ? ORDER BY Date, Id
+				b.HasIndex(a => new { a.UserId, a.Date, a.Id })
+				 .HasDatabaseName("IX_MainActivities_User_Date_Id");
+
+				// global / friends feed ordering by Date, Id
+				b.HasIndex(a => new { a.Date, a.Id })
+				 .HasDatabaseName("IX_MainActivities_Date_Id");
+			});
 
 
 			modelBuilder.Entity<MainActivity>()
@@ -76,6 +88,12 @@ namespace APUS.Server.Data
 				.Property(u => u.Bio)
 				.HasDefaultValue(string.Empty);
 
+			// for the SearchByNamePagedAsync method 
+			modelBuilder.Entity<SiteUser>(b =>
+			{
+				b.HasIndex(u => new { u.LastName, u.FirstName, u.Id })
+				 .HasDatabaseName("IX_SiteUsers_Last_First_Id");
+			});
 
 
 			modelBuilder.Entity<UserRelation>(t =>
@@ -165,6 +183,36 @@ namespace APUS.Server.Data
 				 .OnDelete(DeleteBehavior.Restrict);
 
 				b.HasIndex(x => new { x.GroupId, x.RequesterUserId }).IsUnique();
+			});
+
+			modelBuilder.Entity<GroupPost>(b =>
+			{
+				b.ToTable("GroupPosts", "Social");
+				b.HasKey(x => x.Id);
+
+				b.Property(x => x.Title)
+				 .IsRequired()
+				 .HasMaxLength(200);
+
+				b.Property(x => x.Text)
+				 .IsRequired()
+				 .HasMaxLength(4000);
+
+				b.Property(x => x.CreatedAtUtc)
+				 .IsRequired();
+
+				b.HasOne(x => x.Group)
+				 .WithMany(g => g.Posts)
+				 .HasForeignKey(x => x.GroupId)
+				 .OnDelete(DeleteBehavior.Cascade);
+
+				b.HasOne(x => x.AuthorUser)
+				 .WithMany()
+				 .HasForeignKey(x => x.AuthorUserId)
+				 .OnDelete(DeleteBehavior.Restrict);
+
+				// for paging in UI
+				b.HasIndex(x => new { x.GroupId, x.CreatedAtUtc, x.Id });
 			});
 
 

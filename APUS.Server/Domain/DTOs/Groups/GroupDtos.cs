@@ -82,4 +82,27 @@ namespace APUS.Server.Domain.DTOs.Groups
 		public GroupEventPermission? WhoCanCreateEvent { get; set; }
 	}
 
+
+	//Post
+	public sealed class GroupPostDto
+	{
+		public long Id { get; set; }
+		public long GroupId { get; set; }
+
+		public required string AuthorUserId { get; set; }
+		public required string AuthorFullName { get; set; }
+		public string? AuthorAvatarUrl { get; set; }
+
+		public required string Title { get; set; }
+		public required string Text { get; set; }
+
+		public DateTime CreatedAtUtc { get; set; }
+	}
+
+	public sealed class CreateGroupPostDto
+	{
+		public required string Title { get; set; }
+		public required string Text { get; set; }
+	}
+
 }

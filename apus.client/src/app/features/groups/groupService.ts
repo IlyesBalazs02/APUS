@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CreateGroupDto, DecideJoinRequestDto, GroupDto, GroupJoinRequestDto, GroupMembersDto, GroupSettingsDto, UpdateGroupDto, UpdateGroupSettingsDto } from "./groupsDTOs";
+import { CreateGroupDto, CreateGroupPostDto, DecideJoinRequestDto, GroupDto, GroupJoinRequestDto, GroupMembersDto, GroupPostDto, GroupSettingsDto, UpdateGroupDto, UpdateGroupSettingsDto } from "./groupsDTOs";
 import { firstValueFrom } from "rxjs";
+import { PagedResponse } from "../../shared/DTOs/PagedResponse";
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -66,5 +67,20 @@ export class GroupService {
 
     //#endregion
 
+    //#region Posts
+    getPosts(groupId: number, skip: number, take: number) {
+        let params = new HttpParams().set('skip', skip).set('take', take);
+        return this.http.get<PagedResponse<GroupPostDto>>(`${this.base}/${groupId}/posts`, { params });
+    }
+
+    createPost(groupId: number, dto: CreateGroupPostDto) {
+        return this.http.post<GroupPostDto>(`${this.base}/${groupId}/posts`, dto);
+    }
+
+    deletePost(postId: number) {
+        // matches DELETE api/groups/posts/{postId}
+        return this.http.delete<void>(`${this.base}/posts/${postId}`);
+    }
+    //#endregion
 
 }

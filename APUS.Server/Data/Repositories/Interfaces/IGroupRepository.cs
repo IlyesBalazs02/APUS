@@ -21,6 +21,10 @@ namespace APUS.Server.Data.Repositories.Interfaces
 		IQueryable<GroupJoinRequest> JoinRequestsQuery(long groupId);
 		Task<GroupJoinRequest?> GetJoinRequestAsync(long groupId, string userId, CancellationToken ct);
 		Task UpdateJoinRequestAsync(GroupJoinRequest request, CancellationToken ct);
+		IQueryable<GroupPost> PostsQuery(long groupId);
+		Task AddPostAsync(GroupPost post, CancellationToken ct);
+		Task<GroupPost?> GetPostWithGroupAsync(long postId, CancellationToken ct);
+		Task DeletePostAsync(GroupPost post, CancellationToken ct);
 
 	}
 }

@@ -141,5 +141,30 @@ namespace APUS.Server.Data.Repositories.Implementations
 			_db.GroupJoinRequests.Update(request);
 			await _db.SaveChangesAsync(ct);
 		}
+
+		#region Posts
+		// Returns queryable posts of a group (for paging/filtering).
+		public IQueryable<GroupPost> PostsQuery(long groupId) =>
+			_db.GroupPosts.AsNoTracking().Where(p => p.GroupId == groupId);
+
+		// Adds a new post.
+		public async Task AddPostAsync(GroupPost post, CancellationToken ct)
+		{
+			_db.GroupPosts.Add(post);
+			await _db.SaveChangesAsync(ct);
+		}
+
+		// Loads a post with its group & members (for delete/permission checks).
+		public Task<GroupPost?> GetPostWithGroupAsync(long postId, CancellationToken ct) =>
+			_db.GroupPosts
+			   .Include(p => p.Group).ThenInclude(g => g.Members)
+			   .FirstOrDefaultAsync(p => p.Id == postId, ct);
+
+		public async Task DeletePostAsync(GroupPost post, CancellationToken ct)
+		{
+			_db.GroupPosts.Remove(post);
+			await _db.SaveChangesAsync(ct);
+		}
+		#endregion
 	}
 }

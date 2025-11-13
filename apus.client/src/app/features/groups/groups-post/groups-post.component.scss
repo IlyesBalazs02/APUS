@@ -1,0 +1,86 @@
+/* --- CREATE POST CARD (same structure as group create) --- */
+.create-post-card {
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 10px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-1);
+}
+
+.create-post-card h3 {
+  margin-top: 0;
+}
+
+.create-post-card .field {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.create-post-card input,
+.create-post-card textarea {
+  padding: .5rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text);
+}
+
+.create-post-card textarea {
+  resize: vertical;
+}
+
+.create-post-card .actions {
+  margin-top: .5rem;
+}
+
+/* --- POST CARDS --- */
+.post-card {
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-1);
+  margin-bottom: 1.2rem;
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+}
+
+.small-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.post-title {
+  margin: .8rem 0 .4rem 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.post-text {
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* --- MISC --- */
+.load-more {
+  text-align: center;
+  margin: 1.2rem 0;
+}
+
+.error {
+  color: #d9534f;
+  margin-top: .5rem;
+}

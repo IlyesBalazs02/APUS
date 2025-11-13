@@ -1,4 +1,5 @@
-﻿using APUS.Server.Domain.DTOs.Groups;
+﻿using APUS.Server.Domain.DTOs.Feature.Search;
+using APUS.Server.Domain.DTOs.Groups;
 
 namespace APUS.Server.Services.Interfaces
 {
@@ -17,5 +18,9 @@ namespace APUS.Server.Services.Interfaces
 		Task<List<GroupDto>> SearchAsync(string? q, int skip, int take, CancellationToken ct);
 		Task UpdateAsync(string adminId, long groupId, UpdateGroupDto dto, CancellationToken ct);
 		Task UpdateSettingsAsync(string userId, long groupId, UpdateGroupSettingsDto dto, CancellationToken ct);
+		Task<PagedResponse<GroupPostDto>> GetPostsAsync(string viewerId, long groupId, int skip, int take, CancellationToken ct);
+		Task<GroupPostDto> CreatePostAsync(string authorId, long groupId, CreateGroupPostDto dto, CancellationToken ct);
+		Task DeletePostAsync(string userId, long postId, CancellationToken ct);
+
 	}
 }

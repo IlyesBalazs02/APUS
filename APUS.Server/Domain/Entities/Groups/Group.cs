@@ -18,6 +18,8 @@ namespace APUS.Server.Domain.Entities.Groups
 
 		public ICollection<GroupMembership> Members { get; set; } = new List<GroupMembership>();
 		public ICollection<GroupJoinRequest> JoinRequests { get; set; } = new List<GroupJoinRequest>();
+
+		public ICollection<GroupPost> Posts { get; set; } = new List<GroupPost>();
 	}
 
 	public enum GroupPostPermission
@@ -32,4 +34,19 @@ namespace APUS.Server.Domain.Entities.Groups
 		Members = 1
 	}
 
+	public sealed class GroupPost
+	{
+		public long Id { get; set; }
+
+		public long GroupId { get; set; }
+		public Group Group { get; set; } = null!;
+
+		public string AuthorUserId { get; set; } = null!;
+		public SiteUser AuthorUser { get; set; } = null!;
+
+		public required string Title { get; set; } = null!;
+		public required string Text { get; set; } = null!;
+
+		public DateTime CreatedAtUtc { get; set; }
+	}
 }

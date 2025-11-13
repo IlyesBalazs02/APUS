@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Feature.Search;
 using APUS.Server.Domain.DTOs.Groups;
 using APUS.Server.Domain.Entities.Groups;
 using APUS.Server.Services.Interfaces;
@@ -315,6 +316,129 @@ namespace APUS.Server.Services.Implementations.GroupServices
 
 			await _repo.UpdateAsync(g, ct);
 		}
+
+		#region Posts
+		// Returns posts for a group (paged).
+		// For closed groups, only members can see posts; open groups are visible to anyone.
+		public async Task<PagedResponse<GroupPostDto>> GetPostsAsync(
+			string viewerId,
+			long groupId,
+			int skip,
+			int take,
+			CancellationToken ct)
+		{
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+
+			var isMember = g.Members.Any(m => m.UserId == viewerId);
+
+			// Closed group: only members can see posts
+			if (!g.IsOpen && !isMember)
+				throw new UnauthorizedAccessException("You are not allowed to view posts in this group.");
+
+			// load posts with author
+			var query = _repo.PostsQuery(groupId)
+							 .Include(p => p.AuthorUser)
+							 .OrderByDescending(p => p.CreatedAtUtc)
+							 .ThenByDescending(p => p.Id);
+
+			var list = await query
+				.Skip(skip)
+				.Take(take + 1) // +1 to detect HasMore
+				.ToListAsync(ct);
+
+			var hasMore = list.Count == take + 1;
+			if (hasMore)
+				list.RemoveAt(list.Count - 1);
+
+			var items = list.Select(p => new GroupPostDto
+			{
+				Id = p.Id,
+				GroupId = p.GroupId,
+				AuthorUserId = p.AuthorUserId,
+				AuthorFullName = p.AuthorUser.FirstName + " " + p.AuthorUser.LastName,
+				AuthorAvatarUrl = p.AuthorUser.AvatarUrl,
+				Title = p.Title,
+				Text = p.Text,
+				CreatedAtUtc = p.CreatedAtUtc
+			}).ToList();
+
+			return new PagedResponse<GroupPostDto>
+			{
+				Items = items,
+				HasMore = hasMore
+			};
+		}
+
+		// Creates a post in a group, honoring WhoCanPost.
+		public async Task<GroupPostDto> CreatePostAsync(
+			string authorId,
+			long groupId,
+			CreateGroupPostDto dto,
+			CancellationToken ct)
+		{
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+
+			var membership = g.Members.FirstOrDefault(m => m.UserId == authorId);
+			var isMember = membership is not null;
+			var isAdmin = membership?.Role == GroupRole.Admin;
+
+			// Only specific people can create posts
+			var canPost = g.WhoCanPost switch
+			{
+				GroupPostPermission.AdminsOnly => isAdmin,
+				GroupPostPermission.Members => isMember,
+				_ => false
+			};
+
+			if (!canPost)
+				throw new UnauthorizedAccessException("You are not allowed to create posts in this group.");
+
+			var now = DateTime.UtcNow;
+			var post = new GroupPost
+			{
+				GroupId = groupId,
+				AuthorUserId = authorId,
+				Title = dto.Title.Trim(),
+				Text = dto.Text.Trim(),
+				CreatedAtUtc = now
+			};
+
+			await _repo.AddPostAsync(post, ct);
+
+			// reload with author to build DTO
+			var loaded = await _repo.PostsQuery(groupId)
+									.Include(p => p.AuthorUser)
+									.FirstAsync(p => p.Id == post.Id, ct);
+
+			return new GroupPostDto
+			{
+				Id = loaded.Id,
+				GroupId = loaded.GroupId,
+				AuthorUserId = loaded.AuthorUserId,
+				AuthorFullName = loaded.AuthorUser.FirstName + " " + loaded.AuthorUser.LastName,
+				AuthorAvatarUrl = loaded.AuthorUser.AvatarUrl,
+				Title = loaded.Title,
+				Text = loaded.Text,
+				CreatedAtUtc = loaded.CreatedAtUtc
+			};
+		}
+
+		public async Task DeletePostAsync(string userId, long postId, CancellationToken ct)
+		{
+			var post = await _repo.GetPostWithGroupAsync(postId, ct)
+					   ?? throw new KeyNotFoundException("Post not found");
+
+			var g = post.Group;
+			var membership = g.Members.FirstOrDefault(m => m.UserId == userId);
+			var isAdmin = membership?.Role == GroupRole.Admin;
+			var isAuthor = post.AuthorUserId == userId;
+
+			if (!isAdmin && !isAuthor)
+				throw new UnauthorizedAccessException("You are not allowed to delete this post.");
+
+			await _repo.DeletePostAsync(post, ct);
+		}
+		#endregion
 
 
 	}

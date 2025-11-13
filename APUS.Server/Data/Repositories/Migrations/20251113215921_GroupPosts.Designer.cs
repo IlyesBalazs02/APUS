@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113215921_GroupPosts")]
+    partial class GroupPosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,12 +208,6 @@ namespace APUS.Server.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_MainActivities_UserId");
 
-                    b.HasIndex("Date", "Id")
-                        .HasDatabaseName("IX_MainActivities_Date_Id");
-
-                    b.HasIndex("UserId", "Date", "Id")
-                        .HasDatabaseName("IX_MainActivities_User_Date_Id");
-
                     b.ToTable("MainActivities", "Activities");
 
                     b.UseTptMappingStrategy();
@@ -277,14 +274,14 @@ namespace APUS.Server.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -328,9 +325,6 @@ namespace APUS.Server.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("LastName", "FirstName", "Id")
-                        .HasDatabaseName("IX_SiteUsers_Last_First_Id");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });

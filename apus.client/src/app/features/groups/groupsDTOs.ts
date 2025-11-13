@@ -23,6 +23,9 @@ export interface GroupDto {
     isAdmin: boolean;
 
     hasPendingJoinRequest: boolean;
+
+    whoCanPost: GroupPostPermission;
+    whoCanCreateEvent: GroupEventPermission;
 }
 
 export interface DecideJoinRequestDto {
@@ -74,3 +77,22 @@ export interface UpdateGroupSettingsDto {
 }
 //#endregion settings
 
+//#region posts
+export interface GroupPostDto {
+    id: number;
+    groupId: number;
+
+    authorUserId: string;
+    authorFullName: string;
+    authorAvatarUrl: string | null;
+
+    title: string;
+    text: string;
+    createdAtUtc: string;
+}
+
+export interface CreateGroupPostDto {
+    title: string;
+    text: string;
+}
+//#endregion
