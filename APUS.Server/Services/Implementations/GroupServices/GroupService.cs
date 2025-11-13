@@ -50,6 +50,9 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			var isMember = g.Members.Any(m => m.UserId == viewerId);
 			var isAdmin = g.Members.Any(m => m.UserId == viewerId && m.Role == GroupRole.Admin);
 
+			// check if the current user has a pending join request (only interesting if not member)
+			var hasPending = !isMember && await _repo.HasPendingRequestAsync(id, viewerId, ct);
+
 			return new GroupDto
 			{
 				Id = g.Id,
@@ -60,7 +63,8 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				CreatedAtUtc = g.CreatedAtUtc,
 				MemberCount = g.Members.Count,
 				IsMember = isMember,
-				IsAdmin = isAdmin
+				IsAdmin = isAdmin,
+				HasPendingJoinRequest = hasPending
 			};
 		}
 

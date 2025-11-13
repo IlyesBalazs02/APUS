@@ -24,6 +24,8 @@ export class GroupsComponent implements OnInit {
     isMember = false;
     isAdmin = false;
 
+    hasPendingJoinRequest = false;
+
     constructor(private route: ActivatedRoute, private groupService: GroupService, private router: Router, private authService: AuthService) {
         this.group = this.route.snapshot.data['group'] ?? null;
     }
@@ -36,6 +38,7 @@ export class GroupsComponent implements OnInit {
             this.group = group as GroupDto;
             this.isMember = this.group.isMember;
             this.isAdmin = this.group.isAdmin;
+            this.hasPendingJoinRequest = this.group.hasPendingJoinRequest;
         });
     }
 
@@ -54,24 +57,39 @@ export class GroupsComponent implements OnInit {
 
 
     async join() {
-        if (!this.group) return;
+        if (!this.group || this.joining) return;
         this.joining = true;
         try {
             await this.groupService.join(this.group.id).toPromise();
-            this.group = { ...this.group, memberCount: this.group.memberCount };
-            this.isMember = true;
+
+            if (this.group.isOpen) {
+                this.group = {
+                    ...this.group,
+                    memberCount: this.group.memberCount,
+                    isMember: true
+                };
+                this.isMember = true;
+                this.hasPendingJoinRequest = false;
+            } else {
+                this.hasPendingJoinRequest = true;
+            }
         } finally {
             this.joining = false;
         }
     }
 
     async leave() {
-        if (!this.group) return;
+        if (!this.group || this.leaving) return;
         this.leaving = true;
         try {
             await this.groupService.leave(this.group.id).toPromise();
-            this.group = { ...this.group, memberCount: Math.max(0, this.group.memberCount - 1) };
+            this.group = {
+                ...this.group,
+                memberCount: Math.max(0, this.group.memberCount),
+                isMember: false
+            };
             this.isMember = false;
+            this.hasPendingJoinRequest = false;
         } finally {
             this.leaving = false;
         }

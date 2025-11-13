@@ -19,6 +19,8 @@
 
 		public bool IsMember { get; set; }
 		public bool IsAdmin { get; set; }
+
+		public bool HasPendingJoinRequest { get; set; }
 	}
 
 	public sealed class UpdateGroupDto

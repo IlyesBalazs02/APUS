@@ -21,6 +21,8 @@ export interface GroupDto {
 
     isMember: boolean;
     isAdmin: boolean;
+
+    hasPendingJoinRequest: boolean;
 }
 
 export interface DecideJoinRequestDto {

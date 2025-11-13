@@ -12,17 +12,34 @@
         </div>
 
         <div class="actions">
-            <button class="btn primary" *ngIf="!isMember" (click)="join()" [disabled]="joining">Join</button>
-            <button class="btn" *ngIf="isMember" (click)="leave()" [disabled]="leaving">Leave</button>
+            <!-- Not a member -->
+            <ng-container *ngIf="!isMember">
+                <!-- No pending request yet -->
+                <button class="btn primary" *ngIf="!hasPendingJoinRequest" (click)="join()" [disabled]="joining">
+                    {{ group?.isOpen ? 'Join' : 'Send request' }}
+                </button>
+
+                <!-- Pending request -->
+                <button class="btn" *ngIf="hasPendingJoinRequest" disabled>
+                    Request sent
+                </button>
+            </ng-container>
+
+            <!-- Already a member -->
+            <button class="btn" *ngIf="isMember" (click)="leave()" [disabled]="leaving">
+                Leave
+            </button>
         </div>
+
     </header>
 
     <nav class="tabs">
         <a routerLink="posts" routerLinkActive="active">Posts</a>
         <a routerLink="events" routerLinkActive="active">Events</a>
-        <a routerLink="requests" routerLinkActive="active">Requests</a>
-        <a routerLink="settings" routerLinkActive="active">Settings</a>
+        <a *ngIf="isAdmin" routerLink="requests" routerLinkActive="active">Requests</a>
+        <a *ngIf="isAdmin" routerLink="settings" routerLinkActive="active">Settings</a>
     </nav>
+
 
     <router-outlet></router-outlet>
 
