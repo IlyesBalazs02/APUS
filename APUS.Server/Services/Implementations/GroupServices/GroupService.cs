@@ -11,6 +11,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 		private readonly IGroupRepository _repo;
 		public GroupService(IGroupRepository repo) => _repo = repo;
 
+		// Creates a new group and automatically adds the creator as admin.
 		public async Task<GroupDto> CreateAsync(string creatorId, CreateGroupDto dto, CancellationToken ct)
 		{
 			var now = DateTime.UtcNow;
@@ -21,10 +22,15 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				IsOpen = dto.IsOpen,
 				CreatedAtUtc = now,
 				CreatedByUserId = creatorId,
+
+				// defaults for settings
+				WhoCanPost = GroupPostPermission.Members,
+				WhoCanCreateEvent = GroupEventPermission.AdminsOnly,
+
 				Members = new List<GroupMembership>
-			{
-				new() { UserId = creatorId, Role = GroupRole.Admin, JoinedAtUtc = now }
-			}
+				{
+					new() { UserId = creatorId, Role = GroupRole.Admin, JoinedAtUtc = now }
+				}
 			};
 			await _repo.CreateAsync(g, ct);
 
@@ -37,11 +43,14 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				IsOpen = g.IsOpen,
 				CreatedByUserId = g.CreatedByUserId,
 				CreatedAtUtc = g.CreatedAtUtc,
-				MemberCount = g.Members.Count
+				MemberCount = g.Members.Count,
+				WhoCanPost = g.WhoCanPost,
+				WhoCanCreateEvent = g.WhoCanCreateEvent
 			};
 		}
 
 		//new getASync
+		// Returns group details for a viewer, including membership/admin status.
 		public async Task<GroupDto?> GetForUserAsync(long id, string viewerId, CancellationToken ct)
 		{
 			var g = await _repo.GetAsync(id, ct);
@@ -64,10 +73,13 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				MemberCount = g.Members.Count,
 				IsMember = isMember,
 				IsAdmin = isAdmin,
-				HasPendingJoinRequest = hasPending
+				HasPendingJoinRequest = hasPending,
+				WhoCanPost = g.WhoCanPost,
+				WhoCanCreateEvent = g.WhoCanCreateEvent
 			};
 		}
 
+		// Returns basic group details without viewer-specific information.
 		public async Task<GroupDto?> GetAsync(long id, CancellationToken ct)
 		{
 			var g = await _repo.GetAsync(id, ct);
@@ -79,13 +91,17 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				IsOpen = g.IsOpen,
 				CreatedByUserId = g.CreatedByUserId,
 				CreatedAtUtc = g.CreatedAtUtc,
-				MemberCount = g.Members.Count
+				MemberCount = g.Members.Count,
+				WhoCanPost = g.WhoCanPost,
+				WhoCanCreateEvent = g.WhoCanCreateEvent
 			};
 		}
 
+		// Searches groups by name with paging support.
 		public Task<List<GroupDto>> SearchAsync(string? q, int skip, int take, CancellationToken ct)
 			=> _repo.SearchAsync(q, skip, take, ct);
 
+		// Handles joining logic depending on whether the group is open or closed.
 		public async Task RequestToJoinAsync(string userId, long groupId, CancellationToken ct)
 		{
 			var group = await _repo.GetAsync(groupId, ct)
@@ -133,7 +149,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			}
 		}
 
-
+		// Approves or rejects a join request and adds the user as member if approved.
 		public async Task ApproveOrRejectAsync(string adminId, long requestId, bool approve, CancellationToken ct)
 		{
 			var req = await _repo.GetJoinRequestWithGroupAsync(requestId, ct)
@@ -153,6 +169,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				await _repo.UpdateAsync(req.Group, ct); // persist decision (no member add)
 		}
 
+		// Removes the current user from a group, preventing last-admin leaving.
 		public async Task LeaveAsync(string userId, long groupId, CancellationToken ct)
 		{
 			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
@@ -169,6 +186,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			await _repo.RemoveMemberAsync(groupId, userId, ct);
 		}
 
+		// Updates name/description/open-status, allowed only for group admins.
 		public async Task UpdateAsync(string adminId, long groupId, UpdateGroupDto dto, CancellationToken ct)
 		{
 			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
@@ -182,6 +200,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			await _repo.UpdateAsync(g, ct);
 		}
 
+		// Returns a list of all members of the given group.
 		public async Task<List<GroupMemberDto>> GetMembersAsync(long groupId, CancellationToken ct)
 		{
 			var q = _repo.MembersQuery(groupId)
@@ -198,6 +217,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			return await q.ToListAsync(ct);
 		}
 
+		// Removes a member from a group, ensuring at least one admin remains.
 		public async Task KickAsync(string adminId, long groupId, string targetUserId, CancellationToken ct)
 		{
 			if (adminId == targetUserId)
@@ -222,6 +242,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			await _repo.RemoveMemberAsync(groupId, targetUserId, ct);
 		}
 
+		// Returns all pending join requests for admins of the group.
 		public async Task<List<GroupJoinRequestDto>> GetPendingRequestsAsync(string adminId, long groupId, CancellationToken ct)
 		{
 			// Ensure caller is admin of that group
@@ -246,6 +267,53 @@ namespace APUS.Server.Services.Implementations.GroupServices
 						 });
 
 			return await q.ToListAsync(ct);
+		}
+
+		// Returns editable group settings, visible only to admins.
+		public async Task<GroupSettingsDto> GetSettingsAsync(string userId, long groupId, CancellationToken ct)
+		{
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+
+			var isAdmin = g.Members.Any(m => m.UserId == userId && m.Role == GroupRole.Admin);
+			if (!isAdmin)
+				throw new UnauthorizedAccessException("Only admins can view group settings.");
+
+			return new GroupSettingsDto
+			{
+				GroupId = g.Id,
+				Name = g.Name,
+				Description = g.Description,
+				IsOpen = g.IsOpen,
+				WhoCanPost = g.WhoCanPost,
+				WhoCanCreateEvent = g.WhoCanCreateEvent
+			};
+		}
+
+		// Saves updated group settings, allowed only for admins.
+		public async Task UpdateSettingsAsync(string userId, long groupId, UpdateGroupSettingsDto dto, CancellationToken ct)
+		{
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+
+			var isAdmin = g.Members.Any(m => m.UserId == userId && m.Role == GroupRole.Admin);
+			if (!isAdmin)
+				throw new UnauthorizedAccessException("Only admins can update group settings.");
+
+			if (!string.IsNullOrWhiteSpace(dto.Name))
+				g.Name = dto.Name.Trim();
+
+			if (dto.Description is not null)
+				g.Description = dto.Description.Trim();
+
+			if (dto.IsOpen is not null)
+				g.IsOpen = dto.IsOpen.Value;
+
+			if (dto.WhoCanPost is not null)
+				g.WhoCanPost = dto.WhoCanPost.Value;
+
+			if (dto.WhoCanCreateEvent is not null)
+				g.WhoCanCreateEvent = dto.WhoCanCreateEvent.Value;
+
+			await _repo.UpdateAsync(g, ct);
 		}
 
 

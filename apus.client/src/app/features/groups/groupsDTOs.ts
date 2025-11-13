@@ -45,3 +45,32 @@ export interface GroupJoinRequestDto {
     requestedAtUtc: string;
 }
 
+//#region settings
+export enum GroupPostPermission {
+    AdminsOnly = 0,
+    Members = 1
+}
+
+export enum GroupEventPermission {
+    AdminsOnly = 0,
+    Members = 1
+}
+
+export interface GroupSettingsDto {
+    groupId: number;
+    name: string;
+    description?: string | null;
+    isOpen: boolean;
+    whoCanPost: GroupPostPermission;
+    whoCanCreateEvent: GroupEventPermission;
+}
+
+export interface UpdateGroupSettingsDto {
+    name?: string;
+    description?: string | null;
+    isOpen?: boolean;
+    whoCanPost?: GroupPostPermission;
+    whoCanCreateEvent?: GroupEventPermission;
+}
+//#endregion settings
+

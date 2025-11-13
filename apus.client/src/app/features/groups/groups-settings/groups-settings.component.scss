@@ -1,0 +1,177 @@
+.settings-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.settings-container h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.settings-list {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2b2b2b;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  background-color: #161616;
+  border-bottom: 1px solid #2b2b2b;
+  transition: background-color 0.15s ease;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item:hover {
+  background-color: #202020;
+}
+
+.setting-label {
+  font-weight: 500;
+}
+
+.setting-value {
+  font-size: 0.9rem;
+}
+
+.text-muted {
+  color: #aaa;
+}
+
+.error {
+  margin: 0.75rem 0;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+.saved-banner {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #7ed957;
+}
+
+/* Modal styles */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #121212;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background-color: #181818;
+  color: #f5f5f5;
+  font-size: 0.95rem;
+}
+
+.modal textarea {
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.modal-actions button {
+  padding: 0.45rem 0.9rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.modal-actions button:first-child {
+  background: transparent;
+  color: #ddd;
+}
+
+.modal-actions button:last-child {
+  background: #1db954;
+  color: #000;
+}
+
+.modal-actions button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.group-settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.group-settings-modal {
+  background: #121212;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+

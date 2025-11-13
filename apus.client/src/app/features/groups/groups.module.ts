@@ -7,13 +7,17 @@ import { GroupsRoutingModule } from './groups-routing.module';
 import { GroupsHomeComponent } from './groups-home/groups-home.component';
 import { GroupsComponent } from './groups.component';
 import { GroupsRequestComponent } from './groups-request/groups-request.component';
+import { GroupsPostComponent } from './groups-post/groups-post.component';
+import { GroupsSettingsComponent } from './groups-settings/groups-settings.component';
 
 
 @NgModule({
     declarations: [
         GroupsHomeComponent,
         GroupsComponent,
-        GroupsRequestComponent
+        GroupsRequestComponent,
+        GroupsPostComponent,
+        GroupsSettingsComponent
     ],
     imports: [
         CommonModule,

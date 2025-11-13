@@ -1,4 +1,6 @@
-﻿namespace APUS.Server.Domain.DTOs.Groups
+﻿using APUS.Server.Domain.Entities.Groups;
+
+namespace APUS.Server.Domain.DTOs.Groups
 {
 	public sealed class CreateGroupDto
 	{
@@ -21,6 +23,9 @@
 		public bool IsAdmin { get; set; }
 
 		public bool HasPendingJoinRequest { get; set; }
+
+		public GroupPostPermission WhoCanPost { get; set; }
+		public GroupEventPermission WhoCanCreateEvent { get; set; }
 	}
 
 	public sealed class UpdateGroupDto
@@ -54,6 +59,27 @@
 		public string? RequesterAvatarUrl { get; set; }
 
 		public DateTime RequestedAtUtc { get; set; }
+	}
+
+
+	//settings
+	public sealed class GroupSettingsDto
+	{
+		public long GroupId { get; set; }
+		public required string Name { get; set; }
+		public string? Description { get; set; }
+		public bool IsOpen { get; set; }
+		public GroupPostPermission WhoCanPost { get; set; }
+		public GroupEventPermission WhoCanCreateEvent { get; set; }
+	}
+
+	public sealed class UpdateGroupSettingsDto
+	{
+		public string? Name { get; set; }
+		public string? Description { get; set; }
+		public bool? IsOpen { get; set; }
+		public GroupPostPermission? WhoCanPost { get; set; }
+		public GroupEventPermission? WhoCanCreateEvent { get; set; }
 	}
 
 }
