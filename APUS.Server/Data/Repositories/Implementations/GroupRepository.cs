@@ -105,5 +105,20 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 		public IQueryable<GroupJoinRequest> PendingRequestsQuery(long groupId) =>
 			_db.GroupJoinRequests.AsNoTracking().Where(r => r.GroupId == groupId && r.Status == JoinRequestStatus.Pending);
+
+		public IQueryable<GroupJoinRequest> JoinRequestsQuery(long groupId)
+			=> _db.GroupJoinRequests
+				   .AsNoTracking()
+				   .Where(r => r.GroupId == groupId);
+
+		public Task<GroupJoinRequest?> GetJoinRequestAsync(long groupId, string userId, CancellationToken ct) =>
+			_db.GroupJoinRequests
+			   .FirstOrDefaultAsync(r => r.GroupId == groupId && r.RequesterUserId == userId, ct);
+
+		public async Task UpdateJoinRequestAsync(GroupJoinRequest request, CancellationToken ct)
+		{
+			_db.GroupJoinRequests.Update(request);
+			await _db.SaveChangesAsync(ct);
+		}
 	}
 }

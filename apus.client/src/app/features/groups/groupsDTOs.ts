@@ -34,3 +34,12 @@ export interface GroupMembersDto {
     role: string;
     joinedAtUtc: string;
 }
+
+export interface GroupJoinRequestDto {
+    id: number;
+    requesterUserId: string;
+    fullName: string;
+    avatarUrl: string | null;
+    requestedAtUtc: string;
+}
+

@@ -4,6 +4,7 @@ import { NgModule } from "@angular/core";
 import { GroupsComponent } from "./groups.component";
 import { groupResolver } from "./group.resolver";
 import { GroupsHomeComponent } from "./groups-home/groups-home.component";
+import { GroupsRequestComponent } from "./groups-request/groups-request.component";
 
 const routes: Routes = [
     {
@@ -11,8 +12,14 @@ const routes: Routes = [
         canActivateChild: [AuthGuard],
         children: [
             { path: '', component: GroupsHomeComponent },
-            { path: ':id', component: GroupsComponent, resolve: { group: groupResolver } }
-
+            {
+                path: ':id',
+                component: GroupsComponent,
+                resolve: { group: groupResolver },
+                children: [
+                    { path: 'requests', component: GroupsRequestComponent },
+                ]
+            }
         ]
     }
 ];

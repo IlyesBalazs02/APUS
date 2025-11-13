@@ -1,0 +1,34 @@
+<div class="requests-page">
+    <h3>Join requests</h3>
+
+    <div *ngIf="loading">Loading…</div>
+    <p *ngIf="error && !loading" class="error">{{ error }}</p>
+
+    <p *ngIf="!loading && !requests.length && !error">
+        No pending requests for this group.
+    </p>
+
+    <ul class="requests-list" *ngIf="!loading && requests.length">
+        <li *ngFor="let r of requests" class="request-card">
+            <div class="who">
+                <img [src]="avatarUrl(r)" class="avatar" alt="avatar" />
+                <div class="info">
+                    <div class="name">{{ r.fullName }}</div>
+                    <div class="meta">
+                        Requested:
+                        {{ r.requestedAtUtc | date:'medium' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn primary" (click)="decide(r, true)" [disabled]="decidingIds.has(r.id)">
+                    Approve
+                </button>
+                <button class="btn danger" (click)="decide(r, false)" [disabled]="decidingIds.has(r.id)">
+                    Reject
+                </button>
+            </div>
+        </li>
+    </ul>
+</div>

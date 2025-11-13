@@ -83,5 +83,14 @@ namespace APUS.Server.Controllers.GroupsController
 			return NoContent();
 		}
 
+		[HttpGet("{groupId:long}/requests")]
+		public async Task<ActionResult<List<GroupJoinRequestDto>>> Requests(long groupId, CancellationToken ct)
+		{
+			var adminId = User.GetUserId();
+			var reqs = await _svc.GetPendingRequestsAsync(adminId, groupId, ct);
+
+			return Ok(reqs);
+		}
+
 	}
 }

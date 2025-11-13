@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.Entities.Groups;
 using APUS.Server.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;

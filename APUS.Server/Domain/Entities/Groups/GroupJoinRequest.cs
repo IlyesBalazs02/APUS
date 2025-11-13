@@ -19,6 +19,7 @@ namespace APUS.Server.Domain.Entities.Groups
 		public SiteUser RequesterUser { get; set; } = null!;
 		public JoinRequestStatus Status { get; set; } = JoinRequestStatus.Pending;
 		public DateTime CreatedAtUtc { get; set; }
+		public DateTime? DecidedAtUtc { get; set; }
 		public string? DecidedByUserId { get; set; }
 	}
 

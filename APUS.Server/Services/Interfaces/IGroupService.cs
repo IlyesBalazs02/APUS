@@ -14,5 +14,7 @@ namespace APUS.Server.Services.Interfaces
 		Task RequestToJoinAsync(string userId, long groupId, CancellationToken ct);
 		Task<List<GroupDto>> SearchAsync(string? q, int skip, int take, CancellationToken ct);
 		Task UpdateAsync(string adminId, long groupId, UpdateGroupDto dto, CancellationToken ct);
+		Task<List<GroupJoinRequestDto>> GetPendingRequestsAsync(string adminId, long groupId, CancellationToken ct);
+
 	}
 }

@@ -18,5 +18,9 @@ namespace APUS.Server.Data.Repositories.Interfaces
 		Task RemoveMemberAsync(long groupId, string userId, CancellationToken ct);
 		Task<List<GroupDto>> SearchAsync(string? q, int skip, int take, CancellationToken ct);
 		Task UpdateAsync(Group g, CancellationToken ct);
+		IQueryable<GroupJoinRequest> JoinRequestsQuery(long groupId);
+		Task<GroupJoinRequest?> GetJoinRequestAsync(long groupId, string userId, CancellationToken ct);
+		Task UpdateJoinRequestAsync(GroupJoinRequest request, CancellationToken ct);
+
 	}
 }

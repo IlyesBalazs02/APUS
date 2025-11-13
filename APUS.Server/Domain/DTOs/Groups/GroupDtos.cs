@@ -41,4 +41,17 @@
 		public required string Role { get; set; }
 		public DateTime JoinedAtUtc { get; set; }
 	}
+
+	public sealed class GroupJoinRequestDto
+	{
+		public long Id { get; set; }
+		public long GroupId { get; set; }
+
+		public required string RequesterUserId { get; set; }
+		public required string RequesterFullName { get; set; }
+		public string? RequesterAvatarUrl { get; set; }
+
+		public DateTime RequestedAtUtc { get; set; }
+	}
+
 }

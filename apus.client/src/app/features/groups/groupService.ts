@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CreateGroupDto, DecideJoinRequestDto, GroupDto, GroupMembersDto, UpdateGroupDto } from "./groupsDTOs";
+import { CreateGroupDto, DecideJoinRequestDto, GroupDto, GroupJoinRequestDto, GroupMembersDto, UpdateGroupDto } from "./groupsDTOs";
 import { firstValueFrom } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
@@ -48,5 +48,9 @@ export class GroupService {
 
     kickMember(groupId: number, userId: string) {
         return this.http.delete<void>(`${this.base}/${groupId}/members/${userId}`);
+    }
+
+    getRequests(groupId: number) {
+        return this.http.get<GroupJoinRequestDto[]>(`${this.base}/${groupId}/requests`);
     }
 }

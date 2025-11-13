@@ -58,7 +58,7 @@ export class GroupsComponent implements OnInit {
         this.joining = true;
         try {
             await this.groupService.join(this.group.id).toPromise();
-            this.group = { ...this.group, memberCount: this.group.memberCount + 1 };
+            this.group = { ...this.group, memberCount: this.group.memberCount };
             this.isMember = true;
         } finally {
             this.joining = false;

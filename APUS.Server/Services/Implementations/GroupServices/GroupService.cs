@@ -84,22 +84,51 @@ namespace APUS.Server.Services.Implementations.GroupServices
 
 		public async Task RequestToJoinAsync(string userId, long groupId, CancellationToken ct)
 		{
-			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+			var group = await _repo.GetAsync(groupId, ct)
+				?? throw new KeyNotFoundException("Group not found");
 
-			if (await _repo.IsMemberAsync(groupId, userId, ct))
+			// already member? nothing to do
+			if (group.Members.Any(m => m.UserId == userId))
 				return;
 
-			if (g.IsOpen)
+			// OPEN group → just add membership once
+			if (group.IsOpen)
 			{
-				await _repo.AddMemberAsync(groupId, userId, GroupRole.Member, DateTime.UtcNow, ct);
+				// avoid duplicate membership
+				var alreadyMember = await _repo.IsMemberAsync(groupId, userId, ct);
+				if (!alreadyMember)
+				{
+					await _repo.AddMemberAsync(groupId, userId, GroupRole.Member, DateTime.UtcNow, ct);
+				}
 				return;
 			}
 
-			if (await _repo.HasPendingRequestAsync(groupId, userId, ct))
+			// CLOSED group → work with join requests
+			var existing = await _repo.GetJoinRequestAsync(groupId, userId, ct);
+
+			// if already have a pending request → do nothing
+			if (existing is not null && existing.Status == JoinRequestStatus.Pending)
 				return;
 
-			_ = await _repo.AddJoinRequestAsync(groupId, userId, DateTime.UtcNow, ct);
+			var now = DateTime.UtcNow;
+
+			if (existing is not null)
+			{
+				// reuse old row (Approved/Rejected) → reset to pending
+				existing.Status = JoinRequestStatus.Pending;
+				existing.CreatedAtUtc = now;
+				existing.DecidedAtUtc = null;
+				existing.DecidedByUserId = null;
+
+				await _repo.UpdateJoinRequestAsync(existing, ct); // small helper, see below
+			}
+			else
+			{
+				// no request yet → create new
+				await _repo.AddJoinRequestAsync(groupId, userId, now, ct);
+			}
 		}
+
 
 		public async Task ApproveOrRejectAsync(string adminId, long requestId, bool approve, CancellationToken ct)
 		{
@@ -187,6 +216,32 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			}
 
 			await _repo.RemoveMemberAsync(groupId, targetUserId, ct);
+		}
+
+		public async Task<List<GroupJoinRequestDto>> GetPendingRequestsAsync(string adminId, long groupId, CancellationToken ct)
+		{
+			// Ensure caller is admin of that group
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+			var isAdmin = g.Members.Any(m => m.UserId == adminId && m.Role == GroupRole.Admin);
+			if (!isAdmin)
+				throw new UnauthorizedAccessException("Only admins can view join requests.");
+
+			// Query pending requests with requester user loaded
+			var q = _repo.JoinRequestsQuery(groupId)              // new repo helper, see step 4
+						 .Include(r => r.RequesterUser)
+						 .Where(r => r.Status == JoinRequestStatus.Pending)
+						 .OrderByDescending(r => r.CreatedAtUtc)
+						 .Select(r => new GroupJoinRequestDto
+						 {
+							 Id = r.Id,
+							 GroupId = r.GroupId,
+							 RequesterUserId = r.RequesterUserId,
+							 RequesterFullName = r.RequesterUser.FirstName + " " + r.RequesterUser.LastName,
+							 RequesterAvatarUrl = r.RequesterUser.AvatarUrl,
+							 RequestedAtUtc = r.CreatedAtUtc
+						 });
+
+			return await q.ToListAsync(ct);
 		}
 
 
