@@ -86,6 +86,17 @@ export class AuthService {
     return payload?.email ?? null;
   }
 
+  currentUserId(): string | null {
+    const token = this.getToken();
+    const payload = token ? this.decodePayload(token) : null;
+    const nameIdUri = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+
+    return (
+      payload[nameIdUri] ?? // ASP.NET ClaimTypes.NameIdentifier as URI
+      null
+    );
+  }
+
   private decodePayload(token: string): any | null {
     try {
       const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');

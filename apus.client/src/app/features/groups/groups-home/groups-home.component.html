@@ -5,25 +5,28 @@
     </section>
 
     <section class="create">
-        <h3>Create group</h3>
+        <details class="create-accordion" [open]="false">
+            <summary>Create group</summary>
 
-        <div class="form-grid">
-            <input class="input" placeholder="Name" [(ngModel)]="newGroup.name" />
+            <div class="form-grid">
+                <input class="input" placeholder="Name" [(ngModel)]="newGroup.name" />
 
-            <label class="row">
-                <input type="checkbox" [(ngModel)]="newGroup.isOpen" />
-                <span>Open to join</span>
-            </label>
+                <label class="row">
+                    <input type="checkbox" [(ngModel)]="newGroup.isOpen" />
+                    <span>Open to join</span>
+                </label>
 
-            <textarea class="textarea" placeholder="Description" [(ngModel)]="newGroup.description"></textarea>
+                <textarea class="textarea" placeholder="Description" [(ngModel)]="newGroup.description"></textarea>
 
-            <div class="row">
-                <button class="btn" (click)="create()" [disabled]="creating || !newGroup.name?.trim()">
-                    Create
-                </button>
+                <div class="row">
+                    <button class="btn primary" (click)="create()" [disabled]="creating || !newGroup.name?.trim()">
+                        Create
+                    </button>
+                </div>
             </div>
-        </div>
+        </details>
     </section>
+
 
     <section class="list">
         <a *ngFor="let g of groups" class="group-card" [routerLink]="['/groups', g.id]">
@@ -31,8 +34,6 @@
             <p class="desc">{{ g.description || '—' }}</p>
             <div class="meta">
                 <span>Members: {{ g.memberCount }}</span>
-                <span>Created: {{ g.createdAtUtc | date: 'medium' }}</span>
-                <span>{{ g.isOpen ? 'Open' : 'Closed' }}</span>
             </div>
         </a>
 

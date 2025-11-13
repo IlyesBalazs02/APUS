@@ -18,8 +18,19 @@ export interface GroupDto {
     createdByUserId: string;
     createdAtUtc: string;
     memberCount: number;
+
+    isMember: boolean;
+    isAdmin: boolean;
 }
 
 export interface DecideJoinRequestDto {
     approve: boolean;
+}
+
+export interface GroupMembersDto {
+    userId: string;
+    fullName: string;
+    avatarUrl: string;
+    role: string;
+    joinedAtUtc: string;
 }

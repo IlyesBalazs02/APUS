@@ -2,6 +2,7 @@
 using APUS.Server.Domain.DTOs.Groups;
 using APUS.Server.Domain.Entities.Groups;
 using APUS.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace APUS.Server.Services.Implementations.GroupServices
 {
@@ -37,6 +38,29 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				CreatedByUserId = g.CreatedByUserId,
 				CreatedAtUtc = g.CreatedAtUtc,
 				MemberCount = g.Members.Count
+			};
+		}
+
+		//new getASync
+		public async Task<GroupDto?> GetForUserAsync(long id, string viewerId, CancellationToken ct)
+		{
+			var g = await _repo.GetAsync(id, ct);
+			if (g is null) return null;
+
+			var isMember = g.Members.Any(m => m.UserId == viewerId);
+			var isAdmin = g.Members.Any(m => m.UserId == viewerId && m.Role == GroupRole.Admin);
+
+			return new GroupDto
+			{
+				Id = g.Id,
+				Name = g.Name,
+				Description = g.Description,
+				IsOpen = g.IsOpen,
+				CreatedByUserId = g.CreatedByUserId,
+				CreatedAtUtc = g.CreatedAtUtc,
+				MemberCount = g.Members.Count,
+				IsMember = isMember,
+				IsAdmin = isAdmin
 			};
 		}
 
@@ -124,5 +148,47 @@ namespace APUS.Server.Services.Implementations.GroupServices
 
 			await _repo.UpdateAsync(g, ct);
 		}
+
+		public async Task<List<GroupMemberDto>> GetMembersAsync(long groupId, CancellationToken ct)
+		{
+			var q = _repo.MembersQuery(groupId)
+						 .Include(m => m.User)
+						 .Select(m => new GroupMemberDto
+						 {
+							 UserId = m.UserId,
+							 FullName = m.User.FirstName + " " + m.User.LastName,
+							 AvatarUrl = m.User.AvatarUrl,
+							 Role = m.Role.ToString(),
+							 JoinedAtUtc = m.JoinedAtUtc
+						 });
+
+			return await q.ToListAsync(ct);
+		}
+
+		public async Task KickAsync(string adminId, long groupId, string targetUserId, CancellationToken ct)
+		{
+			if (adminId == targetUserId)
+				throw new InvalidOperationException("You cannot remove yourself.");
+
+			var g = await _repo.GetAsync(groupId, ct) ?? throw new KeyNotFoundException("Group not found");
+
+			var isAdmin = g.Members.Any(m => m.UserId == adminId && m.Role == GroupRole.Admin);
+			if (!isAdmin) throw new UnauthorizedAccessException("Only admins can remove members.");
+
+			var target = g.Members.FirstOrDefault(m => m.UserId == targetUserId);
+			if (target is null) return; // already not a member
+
+			// If target is Admin, ensure at least one other admin remains
+			if (target.Role == GroupRole.Admin)
+			{
+				var otherAdmins = await _repo.AdminCountAsync(groupId, targetUserId, ct);
+				if (otherAdmins == 0)
+					throw new InvalidOperationException("Cannot remove the last admin.");
+			}
+
+			await _repo.RemoveMemberAsync(groupId, targetUserId, ct);
+		}
+
+
 	}
 }

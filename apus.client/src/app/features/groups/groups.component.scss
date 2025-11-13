@@ -1,0 +1,119 @@
+.group-header {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 1rem; border: 1px solid var(--border, #2b2b2b); border-radius: 12px;
+  background: var(--bg-card, #141414);
+}
+
+.actions .btn { margin-left: .5rem; }
+.btn {
+  padding: .45rem .9rem; border-radius: 10px; border: 1px solid var(--border, #2b2b2b);
+  background: var(--btn-bg, #2a2a2a); color: #fff; cursor: pointer;
+}
+.btn.primary { background: #2d7be0; border-color: #1e58a6; }
+.btn.danger { background: #c33; border-color: #812; }
+
+.tabs {
+  display: flex; gap: .75rem; margin: 1rem 0; flex-wrap: wrap;
+}
+.tabs a {
+  text-decoration: none; color: #ddd; padding: .4rem .7rem; border: 1px solid #2b2b2b;
+  border-radius: 999px; background: #1a1a1a; opacity: .85;
+}
+.tabs a.active { opacity: 1; border-color: #3c6; background: #0f2817; color: #cfe; }
+
+
+/* MODAL */
+.linklike {
+  background: none;
+  border: none;
+  color: #7fc;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* backdrop covers everything, centers modal */
+.group-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  z-index: 100000; // on top of the app
+}
+
+.group-modal {
+  width: min(720px, 92vw);
+  max-height: 80vh;
+  overflow: auto;
+  background: #101010;
+  color: #eee;
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.group-modal header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.2rem;
+  border-bottom: 1px solid #222;
+}
+.member-row .who small {
+  opacity: 0.8;
+  margin-left: 0.35rem;
+}
+
+.btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #2b2b2b;
+  background: #2a2a2a;
+  color: #fff;
+  cursor: pointer;
+}
+.btn.danger {
+  background: #c33;
+  border-color: #812;
+}
+.btn.primary {
+  background: #2d7be0;
+  border-color: #1e58a6;
+}
+
+/* avatar */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;          /* CIRCLE */
+  object-fit: cover;           /* prevents distortion */
+  margin-right: 0.5rem;        /* space before name */
+  border: 1px solid #333;      /* optional subtle border */
+}
+
+/* Container for avatar + name + metadata */
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;                /* spacing between elements */
+}
+
+.who strong {
+  font-weight: 600;
+}
+
+.who small {
+  opacity: 0.8;
+  margin-left: 0.25rem;
+}

@@ -7,6 +7,9 @@ namespace APUS.Server.Services.Interfaces
 		Task ApproveOrRejectAsync(string adminId, long requestId, bool approve, CancellationToken ct);
 		Task<GroupDto> CreateAsync(string creatorId, CreateGroupDto dto, CancellationToken ct);
 		Task<GroupDto?> GetAsync(long id, CancellationToken ct);
+		Task<GroupDto?> GetForUserAsync(long id, string viewerId, CancellationToken ct);
+		Task<List<GroupMemberDto>> GetMembersAsync(long groupId, CancellationToken ct);
+		Task KickAsync(string adminId, long groupId, string targetUserId, CancellationToken ct);
 		Task LeaveAsync(string userId, long groupId, CancellationToken ct);
 		Task RequestToJoinAsync(string userId, long groupId, CancellationToken ct);
 		Task<List<GroupDto>> SearchAsync(string? q, int skip, int take, CancellationToken ct);

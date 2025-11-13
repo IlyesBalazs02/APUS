@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OsmSharp.API;
 using APUS.Server.Core.Helpers;
+using System.Diagnostics;
 
 namespace APUS.Server.Controllers.GroupsController
 {
@@ -26,11 +27,13 @@ namespace APUS.Server.Controllers.GroupsController
 		[HttpGet("{id:long}")]
 		public async Task<ActionResult<GroupDto>> Get([FromRoute] long id, CancellationToken ct)
 		{
-			var g = await _svc.GetAsync(id, ct);
+			var viewerId = User.GetUserId();
+			var g = await _svc.GetForUserAsync(id, viewerId, ct);
 			return g is null ? NotFound() : Ok(g);
 		}
 
-		[HttpGet]
+
+			[HttpGet]
 		public async Task<ActionResult<List<GroupDto>>> Search([FromQuery] string? q, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken ct = default)
 		{
 			take = Math.Clamp(take, 1, 50);
@@ -63,6 +66,20 @@ namespace APUS.Server.Controllers.GroupsController
 		public async Task<IActionResult> Update([FromRoute] long groupId, [FromBody] UpdateGroupDto dto, CancellationToken ct)
 		{
 			await _svc.UpdateAsync(User.GetUserId(), groupId, dto, ct);
+			return NoContent();
+		}
+
+		[HttpGet("{groupId:long}/members")]
+		public async Task<ActionResult<List<GroupMemberDto>>> Members([FromRoute] long groupId, CancellationToken ct)
+		{
+			var members = await _svc.GetMembersAsync(groupId, ct);
+			return Ok(members);
+		}
+
+		[HttpDelete("{groupId:long}/members/{userId}")]
+		public async Task<IActionResult> Kick([FromRoute] long groupId, [FromRoute] string userId, CancellationToken ct)
+		{
+			await _svc.KickAsync(User.GetUserId(), groupId, userId, ct);
 			return NoContent();
 		}
 

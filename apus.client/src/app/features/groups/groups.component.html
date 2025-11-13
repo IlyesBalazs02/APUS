@@ -3,17 +3,20 @@
         <div>
             <h2>{{ g.name }}</h2>
             <p>{{ g.description || '—' }}</p>
-            <small>Members: {{ g.memberCount }} • Created: {{ g.createdAtUtc | date:'medium' }} • {{ g.isOpen ? 'Open' :
-                'Closed' }}</small>
+
+            <small>
+                <button class="linklike" (click)="openMembers()">
+                    Members: {{ g.memberCount }}
+                </button>
+            </small>
         </div>
+
         <div class="actions">
-            <button (click)="join()" [disabled]="joining">Join</button>
-            <button (click)="leave()" [disabled]="leaving">Leave</button>
-            <!-- Update button can be added when you expose admin role info -->
+            <button class="btn primary" *ngIf="!isMember" (click)="join()" [disabled]="joining">Join</button>
+            <button class="btn" *ngIf="isMember" (click)="leave()" [disabled]="leaving">Leave</button>
         </div>
     </header>
 
-    <!-- Tab nav (routes already wired, components are placeholders) -->
     <nav class="tabs">
         <a routerLink="posts" routerLinkActive="active">Posts</a>
         <a routerLink="events" routerLinkActive="active">Events</a>
@@ -22,4 +25,31 @@
     </nav>
 
     <router-outlet></router-outlet>
+
+    <!-- MEMBERS MODAL -->
+    <div class="group-modal-backdrop" *ngIf="membersOpen" (click)="closeMembers()">
+        <div class="group-modal" (click)="$event.stopPropagation()">
+            <header>
+                <h3>Members</h3>
+                <button class="btn" (click)="closeMembers()">Close</button>
+            </header>
+
+            <div *ngIf="loadingMembers">Loading…</div>
+            <ul *ngIf="!loadingMembers">
+                <li *ngFor="let m of members" class="member-row">
+                    <span class="who">
+                        <img [src]="avatarUrl(m)" class="avatar" />
+                        <strong>{{ m.fullName }}</strong>
+                        <small>• Joined: {{ m.joinedAtUtc | date:'mediumDate' }}</small>
+                        <small> Role: {{m.role}}</small>
+                    </span>
+                    <button class="btn danger" *ngIf="isAdmin && m.userId !== currentUserId" (click)="kick(m)">
+                        Kick
+                    </button>
+
+                </li>
+            </ul>
+        </div>
+    </div>
+
 </ng-container>
