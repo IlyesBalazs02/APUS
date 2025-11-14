@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CreateGroupPostDto, GroupDto, GroupPostDto, GroupPostPermission, } from '../groupsDTOs';
 import { GroupService } from '../groupService';
@@ -12,18 +12,17 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './groups-post.component.html',
   styleUrls: ['./groups-post.component.scss']
 })
-export class GroupsPostComponent implements OnInit {
+export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
   groupId!: number;
   group: GroupDto | null = null;
 
-  posts: GroupPostDto[] = [];
+  posts: (GroupPostDto & { _expanded?: boolean })[] = [];
   loading = false;
   loadingMore = false;
   hasMore = true;
   private pageSize = 10;
   private skip = 0;
 
-  // create form
   title = '';
   text = '';
   creating = false;
@@ -31,6 +30,17 @@ export class GroupsPostComponent implements OnInit {
 
   currentUserId: string | null = null;
   canPost = false;
+
+  readonly maxTitleLength = 100;
+  readonly maxTextLength = 2000;
+  readonly maxPreviewLength = 300;
+
+  // delete popup
+  deleteTargetId: number | null = null;
+
+  // infinite scroll
+  @ViewChild('sentinel') sentinelRef?: ElementRef<HTMLDivElement>;
+  private io?: IntersectionObserver;
 
   constructor(
     private route: ActivatedRoute,
@@ -41,13 +51,34 @@ export class GroupsPostComponent implements OnInit {
   ngOnInit(): void {
     this.currentUserId = this.authService.currentUserId();
 
-    // group is resolved on parent route
     this.group = this.route.parent?.snapshot.data['group'] as GroupDto | null ?? null;
     const idFromParam = this.route.parent?.snapshot.params['id'];
     this.groupId = this.group?.id ?? (idFromParam ? +idFromParam : 0);
 
     this.updateCanPost();
     this.loadInitial();
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.sentinelRef) return;
+
+    this.io = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          this.loadMore();
+        }
+      }
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    });
+
+    this.io.observe(this.sentinelRef.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.io?.disconnect();
   }
 
   private updateCanPost() {
@@ -64,7 +95,6 @@ export class GroupsPostComponent implements OnInit {
     if (this.group.whoCanPost === GroupPostPermission.AdminsOnly) {
       this.canPost = this.group.isAdmin;
     } else {
-      // Members
       this.canPost = this.group.isMember;
     }
   }
@@ -76,7 +106,7 @@ export class GroupsPostComponent implements OnInit {
     try {
       const resp = await this.groupService.getPosts(this.groupId, this.skip, this.pageSize).toPromise();
       if (!resp) return;
-      this.posts = resp.items;
+      this.posts = resp.items.map(p => ({ ...p, _expanded: false }));
       this.hasMore = resp.hasMore;
       this.skip += resp.items.length;
     } finally {
@@ -90,7 +120,9 @@ export class GroupsPostComponent implements OnInit {
     try {
       const resp = await this.groupService.getPosts(this.groupId, this.skip, this.pageSize).toPromise();
       if (!resp) return;
-      this.posts = this.posts.concat(resp.items);
+      this.posts = this.posts.concat(
+        resp.items.map(p => ({ ...p, _expanded: false }))
+      );
       this.hasMore = resp.hasMore;
       this.skip += resp.items.length;
     } finally {
@@ -101,9 +133,12 @@ export class GroupsPostComponent implements OnInit {
   async createPost() {
     if (!this.groupId || !this.canPost || this.creating) return;
 
-    const t = this.title.trim();
-    const body = this.text.trim();
+    let t = this.title.trim();
+    let body = this.text.trim();
     if (!t || !body) return;
+
+    if (t.length > this.maxTitleLength) t = t.slice(0, this.maxTitleLength);
+    if (body.length > this.maxTextLength) body = body.slice(0, this.maxTextLength);
 
     this.creating = true;
     this.createError = null;
@@ -112,13 +147,11 @@ export class GroupsPostComponent implements OnInit {
     try {
       const created = await this.groupService.createPost(this.groupId, dto).toPromise();
       if (created) {
-        // prepend newest
-        this.posts = [created, ...this.posts];
+        this.posts = [{ ...created, _expanded: false }, ...this.posts];
         this.title = '';
         this.text = '';
-        // keep hasMore/skip as-is, paging will still work
       }
-    } catch (err: any) {
+    } catch {
       this.createError = 'Could not create post.';
     } finally {
       this.creating = false;
@@ -140,11 +173,23 @@ export class GroupsPostComponent implements OnInit {
     return !!this.group?.isAdmin;
   }
 
-  async deletePost(post: GroupPostDto) {
-    if (!this.canDelete(post)) return;
-    if (!confirm('Delete this post?')) return;
+  openDeletePopup(post: GroupPostDto & { _expanded?: boolean }) {
+    this.deleteTargetId = post.id;
+  }
 
-    await this.groupService.deletePost(post.id).toPromise();
-    this.posts = this.posts.filter(p => p.id !== post.id);
+  closeDeletePopup() {
+    this.deleteTargetId = null;
+  }
+
+  async confirmDelete() {
+    if (this.deleteTargetId == null) return;
+
+    await this.groupService.deletePost(this.deleteTargetId).toPromise();
+    this.posts = this.posts.filter(p => p.id !== this.deleteTargetId);
+    this.deleteTargetId = null;
+  }
+
+  toggleExpand(post: GroupPostDto & { _expanded?: boolean }) {
+    post._expanded = !post._expanded;
   }
 }

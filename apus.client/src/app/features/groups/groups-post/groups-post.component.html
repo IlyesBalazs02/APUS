@@ -1,65 +1,75 @@
-<div class="group-posts">
+<div class="page posts-page">
 
-    <!-- CREATE POST CARD (same style as group create card) -->
-    <div class="card create-post-card" *ngIf="canPost">
-        <h3>Create Post</h3>
+    <!-- CREATE POST -->
+    <section class="create" *ngIf="canPost">
+        <details class="create-accordion" [open]="false">
+            <summary>Create post</summary>
 
-        <div class="field">
-            <label>Title</label>
-            <input type="text" [(ngModel)]="title" maxlength="200" placeholder="Post title..." />
-        </div>
+            <div class="form-grid">
+                <input class="input" placeholder="Title" [(ngModel)]="title" maxlength="100" />
+                <div class="row">
+                    <span>{{ title.length }}/100</span>
+                </div>
 
-        <div class="field">
-            <label>Text</label>
-            <textarea rows="4" [(ngModel)]="text" maxlength="4000" placeholder="Write something..."></textarea>
-        </div>
-
-        <div class="actions">
-            <button class="btn primary" (click)="createPost()" [disabled]="creating || !title.trim() || !text.trim()">
-                {{ creating ? 'Posting…' : 'Post' }}
-            </button>
-        </div>
-
-        <p class="error" *ngIf="createError">{{ createError }}</p>
-    </div>
-
-
-    <!-- POSTS LIST -->
-    <div *ngIf="loading && posts.length === 0" class="loading">
-        Loading posts…
-    </div>
-
-    <div *ngIf="!loading && posts.length === 0" class="empty">
-        No posts yet.
-    </div>
-
-
-    <!-- POST CARD -->
-    <article class="card post-card" *ngFor="let p of posts">
-        <header class="post-header">
-            <div class="author">
-                <img [src]="avatarUrl(p)" class="avatar small-avatar" />
-                <div class="meta">
-                    <strong>{{ p.authorFullName }}</strong>
-                    <small>{{ p.createdAtUtc | date:'medium' }}</small>
+                <textarea class="textarea" placeholder="Text" [(ngModel)]="text" maxlength="2000"></textarea>
+                <div class="row">
+                    <span>{{ text.length }}/2000</span>
+                    <button class="btn primary" (click)="createPost()"
+                        [disabled]="creating || !title.trim() || !text.trim()">
+                        {{ creating ? 'Posting…' : 'Post' }}
+                    </button>
                 </div>
             </div>
 
-            <button *ngIf="canDelete(p)" class="btn danger small" (click)="deletePost(p)">
-                Delete
-            </button>
-        </header>
+            <p class="error" *ngIf="createError">{{ createError }}</p>
+        </details>
+    </section>
 
-        <h3 class="post-title">{{ p.title }}</h3>
-        <p class="post-text">{{ p.text }}</p>
-    </article>
+    <!-- POSTS LIST -->
+    <section class="list">
+        <article class="group-card post-card" *ngFor="let p of posts">
+            <header class="post-header">
+                <div class="author">
+                    <img [src]="avatarUrl(p)" class="avatar small-avatar" />
+                    <div class="meta">
+                        <strong>{{ p.authorFullName }}</strong>
+                        <small>{{ p.createdAtUtc | date:'medium' }}</small>
+                    </div>
+                </div>
 
+                <button *ngIf="canDelete(p)" class="btn danger small" type="button" (click)="openDeletePopup(p)">
+                    Delete
+                </button>
+            </header>
 
-    <!-- LOAD MORE -->
-    <div class="load-more" *ngIf="hasMore && posts.length > 0">
-        <button class="btn" (click)="loadMore()" [disabled]="loadingMore">
-            {{ loadingMore ? 'Loading…' : 'Load more' }}
-        </button>
-    </div>
+            <h4 class="post-title">{{ p.title }}</h4>
+
+            <p class="post-text">
+                {{
+                p._expanded || p.text.length <= maxPreviewLength ? p.text : (p.text | slice:0:maxPreviewLength) + '...'
+                    }} </p>
+
+                    <button *ngIf="p.text.length > maxPreviewLength" class="btn linklike show-more-btn" type="button"
+                        (click)="toggleExpand(p)">
+                        {{ p._expanded ? 'Show less' : 'Show more' }}
+                    </button>
+
+                    <!-- INLINE DELETE POPUP -->
+                    <div class="delete-popup" *ngIf="deleteTargetId === p.id">
+                        <p>Delete this post?</p>
+                        <div class="delete-popup-actions">
+                            <button class="btn" type="button" (click)="closeDeletePopup()">Cancel</button>
+                            <button class="btn danger" type="button" (click)="confirmDelete()">Delete</button>
+                        </div>
+                    </div>
+        </article>
+
+        <div class="loading-more" *ngIf="loadingMore">
+            Loading…
+        </div>
+
+        <!-- SENTINEL FOR INFINITE SCROLL -->
+        <div #sentinel class="sentinel" *ngIf="hasMore && !loadingMore"></div>
+    </section>
 
 </div>
