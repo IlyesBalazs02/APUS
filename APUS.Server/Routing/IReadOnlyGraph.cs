@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OSMGraphCreater
+namespace APUS.Server.Routing
 {
 	public interface IReadOnlyGraph
 	{

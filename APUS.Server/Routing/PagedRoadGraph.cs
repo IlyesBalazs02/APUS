@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace OSMGraphCreater
+namespace APUS.Server.Routing
 {
 	public sealed class PagedRoadGraph : IReadOnlyGraph, IDisposable
 	{

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using APUS.Server.Routing;
 
-namespace OSMGraphCreater
+namespace APUS.Server.Routing
 {
 	public sealed class VirtualEndpointsGraph : IReadOnlyGraph
 	{

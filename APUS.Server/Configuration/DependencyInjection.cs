@@ -12,8 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using APUS.Server.Services.Implementations.UserServices;
 using APUS.Server.Services.Implementations.GroupServices;
-using OSMGraphCreater;
 using APUS.Server.Routing;
+using APUS.Server.Services.Implementations.MapServices;
 
 namespace APUS.Server.Configuration
 {
@@ -54,14 +54,15 @@ namespace APUS.Server.Configuration
 				});
 			});
 
+			// Register PagedRoadGraph as a singleton (and dispose on shutdown)
 			services.AddSingleton<PagedRoadGraph>(sp =>
 			{
-				var env = sp.GetRequiredService<IHostEnvironment>();
+				var env = sp.GetRequiredService<IWebHostEnvironment>();
 
-				// Adjust folder name if needed ("graph_store" vs "graph_Store")
-				var rootDir = Path.Combine(env.ContentRootPath, "wwwroot", "graph_store");
+				// Adjust this if your graph_store lives elsewhere
+				var rootDir = Path.Combine(env.ContentRootPath, "graph_store");
 
-				// tune maxTilesInMem as you like
+				// maxTilesInMem same as your earlier tests
 				return new PagedRoadGraph(rootDir, maxTilesInMem: 8);
 			});
 
@@ -88,6 +89,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IGroupRepository, GroupRepository>();
 			services.AddScoped<IGroupService, GroupService>();
 			services.AddSingleton<IRandomRouteService, RandomRouteService>();
+			services.AddSingleton<IRoutingService, RoutingService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

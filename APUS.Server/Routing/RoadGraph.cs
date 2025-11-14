@@ -1,6 +1,4 @@
-﻿using OSMGraphCreater;
-
-namespace APUS.Server.Routing
+﻿namespace APUS.Server.Routing
 {
 	public sealed class RoadGraph : IReadOnlyGraph
 	{

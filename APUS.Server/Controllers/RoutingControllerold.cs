@@ -7,7 +7,7 @@ namespace APUS.Server.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class RoutingController : ControllerBase
+	public class RoutingControllerold : ControllerBase
 	{
 
 		public class RouteRequest
@@ -25,7 +25,7 @@ namespace APUS.Server.Controllers
 		private readonly IRouteService _routeService;
 		private readonly IRandomRouteService _randomRouteService;
 
-		public RoutingController(IRouteService routeService, IRandomRouteService randomRouteService)
+		public RoutingControllerold(IRouteService routeService, IRandomRouteService randomRouteService)
 		{
 			_routeService = routeService;
 			_randomRouteService = randomRouteService;
