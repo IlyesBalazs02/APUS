@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using APUS.Server.Services.Implementations.UserServices;
 using APUS.Server.Services.Implementations.GroupServices;
+using OSMGraphCreater;
+using APUS.Server.Routing;
 
 namespace APUS.Server.Configuration
 {
@@ -52,6 +54,18 @@ namespace APUS.Server.Configuration
 				});
 			});
 
+			services.AddSingleton<PagedRoadGraph>(sp =>
+			{
+				var env = sp.GetRequiredService<IHostEnvironment>();
+
+				// Adjust folder name if needed ("graph_store" vs "graph_Store")
+				var rootDir = Path.Combine(env.ContentRootPath, "wwwroot", "graph_store");
+
+				// tune maxTilesInMem as you like
+				return new PagedRoadGraph(rootDir, maxTilesInMem: 8);
+			});
+
+
 			var connectionString = configuration.GetConnectionString("DefaultConnection")
 						  ?? "Server=(localdb)\\mssqllocaldb;Database=APUSActivityDbDev;Trusted_Connection=True;MultipleActiveResultSets=true";
 
@@ -73,6 +87,7 @@ namespace APUS.Server.Configuration
 			services.AddTransient<IRouteService, RouteService>();
 			services.AddScoped<IGroupRepository, GroupRepository>();
 			services.AddScoped<IGroupService, GroupService>();
+			services.AddSingleton<IRandomRouteService, RandomRouteService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

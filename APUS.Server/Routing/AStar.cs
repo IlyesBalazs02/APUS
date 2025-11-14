@@ -1,71 +1,135 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OSMGraphCreater;
+using System.Text.Json;
 
-namespace OSMRouting
+namespace APUS.Server.Routing
 {
-	public class AStar
+	public static class AStarRouter
 	{
-		private List<GraphNode> graphNodeList;
+		private sealed class OpenItem : IComparable<OpenItem>
+		{
+			public int Node;
+			public float F;
+			public int CompareTo(OpenItem other) => F.CompareTo(other.F);
+		}
 
-        public AStar(List<GraphNode> graphNodes)
-        {
-            graphNodeList = graphNodes;
-        }
+		// Returns nodes path + also lets you reconstruct edges used
+		public static List<int> ShortestPath(IReadOnlyGraph g, int start, int goal)
+		{
+			int n = g.NodeCount;
+			var gScore = Enumerable.Repeat(float.PositiveInfinity, n).ToArray();
+			var fScore = Enumerable.Repeat(float.PositiveInfinity, n).ToArray();
+			var cameFrom = Enumerable.Repeat(-1, n).ToArray();
 
-        public List<GraphNode> FindPath(GraphNode start, GraphNode goal)
-        {
-            var openList = new List<GraphNode> { start};
-            var closedList = new HashSet<GraphNode>();
-            var cameFrom = new Dictionary<GraphNode, GraphNode>();
+			var open = new PriorityQueue<int, float>();
+			gScore[start] = 0;
+			fScore[start] = Heuristic(g, start, goal);
+			open.Enqueue(start, fScore[start]);
 
-			start.G = 0;
-			start.H = start.CalculateHeuristic(goal);
+			var inOpen = new bool[n];
+			inOpen[start] = true;
 
-			while (openList.Count > 0)
+			while (open.Count > 0)
 			{
-				var current = openList.OrderBy(node => node.F).First();
+				var current = open.Dequeue();
+				if (current == goal) return ReconstructPath(cameFrom, current);
 
-				if (current == goal)
-					return ReconstructPath(cameFrom, current);
-
-				openList.Remove(current);
-				closedList.Add(current);
-
-				foreach (var neighbour in current.Neighbours)
+				var adj = g.GetAdj(current);
+				for (int i = 0; i < adj.Count; i++)
 				{
-					var neighborNode = neighbour.Key;
-					var tentativeG = current.G + neighbour.Value;
+					var e = adj[i];
+					float tentative = gScore[current] + e.Weight;
+					if (tentative < gScore[e.To])
+					{
+						cameFrom[e.To] = current;
+						gScore[e.To] = tentative;
+						fScore[e.To] = tentative + Heuristic(g, e.To, goal);
+						if (!inOpen[e.To])
+						{
+							open.Enqueue(e.To, fScore[e.To]);
+							inOpen[e.To] = true;
+						}
+					}
+				}
+			}
+			return new List<int>();
+		}
 
-					if (closedList.Contains(neighborNode))
-						continue;
+		private static List<int> ReconstructPath(int[] cameFrom, int cur)
+		{
+			var path = new List<int> { cur };
+			while (cameFrom[cur] != -1) { cur = cameFrom[cur]; path.Add(cur); }
+			path.Reverse(); return path;
+		}
 
-					if (!openList.Contains(neighborNode))
-						openList.Add(neighborNode);
-					else if (tentativeG >= neighborNode.G)
-						continue;
+		private static float Heuristic(IReadOnlyGraph g, int u, int v)
+		{
+			var a = g.GetNodeLatLon(u); var b = g.GetNodeLatLon(v);
+			return (float)Math.Sqrt((a.Lat - b.Lat) * (a.Lat - b.Lat) + (a.Lon - b.Lon) * (a.Lon - b.Lon)) * 111_000f;
+		}
 
-					cameFrom[neighborNode] = current;
-					neighborNode.G = tentativeG;
-					neighborNode.H = neighborNode.CalculateHeuristic(goal);
+		public static int NearestNodeLinear(RoadGraph g, double lat, double lon)
+		{
+			int best = -1;
+			double bestD2 = double.MaxValue;
+			for (int i = 0; i < g.Nodes.Count; i++)
+			{
+				double dLat = g.Nodes[i].Lat - lat;
+				double dLon = g.Nodes[i].Lon - lon;
+				double d2 = dLat * dLat + dLon * dLon;
+				if (d2 < bestD2) { bestD2 = d2; best = i; }
+			}
+			return best;
+		}
+
+		public static string ExportRouteNodesGeoJson(RoadGraph g, List<int> path)
+		{
+			// Build GeoJSON features for each node in the path
+			var features = new List<object>();
+
+			foreach (var idx in path)
+			{
+				var node = g.Nodes[idx];
+				features.Add(new
+				{
+					type = "Feature",
+					properties = new { },
+					geometry = new
+					{
+						type = "Point",
+						coordinates = new[] { node.Lon, node.Lat } // GeoJSON = [lon, lat]
+					}
+				});
+			}
+
+			var geojson = new
+			{
+				type = "FeatureCollection",
+				features = features
+			};
+
+			return JsonSerializer.Serialize(geojson);
+		}
+
+		public static int NearestNode(IReadOnlyGraph g, double lat, double lon)
+		{
+			int best = -1;
+			double bestD2 = double.MaxValue;
+
+			for (int i = 0; i < g.NodeCount; i++)
+			{
+				var n = g.GetNodeLatLon(i);
+				double dLat = n.Lat - lat;
+				double dLon = n.Lon - lon;
+				double d2 = dLat * dLat + dLon * dLon; // squared degrees, good enough
+
+				if (d2 < bestD2)
+				{
+					bestD2 = d2;
+					best = i;
 				}
 			}
 
-			return null; // Path not found
-		}
-
-		private static List<GraphNode> ReconstructPath(Dictionary<GraphNode, GraphNode> cameFrom, GraphNode current)
-		{
-			var path = new List<GraphNode> { current };
-			while (cameFrom.ContainsKey(current))
-			{
-				current = cameFrom[current];
-				path.Add(current);
-			}
-			path.Reverse();
-			return path;
+			return best;
 		}
 
 	}

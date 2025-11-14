@@ -2,7 +2,6 @@
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OSMRouting;
 
 namespace APUS.Server.Controllers
 {
@@ -24,12 +23,19 @@ namespace APUS.Server.Controllers
 		}
 
 		private readonly IRouteService _routeService;
-		public RoutingController(IRouteService routeService)
-			=> _routeService = routeService;
+		private readonly IRandomRouteService _randomRouteService;
+
+		public RoutingController(IRouteService routeService, IRandomRouteService randomRouteService)
+		{
+			_routeService = routeService;
+			_randomRouteService = randomRouteService;
+		}
 
 		[HttpPost("route")]
 		public Task<List<(double latitude, double longitude)>> GetRoute([FromBody] RouteRequest request)
 		{
+			var A = _randomRouteService.CreateRandomRouteGeoJson();
+
 			return _routeService.GetRouteAsync(
 				(request.Start.Latitude, request.Start.Longitude),
 				(request.End.Latitude, request.End.Longitude)
