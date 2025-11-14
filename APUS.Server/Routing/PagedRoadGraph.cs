@@ -37,6 +37,8 @@ namespace APUS.Server.Routing
 			public Dictionary<(int u, int v), (List<(double Lat, double Lon)> geom, float[] cum)> Geoms = new();
 
 			public bool GeomsLoaded = false;
+
+			public readonly object GeomLock = new();
 		}
 
 
@@ -169,62 +171,71 @@ namespace APUS.Server.Routing
 
 		private void EnsureGeomLoaded(int tileId, TileData tile)
 		{
+			// Fast path: already loaded
 			if (tile.GeomsLoaded) return;
 
-			var meta = _m.Tiles.First(x => x.TileId == tileId);
-			if (string.IsNullOrEmpty(meta.GeomPath))
+			lock (tile.GeomLock)
 			{
-				// No geometry file – nothing to load.
-				tile.GeomsLoaded = true;
-				return;
-			}
+				// Double-check inside the lock
+				if (tile.GeomsLoaded) return;
 
-			var geomPath = Path.Combine(_root, meta.GeomPath);
-			using var fs = File.OpenRead(geomPath);
-			using var br = new BinaryReader(fs);
-
-			var magic = new string(br.ReadChars(8));
-			if (magic != "RGSHGEO1") throw new Exception("Corrupt geometry tile");
-
-			int nCount = br.ReadInt32();
-			int eCount = br.ReadInt32();
-
-			var localNodes = new int[nCount];
-			for (int i = 0; i < nCount; i++)
-			{
-				localNodes[i] = br.ReadInt32();
-			}
-
-			// Edges + geometry
-			for (int ni = 0; ni < nCount; ni++)
-			{
-				int u = br.ReadInt32();
-				int deg = br.ReadInt32();
-
-				for (int k = 0; k < deg; k++)
+				var meta = _m.Tiles.First(x => x.TileId == tileId);
+				if (string.IsNullOrEmpty(meta.GeomPath))
 				{
-					int to = br.ReadInt32();
-
-					int gc = br.ReadInt32();
-					var geom = new List<(double Lat, double Lon)>(gc);
-					for (int gi = 0; gi < gc; gi++)
-					{
-						double la = br.ReadDouble();
-						double lo = br.ReadDouble();
-						geom.Add((la, lo));
-					}
-
-					int cc = br.ReadInt32();
-					var cum = new float[cc];
-					for (int ci = 0; ci < cc; ci++)
-						cum[ci] = br.ReadSingle();
-
-					tile.Geoms[(u, to)] = (geom, cum);
+					// No geometry file – nothing to load.
+					tile.GeomsLoaded = true;
+					return;
 				}
-			}
 
-			tile.GeomsLoaded = true;
+				var geomPath = Path.Combine(_root, meta.GeomPath);
+				using var fs = File.OpenRead(geomPath);
+				using var br = new BinaryReader(fs);
+
+				var magic = new string(br.ReadChars(8));
+				if (magic != "RGSHGEO1") throw new Exception("Corrupt geometry tile");
+
+				int nCount = br.ReadInt32();
+				int eCount = br.ReadInt32();
+
+				var localNodes = new int[nCount];
+				for (int i = 0; i < nCount; i++)
+				{
+					localNodes[i] = br.ReadInt32();
+				}
+
+				// Edges + geometry
+				for (int ni = 0; ni < nCount; ni++)
+				{
+					int u = br.ReadInt32();
+					int deg = br.ReadInt32();
+
+					for (int k = 0; k < deg; k++)
+					{
+						int to = br.ReadInt32();
+
+						int gc = br.ReadInt32();
+						var geom = new List<(double Lat, double Lon)>(gc);
+						for (int gi = 0; gi < gc; gi++)
+						{
+							double la = br.ReadDouble();
+							double lo = br.ReadDouble();
+							geom.Add((la, lo));
+						}
+
+						int cc = br.ReadInt32();
+						var cum = new float[cc];
+						for (int ci = 0; ci < cc; ci++)
+							cum[ci] = br.ReadSingle();
+
+						// This write is now protected by the lock
+						tile.Geoms[(u, to)] = (geom, cum);
+					}
+				}
+
+				tile.GeomsLoaded = true;
+			}
 		}
+
 
 
 
@@ -470,11 +481,129 @@ namespace APUS.Server.Routing
 			return poly;
 		}
 
-		static SnapResult SnapToGraph(PagedRoadGraph g, (double Lat, double Lon) p)
+		public static SnapResult SnapToGraph(PagedRoadGraph g, (double Lat, double Lon) p)
 		{
-			// TODO: connect segment index; for now, throw:
-			throw new NotImplementedException("Integrate your snapper here.");
+			double lat = p.Lat;
+			double lon = p.Lon;
+
+			// local meter scale around the query point
+			double cosLat = Math.Cos(lat * Math.PI / 180.0);
+			double dxScale = 111_320.0 * cosLat;
+			double dyScale = 110_540.0;
+
+			// We’ll try progressively larger search radii (in meters)
+			double[] radiiMeters = { 2000, 5000, 15000 };
+
+			SnapResult? best = null;
+			double bestD = double.MaxValue;
+
+			foreach (var radius in radiiMeters)
+			{
+				// Convert radius to lat/lon deltas
+				double dLat = radius / dyScale;
+				double dLon = radius / dxScale;
+
+				double minLat = lat - dLat;
+				double maxLat = lat + dLat;
+				double minLon = lon - dLon;
+				double maxLon = lon + dLon;
+
+				// 1) Pick only tiles whose bbox intersects the search box
+				var candidateTileIds = new List<int>();
+				foreach (var meta in g._m.Tiles)
+				{
+					if (meta.MaxLat < minLat || meta.MinLat > maxLat ||
+						meta.MaxLon < minLon || meta.MinLon > maxLon)
+					{
+						continue;
+					}
+
+					candidateTileIds.Add(meta.TileId);
+				}
+
+				if (candidateTileIds.Count == 0)
+					continue; // try next (larger) radius
+
+				// 2) Scan edges only in those tiles
+				foreach (var tileId in candidateTileIds)
+				{
+					var tile = g.EnsureTile(tileId);
+
+					foreach (var u in tile.NodeSet)
+					{
+						if (!tile.Adj.TryGetValue(u, out var adj) || adj.Count == 0)
+							continue;
+
+						for (int i = 0; i < adj.Count; i++)
+						{
+							int v = adj[i].To;
+
+							if (!g.TryGetEdgeGeometry(u, v, out var geom, out var cum))
+								continue;
+
+							if (geom.Count < 2 || cum.Length != geom.Count)
+								continue;
+
+							// Project onto each segment of this edge
+							for (int si = 0; si < geom.Count - 1; si++)
+							{
+								var a = geom[si];
+								var b = geom[si + 1];
+
+								// local coords (meters) relative to query point
+								double ax = (a.Lon - lon) * dxScale;
+								double ay = (a.Lat - lat) * dyScale;
+								double bx = (b.Lon - lon) * dxScale;
+								double by = (b.Lat - lat) * dyScale;
+
+								double vx = bx - ax;
+								double vy = by - ay;
+								double v2 = vx * vx + vy * vy;
+								if (v2 < 1e-6) continue;
+
+								// projection parameter t on segment [a,b] clamped to [0,1]
+								double t = Math.Clamp((-(ax * vx + ay * vy)) / v2, 0.0, 1.0);
+
+								double px = ax + t * vx;
+								double py = ay + t * vy;
+								double d = Math.Sqrt(px * px + py * py);
+								if (d >= bestD) continue;
+
+								// back to lat/lon
+								double snapLon = lon + (px / dxScale);
+								double snapLat = lat + (py / dyScale);
+
+								// distances along the edge (meters) from U
+								float edgeLen = cum[^1];
+								float segLen = cum[si + 1] - cum[si];
+								float lenFromStart = cum[si] + (float)(t * segLen);
+
+								bestD = d;
+								best = new SnapResult
+								{
+									U = u,
+									V = v,
+									DistFromU = lenFromStart,
+									EdgeLen = edgeLen,
+									Point = (snapLat, snapLon)
+								};
+							}
+						}
+					}
+				}
+
+				// If we found something in this radius, no need to expand further
+				if (best != null)
+					break;
+			}
+
+			if (best == null)
+				throw new InvalidOperationException("Could not snap point to graph (no nearby edges).");
+
+			return best;
 		}
+
+
 
 
 

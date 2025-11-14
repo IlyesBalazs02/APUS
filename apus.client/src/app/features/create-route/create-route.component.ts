@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -39,8 +39,10 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private snappedPoints: { lat: number; lon: number }[] = [];
   private fullRouteCoords: RouteCoordinateDto[] = [];
 
-  constructor(private http: HttpClient) {
-  }
+  // if you already have environment.apiUrl, use it; otherwise '' keeps current behaviour
+  private readonly apiBase = (environment as any).apiUrl ?? '';
+
+  constructor(private http: HttpClient) { }
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -61,17 +63,66 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       center: [this.lng, this.lat]
     });
 
-
     this.map.addControl(new mapboxgl.NavigationControl());
 
     this.map.on('load', () => {
+      console.log('[Map] load fired');
       this.addEmptyRouteSource();
-      this.registerMapClickHandler();
+
+      // sanity check: put a marker in the middle once on load
+      this.addMarker(this.lat, this.lng);
     });
+
+    this.map.on('click', (e) => this.onMapClick(e));
+  }
+
+  private onMapClick(e: mapboxgl.MapMouseEvent): void {
+    console.log('[Map] click', e.lngLat);
+
+    const { lng, lat } = e.lngLat;
+
+    this.snappedPoints.push({ lat, lon: lng });
+
+    const params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lon', lng.toString());
+
+    const url = `${this.apiBase}/api/routing/snap`;
+    console.log('[Snap] GET', url, 'params=', params.toString());
+
+    this.http.get<SnapResponseDto>(url, { params })
+      .subscribe({
+        next: snap => {
+          console.log('[Snap] result', snap);
+
+          // Optionally: move the last marker to the snapped position.
+          // For now, just add an extra snapped marker:
+          this.addMarker(snap.lat, snap.lon);
+
+          // replace last snapped point with the snapped one
+          this.snappedPoints[this.snappedPoints.length - 1] = {
+            lat: snap.lat,
+            lon: snap.lon
+          };
+
+          // if we have at least two snapped points, route between the last two
+          if (this.snappedPoints.length >= 2) {
+            const count = this.snappedPoints.length;
+            const from = this.snappedPoints[count - 2];
+            const to = this.snappedPoints[count - 1];
+
+            this.requestRoute(from, to);
+          }
+        },
+        error: err => {
+          console.error('[Snap] failed', err);
+          // we already added a raw-click marker above, so just notify
+          alert('Could not snap to road. Check Network tab for /api/routing/snap.');
+        }
+      });
   }
 
   private addEmptyRouteSource(): void {
-    // Empty feature collection for the route
     const emptyData: GeoJSON.FeatureCollection<GeoJSON.Geometry> = {
       type: 'FeatureCollection',
       features: []
@@ -97,42 +148,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private registerMapClickHandler(): void {
-    this.map.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
-
-      // 1) Snap clicked position to nearest road via backend
-      const params = new HttpParams()
-        .set('lat', lat.toString())
-        .set('lon', lng.toString());
-
-      this.http.get<SnapResponseDto>('/api/routing/snap', { params })
-        .subscribe({
-          next: snap => {
-            // add marker at snapped coordinate
-            this.addMarker(snap.lat, snap.lon);
-
-            // remember snapped point
-            this.snappedPoints.push({ lat: snap.lat, lon: snap.lon });
-
-            // if we have at least two snapped points, route between the last two
-            if (this.snappedPoints.length >= 2) {
-              const count = this.snappedPoints.length;
-              const from = this.snappedPoints[count - 2];
-              const to = this.snappedPoints[count - 1];
-
-              this.requestRoute(from, to);
-            }
-          },
-          error: err => {
-            console.error('Snap failed', err);
-            alert('Could not snap to road (see console for details).');
-          }
-        });
-    });
-  }
-
   private addMarker(lat: number, lon: number): void {
+    console.log('[Marker] add', { lat, lon });
     const marker = new mapboxgl.Marker()
       .setLngLat([lon, lat])
       .addTo(this.map);
@@ -151,20 +168,22 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       toLon: to.lon
     };
 
-    this.http.post<RouteCoordinateDto[]>('/api/routing/route', body)
+    const url = `${this.apiBase}/api/routing/route`;
+    console.log('[Route] POST', url, body);
+
+    this.http.post<RouteCoordinateDto[]>(url, body)
       .subscribe({
         next: (coords) => {
+          console.log('[Route] coords count', coords?.length ?? 0);
+
           if (!coords || coords.length === 0) {
             console.warn('Route returned no coordinates');
             return;
           }
 
-          // First segment: just set it
           if (this.fullRouteCoords.length === 0) {
             this.fullRouteCoords = coords;
           } else {
-            // Next segments: append, but skip the first point
-            // (it’s the same as the last point of the previous segment)
             const toAppend = coords.slice(1);
             this.fullRouteCoords = this.fullRouteCoords.concat(toAppend);
           }
@@ -192,5 +211,4 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
         }
       });
   }
-
 }

@@ -17,17 +17,15 @@ namespace APUS.Server.Services.Implementations.MapServices
 			if (_graph.NodeCount == 0)
 				throw new InvalidOperationException("Graph has no nodes.");
 
-			var nodeId = AStarRouter.NearestNode(_graph, lat, lon);
-			if (nodeId < 0)
-				throw new InvalidOperationException("No nearest node found.");
-
-			var (nLat, nLon) = _graph.GetNodeLatLon(nodeId);
+			// SEGMENT-BASED SNAP (uses edge geometry + cumulative lengths)
+			var snap = PagedRoadGraph.SnapToGraph(_graph, (lat, lon));
+			var (sLat, sLon) = snap.Point;
 
 			return new SnapResponseDto
 			{
-				NodeId = nodeId,
-				Lat = nLat,
-				Lon = nLon
+				NodeId = snap.U, // not really used by frontend, but fine
+				Lat = sLat,
+				Lon = sLon
 			};
 		}
 
@@ -38,27 +36,29 @@ namespace APUS.Server.Services.Implementations.MapServices
 			if (_graph.NodeCount == 0)
 				throw new InvalidOperationException("Graph has no nodes.");
 
-			// 1) snap endpoints to nearest nodes
-			int start = AStarRouter.NearestNode(_graph, fromLat, fromLon);
-			int goal = AStarRouter.NearestNode(_graph, toLat, toLon);
+			// *** KEY POINT ***
+			// This function:
+			//  - snaps both endpoints onto *segments* (partial edges)
+			//  - builds a VirtualEndpointsGraph overlay (S/T nodes)
+			//  - runs A* on the overlay
+			//  - reconstructs the full polyline using edge geometry (segmented)
+			var poly = PagedRoadGraph.GetRouteGeometryBetweenCoords(
+				_graph,
+				(fromLat, fromLon),
+				(toLat, toLon));
 
-			if (start < 0 || goal < 0)
-				throw new InvalidOperationException("Could not snap endpoints to graph.");
-
-			// 2) run A*
-			var path = AStarRouter.ShortestPath(_graph, start, goal);
-			if (path.Count == 0)
-				throw new InvalidOperationException("No path found between the snapped nodes.");
-
-			// 3) collect coordinates along the path
-			var coords = new List<RouteCoordinateDto>(path.Count);
-			foreach (var nodeId in path)
+			var coords = new List<RouteCoordinateDto>(poly.Count);
+			for (int i = 0; i < poly.Count; i++)
 			{
-				var (lat, lon) = _graph.GetNodeLatLon(nodeId);
-				coords.Add(new RouteCoordinateDto { Lat = lat, Lon = lon });
+				coords.Add(new RouteCoordinateDto
+				{
+					Lat = poly[i].Lat,
+					Lon = poly[i].Lon
+				});
 			}
 
 			return coords;
 		}
 	}
 }
+
