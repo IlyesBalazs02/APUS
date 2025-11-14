@@ -6,5 +6,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 	{
 		IReadOnlyList<RouteCoordinateDto> RouteBetweenCoords(double fromLat, double fromLon, double toLat, double toLon);
 		SnapResponseDto SnapToRoad(double lat, double lon);
+		IReadOnlyList<float?> SampleElevation(IReadOnlyList<RouteCoordinateDto> points);
+
 	}
 }

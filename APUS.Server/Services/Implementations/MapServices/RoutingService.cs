@@ -6,10 +6,12 @@ namespace APUS.Server.Services.Implementations.MapServices
 	public sealed class RoutingService : IRoutingService
 	{
 		private readonly PagedRoadGraph _graph;
+		private readonly IElevationSampler _elevationSampler;
 
-		public RoutingService(PagedRoadGraph graph)
+		public RoutingService(PagedRoadGraph graph, IElevationSampler elevationSampler)
 		{
-			_graph = graph ?? throw new ArgumentNullException(nameof(graph));
+			_graph = graph;
+			_elevationSampler = elevationSampler;
 		}
 
 		public SnapResponseDto SnapToRoad(double lat, double lon)
@@ -58,6 +60,20 @@ namespace APUS.Server.Services.Implementations.MapServices
 			}
 
 			return coords;
+		}
+
+		public IReadOnlyList<float?> SampleElevation(IReadOnlyList<RouteCoordinateDto> points)
+		{
+			if (points == null || points.Count == 0)
+				return Array.Empty<float?>();
+
+			var result = new float?[points.Count];
+			for (int i = 0; i < points.Count; i++)
+			{
+				var p = points[i];
+				result[i] = _elevationSampler.Sample(p.Lat, p.Lon);
+			}
+			return result;
 		}
 	}
 }

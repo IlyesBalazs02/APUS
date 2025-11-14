@@ -29,6 +29,7 @@ import { UserProfileComponent } from './features/user-features/user-profile/user
 //refresh fix
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { NgChartsModule } from 'ng2-charts';
 
 
 @NgModule({
@@ -55,6 +56,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     AppRoutingModule,
     HttpClientModule,
     MatCardModule,
+    NgChartsModule
 
   ],
   providers: [

@@ -66,6 +66,14 @@ namespace APUS.Server.Configuration
 				return new PagedRoadGraph(rootDir, maxTilesInMem: 8);
 			});
 
+			services.AddSingleton<IElevationSampler>(_ =>
+			{
+				GdalConfiguration.Configure();
+
+				const string demPath = @"C:\EU-DEM\EU_DEM_mosaic_5deg\eudem_dem_4258_europe.tif";
+				return new GdalElevationSampler(demPath);
+			});
+
 
 			var connectionString = configuration.GetConnectionString("DefaultConnection")
 						  ?? "Server=(localdb)\\mssqllocaldb;Database=APUSActivityDbDev;Trusted_Connection=True;MultipleActiveResultSets=true";

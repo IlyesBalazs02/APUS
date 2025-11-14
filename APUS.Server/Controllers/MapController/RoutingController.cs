@@ -42,6 +42,17 @@ namespace APUS.Server.Controllers.MapController
 
 				return Ok(coords);
 			}
+
+		[HttpPost("elevation")]
+		public ActionResult<IReadOnlyList<float?>> Elevation([FromBody] List<RouteCoordinateDto> points)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
+
+			var result = _routing.SampleElevation(points);
+			return Ok(result);
 		}
-	
+
+	}
+
 }
