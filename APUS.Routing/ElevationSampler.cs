@@ -1,9 +1,9 @@
-﻿using OSGeo.GDAL;
+﻿using MaxRev.Gdal.Core;
+using OSGeo.GDAL;
 using OSGeo.OGR;
 using OSGeo.OSR;
-using System.Data;
 
-namespace APUS.Server.Services.Implementations.MapServices
+namespace APUS.Routing
 {
 	public interface IElevationSampler : IDisposable
 	{
@@ -12,7 +12,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 		float? Sample(double lat, double lon);
 	}
 
-	public sealed class GdalElevationSampler : IElevationSampler, IGdalElevationSampler
+	public sealed class GdalElevationSampler : IElevationSampler
 	{
 		private readonly Dataset _ds;               // GDAL dataset
 		private readonly Band _band;                // First raster band (elevation values)
@@ -24,15 +24,21 @@ namespace APUS.Server.Services.Implementations.MapServices
 			if (!File.Exists(path))
 				throw new FileNotFoundException(path);
 
-			// GdalConfiguration.Configure();  // not needed here if done in DI
+			if (!System.IO.File.Exists(path))
+			{
+				Console.WriteLine("GeoTIFF file not found.");
+				return;
+			}
 
-			_ds = Gdal.Open(path, Access.GA_ReadOnly);
+			// Open the GeoTIFF DEM in read-only mode
+			_ds = Gdal.Open(path, Access.GA_ReadOnly) ?? throw new Exception("GDAL: cannot open DEM");
 			_band = _ds.GetRasterBand(1) ?? throw new Exception("GDAL: missing band 1");
 
 			_ds.GetGeoTransform(_gt);
 
-			var src = new SpatialReference(""); src.ImportFromEPSG(4326);
-			var dst = new SpatialReference(_ds.GetProjection());
+			// Prepare coordinate transformation: WGS84 → DEM CRS
+			var src = new SpatialReference(""); src.ImportFromEPSG(4326); // WGS84 input
+			var dst = new SpatialReference(_ds.GetProjection());          // DEM projection
 			_wgs84_to_dem = new CoordinateTransformation(src, dst);
 		}
 

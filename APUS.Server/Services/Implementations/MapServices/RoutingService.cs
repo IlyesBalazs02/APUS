@@ -1,14 +1,14 @@
 ﻿using APUS.Server.Domain.DTOs.Routing;
-using APUS.Server.Routing;
+using APUS.Routing;
 
 namespace APUS.Server.Services.Implementations.MapServices
 {
 	public sealed class RoutingService : IRoutingService
 	{
 		private readonly PagedRoadGraph _graph;
-		private readonly IElevationSampler _elevationSampler;
+		private readonly APUS.Routing.IElevationSampler _elevationSampler;
 
-		public RoutingService(PagedRoadGraph graph, IElevationSampler elevationSampler)
+		public RoutingService(PagedRoadGraph graph, APUS.Routing.IElevationSampler elevationSampler)
 		{
 			_graph = graph;
 			_elevationSampler = elevationSampler;

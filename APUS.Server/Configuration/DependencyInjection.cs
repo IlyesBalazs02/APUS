@@ -1,19 +1,20 @@
-﻿using APUS.Server.Data.Repositories.Implementations;
-using APUS.Server.Data.Repositories.Interfaces;
+﻿using APUS.Routing;
 using APUS.Server.Data;
+using APUS.Server.Data.Repositories.Implementations;
+using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Implementations;
-using APUS.Server.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using APUS.Server.Services.Implementations.UserServices;
 using APUS.Server.Services.Implementations.GroupServices;
-using APUS.Server.Routing;
 using APUS.Server.Services.Implementations.MapServices;
+using APUS.Server.Services.Implementations.UserServices;
+using APUS.Server.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using OSGeo.GDAL;
+using System.Text;
 
 namespace APUS.Server.Configuration
 {
@@ -66,6 +67,7 @@ namespace APUS.Server.Configuration
 				return new PagedRoadGraph(rootDir, maxTilesInMem: 8);
 			});
 
+			// keep the using OSMGraphCreater; at the top
 			services.AddSingleton<IElevationSampler>(_ =>
 			{
 				GdalConfiguration.Configure();
@@ -73,6 +75,7 @@ namespace APUS.Server.Configuration
 				const string demPath = @"C:\EU-DEM\EU_DEM_mosaic_5deg\eudem_dem_4258_europe.tif";
 				return new GdalElevationSampler(demPath);
 			});
+
 
 
 			var connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -90,13 +93,10 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IProfilePictureService, ProfilePictureService>();
 			services.AddScoped<IFriendService, FriendService>();
 			services.AddScoped<IUserRelationRepository, UserRelationRepository>();
-			services.AddScoped<ISearchUsersService, SearchUsersService>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
-			services.AddTransient<IRouteService, RouteService>();
 			services.AddScoped<IGroupRepository, GroupRepository>();
 			services.AddScoped<IGroupService, GroupService>();
-			services.AddSingleton<IRandomRouteService, RandomRouteService>();
 			services.AddSingleton<IRoutingService, RoutingService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
