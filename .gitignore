@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /APUS.Server/graph_store
+/APUS.Routing.Build/graph_store
+/APUS.Routing/graph_store
