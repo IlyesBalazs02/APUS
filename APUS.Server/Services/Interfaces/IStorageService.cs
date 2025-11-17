@@ -9,5 +9,6 @@
 		string ReturnTrackImagePath(string activityId, string userId);
 		Task SaveImagesAsync(string activityId, IFormFileCollection images, string userId);
 		Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile);
+		void DeleteImages(string activityId, string userId, IReadOnlyCollection<string> fileNames);
 	}
 }

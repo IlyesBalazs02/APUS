@@ -1,4 +1,5 @@
-﻿using APUS.Server.Data.Repositories.Interfaces;
+﻿using APUS.Server.Core.Helpers;
+using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -86,6 +87,16 @@ namespace APUS.Server.Controllers
 
 			var url = $"{Request.Scheme}://{Request.Host}/Users/{activity.UserId}/Activities/{id}/ActivityTrackImage.png";
 			return Ok(url);
+		}
+
+		[HttpPost("{activityId}/images/delete")]
+		public IActionResult DeleteImages(string activityId, [FromBody] string[] fileNames)
+		{
+			var userId = User.GetUserId();
+
+			_storageService.DeleteImages(activityId, userId, fileNames);
+
+			return NoContent();
 		}
 	}
 

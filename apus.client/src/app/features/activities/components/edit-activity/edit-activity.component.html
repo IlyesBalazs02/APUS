@@ -7,8 +7,8 @@
 
     <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <textarea id="description" name="description" class="form-control" rows="3" [(ngModel)]="editModel.description">
-    </textarea>
+        <textarea id="description" name="description" class="form-control" rows="3"
+            [(ngModel)]="editModel.description"></textarea>
     </div>
 
     <div class="mb-3">
@@ -24,6 +24,40 @@
             </option>
         </select>
     </div>
+
+    <!-- =================== IMAGE EDITOR =================== -->
+    <div class="mb-3">
+        <h5>Images</h5>
+
+        <!-- Existing images -->
+        <div class="preview-container mb-2" *ngIf="images.length">
+            <div class="thumb" *ngFor="let img of images; let i = index">
+                <button type="button" class="remove-btn" (click)="markImageForDeletion(i)">×</button>
+                <img [src]="img" alt="Activity image" />
+            </div>
+        </div>
+
+        <p *ngIf="!images.length && !newPreviewUrls.length" class="text-muted">
+            No images attached.
+        </p>
+
+        <!-- Dropzone for new images (same UX as upload-activity) -->
+        <div class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+            [class.dragover]="isDragOver">
+            <p>Drag & drop new images here, or click to browse</p>
+            <input #fileInput type="file" multiple accept="image/*" (change)="onImageFileSelected($event)" hidden />
+            <button type="button" (click)="fileInput.click()">Browse Images</button>
+        </div>
+
+        <!-- New images preview -->
+        <div class="preview-container mt-2" *ngIf="newPreviewUrls.length">
+            <div class="thumb" *ngFor="let url of newPreviewUrls; let i = index">
+                <button type="button" class="remove-btn" (click)="removeNewImage(i)">×</button>
+                <img [src]="url" alt="New image preview" />
+            </div>
+        </div>
+    </div>
+    <!-- ================================================== -->
 
     <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">
         Save

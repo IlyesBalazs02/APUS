@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EditActivityDto } from './EditActivityDto';
+import * as ExifReader from 'exifreader';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-edit-activity',
@@ -12,6 +14,17 @@ import { EditActivityDto } from './EditActivityDto';
 export class EditActivityComponent {
   activityId: string;
 
+  // Existing images from server (these are the ones you can delete)
+  images: string[] = [];
+  // Filenames of images to delete (NOT full URLs)
+  imagesMarkedForDelete = new Set<string>();
+
+  // Newly added images (like in upload-activity)
+  newFiles: File[] = [];
+  newPreviewUrls: string[] = [];
+  isDragOver = false;
+  exifDataMap: Map<string, any> = new Map();
+
   editModel: EditActivityDto = {
     id: '',
     title: '',
@@ -20,7 +33,6 @@ export class EditActivityComponent {
     activityType: ''
   };
 
-  // options must match your C# enum names: ActivityType.Running, Hiking, ...
   activityTypes = [
     { value: 'MainActivity', label: 'Activity' },
     { value: 'Running', label: 'Running' },
@@ -41,12 +53,14 @@ export class EditActivityComponent {
     this.route.paramMap.subscribe(params => {
       this.activityId = params.get('id')!;
       this.loadActivity();
+      this.loadImages();
     });
   }
 
+  // --------- Activity data ---------
+
   private loadActivity() {
     this.http.get<any>(`/api/activities/${this.activityId}`).subscribe(dto => {
-      // dto is ActivityDto from GetById → uses .type, .title, .description, .date
       const d = dto.date ? new Date(dto.date).toISOString().substring(0, 10) : '';
 
       this.editModel = {
@@ -54,11 +68,127 @@ export class EditActivityComponent {
         title: dto.title,
         description: dto.description,
         date: d,
-        // "Running", "Hiking", "GpsRelatedActivity", ...
         activityType: dto.type
       };
     });
   }
+
+  // --------- Existing images from server ---------
+
+  private loadImages() {
+    this.http.get<string[]>(`/api/images/${this.activityId}`)
+      .subscribe({
+        next: (files) => {
+          if (!files || !Array.isArray(files)) {
+            this.images = [];
+            return;
+          }
+          // Typically: full URLs like https://localhost:54954/Users/.../Images/4513243.png
+          this.images = files;
+        },
+        error: (err) => {
+          console.warn('No images found or API returned error, skipping.', err);
+          this.images = [];
+        }
+      });
+  }
+
+  // User clicks "X" on an existing image → mark that file for deletion
+  markImageForDeletion(index: number) {
+    const url = this.images[index];
+    if (!url) return;
+
+    const fileName = this.extractFileName(url);
+    this.imagesMarkedForDelete.add(fileName);
+
+    // Remove from UI, but keep in the set so it gets deleted on save
+    this.images.splice(index, 1);
+  }
+
+  private extractFileName(url: string): string {
+    try {
+      // Absolute URL
+      const u = new URL(url);
+      const last = u.pathname.split('/').pop();
+      return last ?? url;
+    } catch {
+      // Relative path
+      const last = url.split('/').pop();
+      return last ?? url;
+    }
+  }
+
+  // --------- New images (upload-like editor) ---------
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragOver = false;
+    const droppedFiles = Array.from(event.dataTransfer?.files || []);
+    this.handleFiles(droppedFiles);
+  }
+
+  onImageFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const selected = Array.from(input.files || []);
+    this.handleFiles(selected);
+  }
+
+  private handleFiles(files: File[]) {
+    const images = files.filter(f => f.type.startsWith('image/'));
+
+    images.forEach(file => {
+      this.newFiles.push(file);
+
+      // EXIF (same approach as upload-activity)
+      ExifReader.load(file).then(tags => {
+        const imageDate =
+          tags['DateTime']?.description ||
+          tags['DateTimeOriginal']?.description ||
+          tags['CreateDate']?.description;
+
+        const metadata = {
+          dateTaken: imageDate
+        };
+
+        if (metadata.dateTaken) {
+          this.exifDataMap.set(file.name, metadata);
+        }
+      }).catch(error => {
+        console.warn('EXIF load failed:', error);
+      });
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          this.newPreviewUrls.push(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  removeNewImage(index: number) {
+    const file = this.newFiles[index];
+    if (file) {
+      this.exifDataMap.delete(file.name);
+    }
+
+    this.newFiles.splice(index, 1);
+    this.newPreviewUrls.splice(index, 1);
+  }
+
+  // --------- Submit: save activity + batch sync images ---------
 
   submit(form: any) {
     if (form.invalid) {
@@ -67,19 +197,74 @@ export class EditActivityComponent {
 
     const payload: EditActivityDto = {
       ...this.editModel,
-      id: this.activityId, // make sure ids match
+      id: this.activityId,
     };
 
     this.http.put<void>(`/api/activities/${this.activityId}`, payload)
       .subscribe({
         next: () => {
-          // navigate back to details page
-          this.router.navigate(['/activities', this.activityId]);
+          this.syncImagesBatch();
         },
         error: err => {
           console.error(err);
           alert('Failed to save changes.');
         }
       });
+  }
+
+  /**
+   * Batch operation:
+   *  - send ONE request with all files to delete
+   *  - send ONE request with all new images (if any)
+   * Both are fired together via forkJoin.
+   */
+  private syncImagesBatch() {
+    const requests: Observable<any>[] = [];
+
+    // 1) Batch delete
+    if (this.imagesMarkedForDelete.size > 0) {
+      const filesToDelete = Array.from(this.imagesMarkedForDelete);
+      requests.push(
+        this.http.post(
+          `/api/images/${this.activityId}/images/delete`,
+          filesToDelete,                     // body: string[]
+          { withCredentials: true }
+        )
+      );
+    }
+
+    // 2) Upload new images
+    if (this.newFiles.length > 0) {
+      const formData = new FormData();
+      this.newFiles.forEach(f => formData.append('images', f));
+
+      const exifJson = JSON.stringify(Object.fromEntries(this.exifDataMap.entries()));
+      formData.append('exifJson', exifJson);
+
+      requests.push(
+        this.http.post(
+          `/api/images/${this.activityId}/images`,
+          formData,
+          { withCredentials: true }
+        )
+      );
+    }
+
+    // Nothing to sync
+    if (!requests.length) {
+      this.router.navigate(['/activities', this.activityId]);
+      return;
+    }
+
+    forkJoin(requests).subscribe({
+      next: () => {
+        this.router.navigate(['/activities', this.activityId]);
+      },
+      error: err => {
+        console.error('Error updating images', err);
+        // Up to you: navigate anyway or stay and show error
+        this.router.navigate(['/activities', this.activityId]);
+      }
+    });
   }
 }

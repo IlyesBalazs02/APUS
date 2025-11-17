@@ -87,6 +87,28 @@ namespace APUS.Server.Services.Implementations.FileServices
 				.Select(Path.GetFileName);
 		}
 
+		public void DeleteImages(string activityId, string userId, IReadOnlyCollection<string> fileNames)
+		{
+			if (fileNames == null || fileNames.Count == 0)
+				return;
+
+			var folder = Path.Combine(GetActivityRootPath(userId, activityId), ImagesFolder);
+
+			foreach (var fileName in fileNames)
+			{
+				if (string.IsNullOrWhiteSpace(fileName))
+					continue;
+
+				var path = Path.Combine(folder, fileName);
+				if (File.Exists(path))
+				{
+					File.Delete(path);
+				}
+			}
+		}
+
+
+
 		#region Helpers
 
 		private string GetUserActivitiesPath(string userId)
