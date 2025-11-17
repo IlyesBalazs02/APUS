@@ -1,10 +1,10 @@
-﻿using APUS.Server.Domain.DTOs.Feature;
+﻿using APUS.Server.Domain.DTOs.Feature.Activity;
 using APUS.Server.Services.Interfaces;
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Xml.Linq;
 
-namespace APUS.Server.Services.Implementations
+namespace APUS.Server.Services.Implementations.FileServices
 {
 	public class TCXFileService : ITCXFileService
 	{

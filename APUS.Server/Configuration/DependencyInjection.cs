@@ -4,6 +4,8 @@ using APUS.Server.Data.Repositories.Implementations;
 using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Implementations;
+using APUS.Server.Services.Implementations.Activity;
+using APUS.Server.Services.Implementations.FileServices;
 using APUS.Server.Services.Implementations.GroupServices;
 using APUS.Server.Services.Implementations.MapServices;
 using APUS.Server.Services.Implementations.UserServices;
@@ -95,6 +97,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IUserRelationRepository, UserRelationRepository>();
 			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
+			services.AddTransient<IActivityService, ActivityService>();
 			services.AddScoped<IGroupRepository, GroupRepository>();
 			services.AddScoped<IGroupService, GroupService>();
 			services.AddSingleton<IRoutingService, RoutingService>();

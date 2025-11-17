@@ -1,11 +1,11 @@
-﻿using APUS.Server.Domain.DTOs.Feature;
+﻿using APUS.Server.Domain.DTOs.Feature.Activity;
 using APUS.Server.Services.Interfaces;
 using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace APUS.Server.Services.Implementations
+namespace APUS.Server.Services.Implementations.FileServices
 {
 	// NOT FINISHED
 	public class GPXFileService : IGPXFileService

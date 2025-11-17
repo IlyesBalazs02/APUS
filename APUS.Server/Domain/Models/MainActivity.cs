@@ -33,8 +33,7 @@ namespace APUS.Server.Domain.Models
 
 		public string? DisplayName { get; set; }
 
-		//Frontend getComponent
-		public string? ActivityType { get; set; }
+		public string ActivityType { get; set; }
 
 
 		//User setup

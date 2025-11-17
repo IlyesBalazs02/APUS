@@ -2,7 +2,7 @@
 using Azure.Core;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace APUS.Server.Services.Implementations
+namespace APUS.Server.Services.Implementations.FileServices
 {
 	public class StorageService : IStorageService
 	{

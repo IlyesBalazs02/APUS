@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml.Linq;
 
-namespace APUS.Server.Services.Implementations
+namespace APUS.Server.Services.Implementations.FileServices
 {
 	public class TcxXmlTrackpointLoader : ITrackpointLoader
 	{

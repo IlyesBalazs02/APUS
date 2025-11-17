@@ -1,12 +1,7 @@
 import { Component } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
-import { selectActivityHelper } from '../create-activity/formly/selectActivityHelper';
 import { HttpClient } from '@angular/common/http';
-import { MainActivity, createActivity } from '../../_models/ActivityClasses';
-import { mainFields } from '../create-activity/formly/formFieldConfigs';
-import { ActivatedRoute } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EditActivityDto } from './EditActivityDto';
 
 @Component({
   selector: 'app-edit-activity',
@@ -16,90 +11,75 @@ import { catchError, throwError } from 'rxjs';
 })
 export class EditActivityComponent {
   activityId: string;
-  form = new FormGroup({});
-  model: any = {};
-  options: FormlyFormOptions = {};
-  fields: FormlyFieldConfig[] = [];
-  selectActivityHelper = new selectActivityHelper();
 
-  private models: Record<string, any> = {};
+  editModel: EditActivityDto = {
+    id: '',
+    title: '',
+    description: '',
+    date: '',
+    activityType: ''
+  };
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {
+  // options must match your C# enum names: ActivityType.Running, Hiking, ...
+  activityTypes = [
+    { value: 'MainActivity', label: 'Activity' },
+    { value: 'Running', label: 'Running' },
+    { value: 'Hiking', label: 'Hiking' },
+    { value: 'Cycling', label: 'Cycling' },
+    { value: 'GpsRelatedActivity', label: 'Gps-related' },
+  ];
+
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private router: Router,
+  ) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
   }
 
   ngOnInit() {
-    this.getActivities();
+    this.route.paramMap.subscribe(params => {
+      this.activityId = params.get('id')!;
+      this.loadActivity();
+    });
   }
 
-  private getActivities() {
-    this.http
-      .get<MainActivity>(`/api/activities/${this.activityId}`)
-      .subscribe(dto => {
-        const activity = createActivity(dto);
+  private loadActivity() {
+    this.http.get<any>(`/api/activities/${this.activityId}`).subscribe(dto => {
+      // dto is ActivityDto from GetById → uses .type, .title, .description, .date
+      const d = dto.date ? new Date(dto.date).toISOString().substring(0, 10) : '';
 
-        let dateOnly = '';
-        if (dto.date) {
-          dateOnly = new Date(dto.date).toISOString().substring(0, 10);
-        }
-
-        this.selectActivityHelper.selectedActivity = activity;
-        this.models[activity.activityType] = { ...activity, date: dateOnly };
-        this.buildFormFor(activity.activityType);
-      }, err => console.error(err));
+      this.editModel = {
+        id: dto.id,
+        title: dto.title,
+        description: dto.description,
+        date: d,
+        // "Running", "Hiking", "GpsRelatedActivity", ...
+        activityType: dto.type
+      };
+    });
   }
 
-  onActivityChange(selection: MainActivity) {
-    const newType = selection.activityType;
+  submit(form: any) {
+    if (form.invalid) {
+      return;
+    }
 
-    const dto: any = {
-      ...this.model,
-      activityType: newType,
-      $type: selection.$type,
+    const payload: EditActivityDto = {
+      ...this.editModel,
+      id: this.activityId, // make sure ids match
     };
 
-    const transformed = createActivity(dto);
-
-    this.selectActivityHelper.selectedActivity = transformed;
-
-    this.fields = [
-      ...mainFields,
-      ...this.selectActivityHelper.subtypeMap[newType],
-    ];
-
-    this.model = transformed;
-    this.form.reset(this.model);
-  }
-
-  private buildFormFor(type: string) {
-    this.fields = [
-      ...mainFields,
-      ...this.selectActivityHelper.subtypeMap[type],
-    ];
-    this.model = this.models[type] || { ...this.selectActivityHelper.selectedActivity };
-    this.form.reset(this.model);
-  }
-
-  submit() {
-    const payload = { ...this.model };
-    console.log('Submitting', payload);
-
-    this.http
-      .put<void>(`/api/activities/${this.activityId}`, payload)
-      .pipe(
-        catchError(err => {
-          console.error('Update failed', err);
-          return throwError(() => err);
-        })
-      )
+    this.http.put<void>(`/api/activities/${this.activityId}`, payload)
       .subscribe({
         next: () => {
-          console.log('Activity updated successfully');
+          // navigate back to details page
+          this.router.navigate(['/activities', this.activityId]);
         },
-        error: () => {
-          alert('There was an error saving your changes.');
-        },
+        error: err => {
+          console.error(err);
+          alert('Failed to save changes.');
+        }
       });
-
   }
 }

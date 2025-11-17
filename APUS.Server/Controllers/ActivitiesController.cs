@@ -1,7 +1,8 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
-using APUS.Server.Domain.DTOs.Feature;
+using APUS.Server.Domain.DTOs.Feature.Activity;
 using APUS.Server.Domain.DTOs.Feature.Search;
 using APUS.Server.Domain.Models;
+using APUS.Server.Services.Implementations.Activity;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,15 +22,18 @@ namespace APUS.Server.Controllers
 		private readonly ILogger<ActivitiesController> _logger;
 		private readonly IActivityRepository _activityRepository;
 		private readonly IStorageService _storageService;
+		private readonly IActivityService _activityService;
 
 		public ActivitiesController(
 			ILogger<ActivitiesController> logger,
 			IActivityRepository activityRepository,
-			IStorageService storageService)
+			IStorageService storageService,
+			IActivityService activityService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
+			_activityService = activityService;
 		}
 
 		//TODO Create DTO for mainactivity
@@ -193,9 +197,9 @@ namespace APUS.Server.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status403Forbidden)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> EditActivity(string id, [FromBody] MainActivity activity)
+		public async Task<IActionResult> EditActivity(string id, [FromBody] EditActivityRequest request)
 		{
-			if (id != activity.Id)
+			if (id != request.Id)
 				return BadRequest("Mismatched activity ID.");
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -210,19 +214,16 @@ namespace APUS.Server.Controllers
 			if (!ModelState.IsValid)
 			{
 				var errors = ModelState.Values
-									   .SelectMany(v => v.Errors)
-									   .Select(e => e.ErrorMessage);
+					.SelectMany(v => v.Errors)
+					.Select(e => e.ErrorMessage);
+
 				return BadRequest(new { errors });
 			}
 
 			try
 			{
-				await _activityRepository.UpdateAsync(id, activity);
+				await _activityService.EditActivityAsync(existing, request);
 				return NoContent();
-			}
-			catch (ValidationException vex)
-			{
-				return BadRequest(vex.ValidationResult);
 			}
 			catch (KeyNotFoundException)
 			{
@@ -234,6 +235,8 @@ namespace APUS.Server.Controllers
 				return StatusCode(500, "An unexpected error occurred.");
 			}
 		}
+
+
 
 		[HttpDelete("{id}")]
 		[Authorize]

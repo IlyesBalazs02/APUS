@@ -6,6 +6,11 @@
         <small>{{ activity.displayName ?? 'Activity' }}</small>
     </div>
 
+    <!-- EDIT BUTTON -->
+    <button class="btn btn-primary" (click)="editActivity()">
+        Edit
+    </button>
+
     <div class="card-body">
 
         <div *ngIf="activity.description" style="text-align:left; margin-bottom:1rem;">

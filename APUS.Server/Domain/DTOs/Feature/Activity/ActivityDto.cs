@@ -1,4 +1,4 @@
-﻿namespace APUS.Server.Domain.DTOs.Feature
+﻿namespace APUS.Server.Domain.DTOs.Feature.Activity
 {
 	public record ActivityDto
 	{

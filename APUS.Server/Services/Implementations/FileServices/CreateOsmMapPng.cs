@@ -15,7 +15,7 @@ using SysPath = System.IO.Path;
 using APUS.Server.Services.Interfaces;
 using APUS.Server.Domain.Models;
 
-namespace APUS.Server.Services.Implementations
+namespace APUS.Server.Services.Implementations.FileServices
 {
 	public class CreateOsmMapPng : ICreateOsmMapPng
 	{

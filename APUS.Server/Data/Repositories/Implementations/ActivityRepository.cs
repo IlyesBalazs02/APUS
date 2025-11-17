@@ -69,6 +69,27 @@ namespace APUS.Server.Data.Repositories.Implementations
 			await _context.SaveChangesAsync();
 		}
 
+		// copy all props except the activityType
+		public async Task CopyProps(MainActivity existing, MainActivity replacement)
+		{
+			var actType = replacement.ActivityType;
+			_context.Entry(replacement).CurrentValues.SetValues(existing);
+			replacement.ActivityType = actType;
+		}
+
+		public async Task SaveAsync(MainActivity activity)
+		{
+			_context.Update(activity);
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task ReplaceAsync(MainActivity oldEntity, MainActivity newEntity)
+		{
+			_context.Activities.Remove(oldEntity);
+			_context.Activities.Add(newEntity);
+			await _context.SaveChangesAsync();
+		}
+
 		public async Task DeleteAsync(string id)
 		{
 			var entity = await _context.Activities.FindAsync(id)

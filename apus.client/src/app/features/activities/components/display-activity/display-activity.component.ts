@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, forkJoin, of, throwError, Timestamp } from 'rxjs';
 import { Trackpoint } from '../../ActivityDto/TrackpointDto';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-display-activity',
@@ -24,7 +25,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
   trackpoints: Trackpoint[] = [];
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {
+  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
   }
 
@@ -91,6 +92,11 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     allFields.unshift('duration');
 
     return allFields;
+  }
+
+
+  editActivity() {
+    this.router.navigate([`/activities/${this.activityId}/edit`]);
   }
 
   openViewer(i: number) {

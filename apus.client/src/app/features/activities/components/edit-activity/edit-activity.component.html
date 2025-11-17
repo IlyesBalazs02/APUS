@@ -1,25 +1,31 @@
-<div class="activity-container">
-    <div class="pane pane--edit">
-        <mat-accordion>
-            <select [(ngModel)]="selectActivityHelper.selectedActivity" (ngModelChange)="onActivityChange($event)"
-                name="activity" id="activity">
-                <option *ngFor="let activity of selectActivityHelper.SportTypes" [ngValue]="activity">
-                    {{ activity.displayName }}
-                </option>
-            </select>
+<form #editForm="ngForm" (ngSubmit)="submit(editForm)" class="container mt-3">
 
-            <form [formGroup]="form" (ngSubmit)="submit()">
-                <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
-                <button type="submit" class="btn btn-primary submit-button" [disabled]="!form.valid">
-                    Submit
-                </button>
-            </form>
-        </mat-accordion>
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input id="title" name="title" class="form-control" type="text" [(ngModel)]="editModel.title" required />
     </div>
 
-    <!-- <div class="pane-divider"></div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" name="description" class="form-control" rows="3" [(ngModel)]="editModel.description">
+    </textarea>
+    </div>
 
-    <div class="pane pane--display">
-        <app-display-activity [activity]="selectActivityHelper.selectedActivity"></app-display-activity>
-    </div> -->
-</div>
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input id="date" name="date" class="form-control" type="date" [(ngModel)]="editModel.date" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="activityType" class="form-label">Activity type</label>
+        <select id="activityType" name="activityType" class="form-select" [(ngModel)]="editModel.activityType" required>
+            <option *ngFor="let t of activityTypes" [value]="t.value">
+                {{ t.label }}
+            </option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">
+        Save
+    </button>
+</form>

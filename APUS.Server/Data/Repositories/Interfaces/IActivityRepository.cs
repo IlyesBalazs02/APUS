@@ -13,5 +13,8 @@ namespace APUS.Server.Data.Repositories.Interfaces
 		Task<IEnumerable<MainActivity>> ReadAllAsync();
 		Task<MainActivity?> ReadByIdAsync(string id);
 		Task UpdateAsync(string id, MainActivity activity);
+		Task ReplaceAsync(MainActivity oldEntity, MainActivity newEntity);
+		Task SaveAsync(MainActivity activity);
+		Task CopyProps(MainActivity existing, MainActivity replacement);
 	}
 }
