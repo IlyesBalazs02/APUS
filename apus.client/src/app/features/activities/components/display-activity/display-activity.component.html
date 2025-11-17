@@ -1,3 +1,5 @@
+<!-- display-activity.component.html -->
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">{{ activity.title }}</h5>
@@ -19,7 +21,7 @@
             row-cols-sm-2     
             row-cols-md-3     
             row-cols-lg-4     
-            g-3"> <!-- gap between cols in BS5 -->
+            g-3">
 
             <div class="col" *ngFor="let field of fieldsToShow">
                 <div class="h5 mb-1">
@@ -35,17 +37,16 @@
     <div class="images-container" *ngIf="images.length">
         <div class="thumb" *ngFor="let url of images; let i = index" (click)="openViewer(i)">
             <img [src]="url" alt="image" />
-
         </div>
     </div>
 
-    <!-- map -->
-    <app-activity-map [trackpoints]="trackpoints"></app-activity-map>
+    <!-- map: only if there are trackpoints -->
+    <app-activity-map *ngIf="trackpoints && trackpoints.length" [trackpoints]="trackpoints">
+    </app-activity-map>
 
-    <app-activity-chart-component [trackpoints]="trackpoints"></app-activity-chart-component>
-
-
-
+    <!-- charts: only if there are trackpoints -->
+    <app-activity-chart-component *ngIf="trackpoints && trackpoints.length" [trackpoints]="trackpoints">
+    </app-activity-chart-component>
 </div>
 
 <!-- LIGHTBOX OVERLAY -->

@@ -2,7 +2,7 @@ import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, Timestamp } from 'rxjs';
+import { catchError, forkJoin, of, throwError, Timestamp } from 'rxjs';
 import { Trackpoint } from '../../ActivityDto/TrackpointDto';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 
@@ -31,57 +31,67 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   ngOnInit() {
     const activity$ = this.http.get<MainActivity>(`/api/activities/${this.activityId}`);
     const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
-    const trackpointdto$ = this.http.get<Trackpoint[]>(`/api/activityfile/${this.activityId}`);
 
-    forkJoin({ activity: activity$, images: images$, trackpoints: trackpointdto$ })
+    const trackpoints$ = this.http
+      .get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
+      .pipe(
+        catchError(err => {
+          // ANY error (404, 500, etc.) → just behave as "no track"
+          console.warn('Track loading failed, continuing without track', err);
+          return of<Trackpoint[]>([]);
+        })
+      );
+
+    forkJoin({ activity: activity$, images: images$, trackpoints: trackpoints$ })
       .subscribe({
-        next: ({ activity: dto, images, trackpoints }) => {
-          this.activity = createActivity(dto);
+        next: ({ activity, images, trackpoints }) => {
+          this.activity = createActivity(activity);
           this.images = images;
-          this.trackpoints = trackpoints;
+          this.trackpoints = trackpoints ?? []; // safe default
         },
-        error: err => console.error(err)
+        // you can even drop the error handler here if everything is caught above
+        error: err => console.error('Unexpected error in display-activity', err)
       });
   }
+
 
   ngOnChanges(changes: SimpleChanges): void {
   }
 
   // map each activityType to the array of fields to show
   fieldConfig: Record<string, string[]> = {
-    MainActivity: ['avgHeartRate', 'calories'],
-    GpsRelatedActivity: ['totalDistanceKm', 'totalAscentMeters'],
-    Running: ['totalDistanceKm', 'avgpace'],
-    // …etc
+    MainActivity: ['avgHr', 'totalCalories'],
+    GpsRelatedActivity: ['distanceKm', 'elevationGain'],
+    Running: ['distanceKm', 'pace', 'elevationGain'],
   };
 
   labels: Record<string, string> = {
     title: 'Title',
     date: 'Date',
     duration: 'Time',
-    totalDistanceKm: 'Distance (km)',
-    avgpace: 'Avg. Pace',
+
+    distanceKm: 'Distance (km)',
+    pace: 'Avg. Pace',
     difficulty: 'Difficulty',
-    totalAscentMeters: 'Elevation gain',
-    avgHeartRate: 'Avg. Heartrate',
-    calories: 'Calories'
-    // …
+    elevationGain: 'Elevation gain',
+
+    avgHr: 'Avg. Heartrate',
+    totalCalories: 'Calories',
   };
+
 
   get fieldsToShow(): string[] {
     const mainFields = this.fieldConfig['MainActivity'];
     const activityFields = this.fieldConfig[this.activity.activityType] || [];
 
-    // only keep fields where activity[field] is non-null/undefined (and you can add
-    const allFields = Array.from(new Set([...mainFields, ...activityFields])).filter(f => this.activity[f] != null);
+    const allFields = Array.from(new Set([...mainFields, ...activityFields]))
+      .filter(f => (this.activity as any)[f] != null);
 
-    //duration is a must-to-display element
+    // duration is a must-to-display element
     allFields.unshift('duration');
 
     return allFields;
   }
-
-
 
   openViewer(i: number) {
     this.selectedIndex = i;
@@ -104,6 +114,5 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   closeViewer() {
     this.selectedIndex = null;
   }
-
 }
 

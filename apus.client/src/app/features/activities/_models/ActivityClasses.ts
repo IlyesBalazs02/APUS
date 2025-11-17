@@ -8,8 +8,8 @@ export class MainActivity {
     description: string | null = null;
     date: string = new Date().toISOString();
     duration: string = '';
-    calories: number | null = null;
-    avgHeartRate: number | null = null;
+    TotalCalories: number | null = null;
+    AvgHr: number | null = null;
     maxHeartRate: number | null = null;
     displayName: string | null = null;
 
