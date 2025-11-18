@@ -51,6 +51,11 @@ namespace APUS.Server.Domain.Models
 		[System.Text.Json.Serialization.JsonIgnore]
 		public virtual ICollection<SiteUser> LikedBy { get; set; }
 
+		[BindNever]
+		[ValidateNever]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public ICollection<ActivityImage> Images { get; set; } = new List<ActivityImage>();
+
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;

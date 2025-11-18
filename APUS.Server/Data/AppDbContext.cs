@@ -12,6 +12,8 @@ namespace APUS.Server.Data
 		public DbSet<UserRelation> UserRelations { get; set; }
 		public DbSet<SiteUser> SiteUsers { get; set; }
 		public DbSet<PrivacySettings> PrivacySettings { get; set; }
+		public DbSet<ActivityImage> ActivityImages { get; set; }
+
 
 		//groups
 		public DbSet<Group> Groups { get; set; }
@@ -87,6 +89,21 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<SiteUser>()
 				.Property(u => u.Bio)
 				.HasDefaultValue(string.Empty);
+
+
+			#region images
+
+			modelBuilder.Entity<ActivityImage>()
+				   .HasIndex(x => x.ActivityId);
+
+			modelBuilder.Entity<ActivityImage>()
+				.HasOne(x => x.Activity)
+				.WithMany(a => a.Images)
+				.HasForeignKey(x => x.ActivityId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			#endregion
+
 
 			// for the SearchByNamePagedAsync method 
 			modelBuilder.Entity<SiteUser>(b =>

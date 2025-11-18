@@ -19,7 +19,7 @@ export class EditActivityComponent {
   // Filenames of images to delete (NOT full URLs)
   imagesMarkedForDelete = new Set<string>();
 
-  // Newly added images (like in upload-activity)
+  // Newly added images
   newFiles: File[] = [];
   newPreviewUrls: string[] = [];
   isDragOver = false;
@@ -83,7 +83,6 @@ export class EditActivityComponent {
             this.images = [];
             return;
           }
-          // Typically: full URLs like https://localhost:54954/Users/.../Images/4513243.png
           this.images = files;
         },
         error: (err) => {
@@ -93,7 +92,7 @@ export class EditActivityComponent {
       });
   }
 
-  // User clicks "X" on an existing image → mark that file for deletion
+  // User clicks "X" on an existing image and that marks that file for deletion
   markImageForDeletion(index: number) {
     const url = this.images[index];
     if (!url) return;
@@ -101,7 +100,6 @@ export class EditActivityComponent {
     const fileName = this.extractFileName(url);
     this.imagesMarkedForDelete.add(fileName);
 
-    // Remove from UI, but keep in the set so it gets deleted on save
     this.images.splice(index, 1);
   }
 
@@ -149,7 +147,7 @@ export class EditActivityComponent {
     images.forEach(file => {
       this.newFiles.push(file);
 
-      // EXIF (same approach as upload-activity)
+      // EXIF
       ExifReader.load(file).then(tags => {
         const imageDate =
           tags['DateTime']?.description ||
@@ -163,6 +161,8 @@ export class EditActivityComponent {
         if (metadata.dateTaken) {
           this.exifDataMap.set(file.name, metadata);
         }
+
+        console.log('Taken date: ' + imageDate);
       }).catch(error => {
         console.warn('EXIF load failed:', error);
       });
@@ -188,7 +188,7 @@ export class EditActivityComponent {
     this.newPreviewUrls.splice(index, 1);
   }
 
-  // --------- Submit: save activity + batch sync images ---------
+  // --------- Submit: save activity + sync images ---------
 
   submit(form: any) {
     if (form.invalid) {
@@ -212,28 +212,23 @@ export class EditActivityComponent {
       });
   }
 
-  /**
-   * Batch operation:
-   *  - send ONE request with all files to delete
-   *  - send ONE request with all new images (if any)
-   * Both are fired together via forkJoin.
-   */
+
   private syncImagesBatch() {
     const requests: Observable<any>[] = [];
 
-    // 1) Batch delete
+    // delete multiple image
     if (this.imagesMarkedForDelete.size > 0) {
       const filesToDelete = Array.from(this.imagesMarkedForDelete);
       requests.push(
         this.http.post(
           `/api/images/${this.activityId}/images/delete`,
-          filesToDelete,                     // body: string[]
+          filesToDelete,
           { withCredentials: true }
         )
       );
     }
 
-    // 2) Upload new images
+    // Upload new images
     if (this.newFiles.length > 0) {
       const formData = new FormData();
       this.newFiles.forEach(f => formData.append('images', f));
@@ -262,7 +257,7 @@ export class EditActivityComponent {
       },
       error: err => {
         console.error('Error updating images', err);
-        // Up to you: navigate anyway or stay and show error
+
         this.router.navigate(['/activities', this.activityId]);
       }
     });

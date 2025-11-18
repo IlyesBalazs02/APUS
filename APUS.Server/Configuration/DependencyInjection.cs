@@ -101,6 +101,8 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IGroupRepository, GroupRepository>();
 			services.AddScoped<IGroupService, GroupService>();
 			services.AddSingleton<IRoutingService, RoutingService>();
+			services.AddScoped<IActivityImageRepository, ActivityImageRepository>();
+			services.AddScoped<IActivityTrackLookupService, ActivityTrackLookupService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

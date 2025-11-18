@@ -1,9 +1,14 @@
 ﻿using APUS.Server.Core.Helpers;
+using APUS.Server.Data.Repositories.Implementations;
 using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Routing;
+using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client.Extensions.Msal;
+using System.Globalization;
+using System.Text.Json;
 
 namespace APUS.Server.Controllers
 {
@@ -15,39 +20,116 @@ namespace APUS.Server.Controllers
 		private readonly ILogger<ImagesController> _logger;
 		private readonly IActivityRepository _activityRepository;
 		private readonly IStorageService _storageService;
+		private readonly IActivityImageRepository _activityImageRepository;
+		private readonly IActivityTrackLookupService _activityTrackLookupService;
 
 		public ImagesController(
 			ILogger<ImagesController> logger,
 			IActivityRepository activityRepository,
-			IStorageService storageService)
+			IStorageService storageService,
+			IActivityImageRepository activityImageRepository,
+			IActivityTrackLookupService activityTrackLookupService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
+			_activityImageRepository = activityImageRepository;
+			_activityTrackLookupService = activityTrackLookupService;
 		}
 
-		[HttpPost("{id}/images")]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> UploadImages(string id, [FromForm] IFormFileCollection images, [FromForm] string? exifJson)
+		[HttpPost("{activityId}/images")]
+		public async Task<IActionResult> UploadImages(
+	string activityId,
+	[FromForm] IFormFileCollection images,
+	[FromForm] string? exifJson)
 		{
-			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
+			var userId = User.GetUserId();
 
-			// Activity is needed for it's id and userid to know where to save the images
-			var activity = await _activityRepository.ReadByIdAsync(id);
-			if (activity == null) return NotFound();
+			// 1) parse EXIF from client (filename -> ExifMetadataDto)
+			var exifDict = string.IsNullOrWhiteSpace(exifJson)
+				? new Dictionary<string, ExifMetadataDto>()
+				: JsonSerializer.Deserialize<Dictionary<string, ExifMetadataDto>>(exifJson)
+				  ?? new Dictionary<string, ExifMetadataDto>();
 
-			Dictionary<string, Dictionary<string, string>>? exifData = null;
-			if (!string.IsNullOrEmpty(exifJson))
+			// 2) save physical files
+			await _storageService.SaveImagesAsync(activityId, images, userId);
+
+			// 3) build ActivityImage entities
+			var now = DateTime.UtcNow;
+			var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+			var entities = new List<ActivityImage>();
+
+			foreach (var file in images)
 			{
-				exifData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(exifJson);
+				var fileName = Path.GetFileName(file.FileName);
+				var url = $"{baseUrl}/Users/{userId}/Activities/{activityId}/Images/{Uri.EscapeDataString(fileName)}";
+
+				exifDict.TryGetValue(file.FileName, out var metaDto);
+
+				var formats = new[] {
+					"yyyy:MM:dd HH:mm:ss",
+					"yyyy:MM:dd HH:mm:ssK",
+					"yyyy:MM:dd HH:mm:sszzz"
+				};
+
+				DateTime? dateTaken = null;
+
+				if (!string.IsNullOrWhiteSpace(metaDto?.dateTaken) &&
+					DateTime.TryParseExact(
+						metaDto.dateTaken,
+						formats,
+						CultureInfo.InvariantCulture,
+						DateTimeStyles.AssumeLocal,     // or AssumeUniversal
+						out var parsed))
+				{
+					dateTaken = parsed.ToUniversalTime();
+				}
+
+
+				double? gpsLat = null;
+				double? gpsLon = null;
+
+				// 4) If we know when the photo was taken, find closest trackpoint in TCX/GPX
+				if (dateTaken.HasValue)
+				{
+					var closest = await _activityTrackLookupService.FindClosestPointAsync(
+						activityId,
+						userId,
+						dateTaken.Value,
+						HttpContext.RequestAborted);
+
+					if (closest.HasValue)
+					{
+						gpsLat = closest.Value.Lat;
+						gpsLon = closest.Value.Lon;
+					}
+				}
+
+				entities.Add(new ActivityImage
+				{
+					ActivityId = activityId,
+					FileName = fileName,
+					Url = url,
+					UploadedAt = now,
+					DateTaken = dateTaken,   // EXIF timestamp
+					GpsLat = gpsLat,      // from track
+					GpsLon = gpsLon,      // from track
+					RawMetadataJson = metaDto != null
+						? JsonSerializer.Serialize(metaDto)
+						: null
+				});
 			}
 
-			await _storageService.SaveImagesAsync(id, images, activity.UserId);
+			if (entities.Count > 0)
+			{
+				await _activityImageRepository.AddRangeAsync(entities);
+			}
 
-			return NoContent();
+			return Ok();
 		}
+
+
 
 		[HttpGet("{id}")]
 		[Authorize]
@@ -90,11 +172,15 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpPost("{activityId}/images/delete")]
-		public IActionResult DeleteImages(string activityId, [FromBody] string[] fileNames)
+		public async Task<IActionResult> DeleteImages(string activityId, [FromBody] string[] fileNames)
 		{
 			var userId = User.GetUserId();
 
+			// 1) delete physical files
 			_storageService.DeleteImages(activityId, userId, fileNames);
+
+			// 2) delete metadata records
+			await _activityImageRepository.DeleteByFileNamesAsync(activityId, fileNames);
 
 			return NoContent();
 		}
