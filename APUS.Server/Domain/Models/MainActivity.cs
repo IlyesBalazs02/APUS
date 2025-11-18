@@ -73,7 +73,8 @@ namespace APUS.Server.Domain.Models
 		public double? TotalAscentMeters { get; set; }
 		public double? TotalDescentMeters { get; set; }
 		public double? AvgPace { get; set; } // m/s
-			
+		public DateTime? FinishTimeUtc { get; set; }
+
 		[NotMapped]
 		[System.Text.Json.Serialization.JsonIgnore]
 		public string GetPaceInTimeFormat

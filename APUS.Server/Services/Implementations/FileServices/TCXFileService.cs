@@ -209,6 +209,10 @@ namespace APUS.Server.Services.Implementations.FileServices
 				? maxHrList.Max()
 				: null;
 
+			DateTime? finishTimeUtc = points.Count > 0
+					? points.Last().Time
+					: null;
+
 			var stats = new ImportActivityModel
 			{
 				StartTime = laps.First().StartTime,
@@ -221,7 +225,8 @@ namespace APUS.Server.Services.Implementations.FileServices
 				AverageHeartRate = (int)avgHrDouble,
 				MaximumHeartRate = maxHr,
 				TotalAscentMeters = ascentTmp,
-				TotalDescentMeters = descentTmp
+				TotalDescentMeters = descentTmp,
+				FinishTimeUtc = finishTimeUtc
 			};
 
 			return stats;

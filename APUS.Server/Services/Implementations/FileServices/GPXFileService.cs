@@ -74,19 +74,17 @@ namespace APUS.Server.Services.Implementations.FileServices
 		{
 			var stats = new ImportActivityModel();
 
-			// 1) only keep points that have both elevation & time
 			var valid = pts
-			  .Where(p => p.Elevation.HasValue && p.Time.HasValue)
-			  .Select(p => new
-			  {
-				  Lat = p.Latitude,
-				  Lon = p.Longitude,
-				  Ele = p.Elevation.Value,
-				  Time = p.Time.Value
-			  })
-			  .ToList();
+				.Where(p => p.Elevation.HasValue && p.Time.HasValue)
+				.Select(p => new
+				{
+					Lat = p.Latitude,
+					Lon = p.Longitude,
+					Ele = p.Elevation.Value,
+					Time = p.Time.Value
+				})
+				.ToList();
 
-			// 2) accumulate distance & elevation
 			for (int i = 1; i < valid.Count; i++)
 			{
 				var prev = valid[i - 1];
@@ -95,17 +93,22 @@ namespace APUS.Server.Services.Implementations.FileServices
 				stats.TotalDistanceMeters += Haversine(
 					prev.Lat, prev.Lon, curr.Lat, curr.Lon);
 
-				var delta = curr.Ele - prev.Ele;   // now a double
+				var delta = curr.Ele - prev.Ele;
 				if (delta > 0) stats.TotalAscentMeters += delta;
 				else stats.TotalDescentMeters += -delta;
 			}
 
-			// 3) duration is now a non-nullable TimeSpan
 			if (valid.Count >= 2)
+			{
 				stats.Duration = valid.Last().Time - valid.First().Time;
+
+				stats.StartTime = valid.First().Time;
+				stats.FinishTimeUtc = valid.Last().Time;
+			}
 
 			return stats;
 		}
+
 
 
 		private class Trackpoint

@@ -71,7 +71,8 @@ namespace APUS.Server.Controllers
 						TotalAscentMeters = importedActivity.TotalAscentMeters,
 						TotalDescentMeters = importedActivity.TotalDescentMeters,
 						TotalDistanceKm = importedActivity.TotalDistanceKm,
-						AvgPace = importedActivity.AvgPace
+						AvgPace = importedActivity.AvgPace,
+						FinishTimeUtc = importedActivity.FinishTimeUtc
 					}
 					: new MainActivity();
 
