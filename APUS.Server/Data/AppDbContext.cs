@@ -92,6 +92,12 @@ namespace APUS.Server.Data
 
 
 			#region images
+			modelBuilder.Entity<ActivityImage>()
+				.HasKey(x => x.Id);
+
+			modelBuilder.Entity<ActivityImage>()
+				.Property(x => x.Id)
+				.ValueGeneratedNever();
 
 			modelBuilder.Entity<ActivityImage>()
 				   .HasIndex(x => x.ActivityId);

@@ -4,7 +4,7 @@ namespace APUS.Server.Domain.Models
 {
 	public class ActivityImage
 	{
-		public int Id { get; set; }
+		public string Id { get; set; } = Guid.NewGuid().ToString();
 
 		public string ActivityId { get; set; } = null!;
 		public MainActivity Activity { get; set; } = null!;

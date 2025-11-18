@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EditActivityDto } from './EditActivityDto';
 import * as ExifReader from 'exifreader';
 import { forkJoin, Observable } from 'rxjs';
+import { ExifService } from '../services/ExifService';
 
 @Component({
   selector: 'app-edit-activity',
@@ -45,6 +46,7 @@ export class EditActivityComponent {
     private route: ActivatedRoute,
     private http: HttpClient,
     private router: Router,
+    private exifService: ExifService
   ) {
     this.activityId = this.route.snapshot.paramMap.get('id')!;
   }
@@ -141,33 +143,17 @@ export class EditActivityComponent {
     this.handleFiles(selected);
   }
 
-  private handleFiles(files: File[]) {
+  private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
 
-    images.forEach(file => {
+    // Extract EXIF centrally
+    const exifMap = await this.exifService.extractMany(images);
+
+    for (const file of images) {
       this.newFiles.push(file);
+      this.exifDataMap.set(file.name, exifMap.get(file.name) ?? {});
 
-      // EXIF
-      ExifReader.load(file).then(tags => {
-        const imageDate =
-          tags['DateTime']?.description ||
-          tags['DateTimeOriginal']?.description ||
-          tags['CreateDate']?.description;
-
-        const metadata = {
-          dateTaken: imageDate
-        };
-
-        if (metadata.dateTaken) {
-          this.exifDataMap.set(file.name, metadata);
-        }
-
-        console.log('Taken date: ' + imageDate);
-      }).catch(error => {
-        console.warn('EXIF load failed:', error);
-      });
-
-      // Preview
+      // Preview logic stays the same:
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -175,8 +161,9 @@ export class EditActivityComponent {
         }
       };
       reader.readAsDataURL(file);
-    });
+    }
   }
+
 
   removeNewImage(index: number) {
     const file = this.newFiles[index];

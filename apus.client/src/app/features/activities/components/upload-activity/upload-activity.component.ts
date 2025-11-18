@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import * as ExifReader from 'exifreader';
+import { ExifService } from '../services/ExifService';
 
 interface UploadResponse {
   id: number;
@@ -27,7 +28,7 @@ export class UploadActivityComponent {
   files: File[] = [];
   previewUrls: string[] = [];
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private exifService: ExifService) { }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -64,31 +65,19 @@ export class UploadActivityComponent {
   private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
 
-    images.forEach(file => {
+    // --- extract EXIF for all incoming images using the shared service ---
+    const exifMap = await this.exifService.extractMany(images);
+
+    for (const file of images) {
       this.files.push(file);
 
-      // Read EXIF
-      ExifReader.load(file).then(tags => {
-        const imageDate =
-          tags['DateTime']?.description ||
-          tags['DateTimeOriginal']?.description ||
-          tags['CreateDate']?.description;
+      // If service found EXIF, store it in the shared map
+      const meta = exifMap.get(file.name);
+      if (meta?.dateTaken) {
+        this.exifDataMap.set(file.name, meta);
+      }
 
-        const metadata = {
-          dateTaken: imageDate
-        }
-
-        //dont create new set if the metadata is empty
-        if (metadata.dateTaken)
-          this.exifDataMap.set(file.name, metadata);
-
-        console.log('EXIF Date:', imageDate);
-      }).catch(error => {
-        console.warn('EXIF load failed:', error);
-      });
-
-
-      // Preview
+      // Preview generation stays the same
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -96,8 +85,9 @@ export class UploadActivityComponent {
         }
       };
       reader.readAsDataURL(file);
-    });
+    }
   }
+
 
 
   removeImage(i: number) {

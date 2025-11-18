@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251117200249_ActivityImageDbSet")]
-    partial class ActivityImageDbSet
+    [Migration("20251118102459_ActivityImageId")]
+    partial class ActivityImageId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,11 +168,8 @@ namespace APUS.Server.Migrations
 
             modelBuilder.Entity("APUS.Server.Domain.Models.ActivityImage", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ActivityId")
                         .IsRequired()

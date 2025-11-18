@@ -23,13 +23,19 @@ namespace APUS.Server.Tests.Controllers
 			new();
 		private readonly Mock<IStorageService> _storageMock =
 			new();
+		private readonly Mock<IActivityImageRepository> _asd =
+			new();
+		private readonly Mock<IActivityTrackLookupService> dsaaa = 
+			new();
 
 		private ImagesController CreateController(string? scheme = "https", string? host = "localhost", int port = 5000)
 		{
 			var ctrl = new ImagesController(
 				_loggerMock.Object,
 				_repoMock.Object,
-				_storageMock.Object);
+				_storageMock.Object,
+				_asd.Object,
+				dsaaa.Object);
 
 			var httpContext = new DefaultHttpContext();
 			httpContext.Request.Scheme = scheme!;
