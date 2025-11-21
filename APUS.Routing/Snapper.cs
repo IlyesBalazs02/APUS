@@ -1,182 +1,128 @@
-﻿public sealed class SegmentIndex
-{
-	// Reference to a piece of an edge: Geometry[segIdx] -> Geometry[segIdx+1]
-	public readonly struct SegRef
-	{
-		public readonly int FromNode;   // owner of the edge in Adj[FromNode]
-		public readonly int EdgeIdx;    // index in Adj[FromNode]
-		public readonly int SegIdx;     // segment inside Edge.Geometry
-		public readonly double MinLat, MinLon, MaxLat, MaxLon; // bbox
+﻿using System;
 
-		public SegRef(int from, int ei, int si, double minLa, double minLo, double maxLa, double maxLo)
-		{ FromNode = from; EdgeIdx = ei; SegIdx = si; MinLat = minLa; MinLon = minLo; MaxLat = maxLa; MaxLon = maxLo; }
+namespace APUS.Routing
+{
+	public sealed class SnapResult
+	{
+		// Directed edge the point snapped to: U -> V in tiled graph
+		public NodeKey U { get; init; }
+		public NodeKey V { get; init; }
+
+		// Distance from U along edge (in the edge's cost units, usually meters)
+		public float DistFromU { get; init; }
+		public float EdgeLen { get; init; }
+
+		// The exact snapped coordinate on the edge
+		public (double Lat, double Lon) Point { get; init; }
 	}
 
-	private readonly Dictionary<(int iy, int ix), List<SegRef>> _grid = new();
-	private readonly double _cellDeg; // ~0.01 => ~1km cells
-
-	public SegmentIndex(RoadGraph g, double cellDegrees = 0.01)
+	// Snaps arbitrary coordinates to the nearest road segment in the tiled graph.
+	public sealed class Snapper
 	{
-		_cellDeg = cellDegrees;
+		private readonly TiledRoadGraph _graph;
+		private readonly SegmentIndex _index;
 
-		for (int u = 0; u < g.Adj.Count; u++)
+		public Snapper(TiledRoadGraph graph, SegmentIndex index)
 		{
-			var edges = g.Adj[u];
-			for (int ei = 0; ei < edges.Count; ei++)
+			_graph = graph;
+			_index = index;
+		}
+
+		// Build a SegmentIndex that covers all tiles in the graph.
+		public static SegmentIndex BuildGlobalIndex(TiledRoadGraph graph, double cellDegrees = 0.01)
+		{
+			var index = new SegmentIndex(cellDegrees);
+
+			foreach (var tileId in graph.GetAllTileIds())
 			{
-				var e = edges[ei];
-				if (e.Geometry.Count < 2) continue;
-
-				for (int si = 0; si < e.Geometry.Count - 1; si++)
+				int nodeCount = graph.GetNodeCount(tileId);
+				for (int local = 0; local < nodeCount; local++)
 				{
-					var a = e.Geometry[si];
-					var b = e.Geometry[si + 1];
+					var from = new NodeKey(tileId, local);
+					var (uLat, uLon) = graph.GetNodeLatLon(from);
 
-					double minLat = Math.Min(a.Lat, b.Lat);
-					double maxLat = Math.Max(a.Lat, b.Lat);
-					double minLon = Math.Min(a.Lon, b.Lon);
-					double maxLon = Math.Max(a.Lon, b.Lon);
-
-					var seg = new SegRef(u, ei, si, minLat, minLon, maxLat, maxLon);
-
-					var (iy0, ix0) = Key(minLat, minLon);
-					var (iy1, ix1) = Key(maxLat, maxLon);
-					for (int iy = iy0; iy <= iy1; iy++)
-						for (int ix = ix0; ix <= ix1; ix++)
-						{
-							var key = (iy, ix);
-							if (!_grid.TryGetValue(key, out var list))
-								_grid[key] = list = new List<SegRef>();
-							list.Add(seg);
-						}
+					foreach (var (neighbor, _) in graph.GetNeighbors(from))
+					{
+						var (vLat, vLon) = graph.GetNodeLatLon(neighbor);
+						index.AddSegment(from, neighbor, uLat, uLon, vLat, vLon);
+					}
 				}
 			}
+
+			return index;
 		}
-	}
 
-	private (int iy, int ix) Key(double lat, double lon)
-		=> ((int)Math.Floor(lat / _cellDeg), (int)Math.Floor(lon / _cellDeg));
-
-	// Nearby candidates from cell + neighbors
-	public IEnumerable<SegRef> Candidates(double lat, double lon)
-	{
-		var (iy, ix) = Key(lat, lon);
-		for (int dy = -1; dy <= 1; dy++)
-			for (int dx = -1; dx <= 1; dx++)
-			{
-				if (_grid.TryGetValue((iy + dy, ix + dx), out var list))
-					for (int i = 0; i < list.Count; i++)
-						yield return list[i];
-			}
-	}
-}
-
-public sealed class Snapper
-{
-	private readonly RoadGraph _g;
-	private readonly SegmentIndex _index;
-
-	public Snapper(RoadGraph g, SegmentIndex index)
-	{ _g = g; _index = index; }
-
-	public readonly struct SnapResultTmp
-	{
-		public readonly int FromNode;     // Adj owner
-		public readonly int EdgeIdx;      // which edge in Adj[FromNode]
-		public readonly int SegIdx;       // segment inside edge geometry
-		public readonly double T;         // 0..1 along this segment
-		public readonly double Lat, Lon;  // snapped coordinates
-		public readonly double DistMeters;// distance from click to segment (meters)
-		public readonly float LenFromStart; // meters from edge start-node to snap
-		public readonly float LenToEnd;     // meters from snap to edge end-node
-
-		public SnapResultTmp(int fromNode, int edgeIdx, int segIdx, double t, double lat, double lon, double dist,
-						  float lenFromStart, float lenToEnd)
-		{ FromNode = fromNode; EdgeIdx = edgeIdx; SegIdx = segIdx; T = t; Lat = lat; Lon = lon; DistMeters = dist; LenFromStart = lenFromStart; LenToEnd = lenToEnd; }
-	}
-
-
-	public SnapResult Snap(double lat, double lon)
-	{
-		double bestD = double.MaxValue;
-		SnapResult best = null!;  // or default; we'll always set it before return
-
-		double cosLat = Math.Cos(lat * Math.PI / 180.0);
-		double dxScale = 111_320.0 * cosLat;
-		double dyScale = 110_540.0;
-
-		foreach (var s in _index.Candidates(lat, lon))
+		// Snap a coordinate to the nearest point on any nearby road segment.
+		public SnapResult Snap(double lat, double lon, double searchRadiusMeters = 200.0)
 		{
-			var e = _g.Adj[s.FromNode][s.EdgeIdx];
-			if (e.CumulativeLength == null || e.Geometry.Count < 2)
-				continue;
+			// Rough conversion: 1 deg ~ 111km
+			double searchDeg = searchRadiusMeters / 111_000.0;
 
-			var a = e.Geometry[s.SegIdx];
-			var b = e.Geometry[s.SegIdx + 1];
+			SnapResult? best = null;
+			double bestDist2 = double.PositiveInfinity;
 
-			// local meters
-			double ax = (a.Lon - lon) * dxScale, ay = (a.Lat - lat) * dyScale;
-			double bx = (b.Lon - lon) * dxScale, by = (b.Lat - lat) * dyScale;
-			double vx = bx - ax, vy = by - ay;
-			double v2 = vx * vx + vy * vy;
-			if (v2 < 1e-6) continue;
-
-			double t = Math.Clamp((-(ax * vx + ay * vy)) / v2, 0.0, 1.0);
-			double px = ax + t * vx;
-			double py = ay + t * vy;
-			double d = Math.Sqrt(px * px + py * py);
-			if (d >= bestD) continue;
-
-			// back to lat/lon
-			double snapLon = lon + (px / dxScale);
-			double snapLat = lat + (py / dyScale);
-
-			// edge cumulative length
-			var cum = e.CumulativeLength!;
-			float lenToSegmentStart = cum[s.SegIdx];
-			float segLen = (float)HaversineMeters(a.Lat, a.Lon, b.Lat, b.Lon);
-			float lenAlongSegment = (float)(t * segLen);
-			float lenFromStart = lenToSegmentStart + lenAlongSegment;
-			float edgeLen = cum[^1];
-
-			bestD = d;
-			best = new SnapResult
+			foreach (var seg in _index.Candidates(lat, lon, searchDeg))
 			{
-				U = s.FromNode,                 // start node of the edge
-				V = e.To,                       // end node of the edge
-				DistFromU = lenFromStart,       // meters from U to snap
-				EdgeLen = edgeLen,              // full edge length
-				Point = (snapLat, snapLon)      // snapped coordinate
-			};
+				var from = seg.FromNode;
+				var to = seg.ToNode;
+
+				var (uLat, uLon) = _graph.GetNodeLatLon(from);
+				var (vLat, vLon) = _graph.GetNodeLatLon(to);
+
+				var (snappedLat, snappedLon, t01) = ProjectOnSegment(uLat, uLon, vLat, vLon, lat, lon);
+				if (t01 < 0 || t01 > 1)
+					continue;
+
+				double dLat = snappedLat - lat;
+				double dLon = snappedLon - lon;
+				double d2 = dLat * dLat + dLon * dLon;
+				if (d2 >= bestDist2)
+					continue;
+
+				if (!_graph.TryGetEdgeCost(from, to, out float edgeLen))
+					continue;
+
+				float distFromU = edgeLen * (float)t01;
+
+				bestDist2 = d2;
+				best = new SnapResult
+				{
+					U = from,
+					V = to,
+					DistFromU = distFromU,
+					EdgeLen = edgeLen,
+					Point = (snappedLat, snappedLon)
+				};
+			}
+
+			if (best == null)
+				throw new InvalidOperationException("Could not snap point to graph (no nearby segments).");
+
+			return best;
 		}
 
-		return best;
+		/// Orthogonal projection of point P onto segment AB in (lat, lon) space.
+		/// Returns (projectionLat, projectionLon, t in [0,1]).
+		private static (double Lat, double Lon, double T01) ProjectOnSegment(
+			double latA, double lonA,
+			double latB, double lonB,
+			double latP, double lonP)
+		{
+			double vx = lonB - lonA;
+			double vy = latB - latA;
+			double wx = lonP - lonA;
+			double wy = latP - latA;
+
+			double c1 = vx * wx + vy * wy;
+			double c2 = vx * vx + vy * vy;
+			if (c2 <= 0)
+				return (latA, lonA, 0);
+
+			double t = c1 / c2;
+			double lonProj = lonA + t * vx;
+			double latProj = latA + t * vy;
+
+			return (latProj, lonProj, t);
+		}
 	}
-
-
-	// Local copy to avoid changing existing access modifiers
-	private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
-	{
-		const double R = 6371000.0;
-		double dLat = (lat2 - lat1) * Math.PI / 180.0;
-		double dLon = (lon2 - lon1) * Math.PI / 180.0;
-		double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-				   Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2 * Math.PI / 180.0) *
-				   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-		return 2 * R * Math.Asin(Math.Min(1, Math.Sqrt(a)));
-	}
-}
-
-public sealed class SnapResult
-{
-	// Directed edge the point snapped to: U -> V
-	public int U { get; init; }
-	public int V { get; init; }
-
-	// Distance from U along edge (meters) and total edge length (meters)
-	public float DistFromU { get; init; }
-	public float EdgeLen { get; init; }
-
-	// The exact snapped coordinate on the edge
-	public (double Lat, double Lon) Point { get; init; }
 }

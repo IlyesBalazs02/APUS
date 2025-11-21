@@ -4,16 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public interface IReadOnlyGraph
+namespace APUS.Routing
 {
-	int NodeCount { get; }
-	(double Lat, double Lon) GetNodeLatLon(int nodeId);
-	IReadOnlyList<LightEdge> GetAdj(int nodeId);
-}
+	public interface IReadOnlyGraph
+	{
+		int NodeCount { get; }
+		(double Lat, double Lon) GetNodeLatLon(int nodeId);
+		IReadOnlyList<LightEdge> GetAdj(int nodeId);
+	}
 
-public readonly struct LightEdge
-{
-	public readonly int To;
-	public readonly float Weight;
-	public LightEdge(int to, float w) { To = to; Weight = w; }
+	public readonly struct LightEdge
+	{
+		public readonly int To;
+		public readonly float Weight;
+		public LightEdge(int to, float w) { To = to; Weight = w; }
+	}
+
 }

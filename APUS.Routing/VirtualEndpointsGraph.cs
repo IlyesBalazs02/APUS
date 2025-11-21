@@ -1,67 +1,167 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-public sealed class VirtualEndpointsGraph : IReadOnlyGraph
+namespace APUS.Routing
 {
-	private readonly IReadOnlyGraph _base;
-	private readonly int _nBase;
-	private readonly SnapResult _A, _B;
-
-	public int NodeCount => _nBase + 2; // +S +T
-	private int S => _nBase;
-	private int T => _nBase + 1;
-
-	public VirtualEndpointsGraph(IReadOnlyGraph @base, SnapResult a, SnapResult b)
+	// Routes between two snapped points  by creating two virtual
+	// nodes S (start) and T (target) on top of the tiled graph and running A*.
+	public static class VirtualEndpointsGraph
 	{
-		_base = @base;
-		_nBase = @base.NodeCount;
-		_A = a; _B = b;
-	}
+		private static readonly TileId StartTile = new TileId(-1);
+		private static readonly TileId EndTile = new TileId(-2);
 
-	public (double Lat, double Lon) GetNodeLatLon(int nodeId)
-	{
-		if (nodeId == S) return _A.Point;
-		if (nodeId == T) return _B.Point;
-		return _base.GetNodeLatLon(nodeId);
-	}
+		private static readonly NodeKey S = new NodeKey(StartTile, 0);
+		private static readonly NodeKey T = new NodeKey(EndTile, 0);
 
-	public IReadOnlyList<LightEdge> GetAdj(int nodeId)
-	{
-		// From S: we can go to A.U or A.V with the correct partial cost
-		if (nodeId == S)
+		// Route between two snapped positions A and B using the tiled graph.
+		// Returns a path of NodeKey from S to T
+		public static List<NodeKey> RouteBetweenSnaps(
+			TiledRoadGraph graph,
+			SnapResult A,
+			SnapResult B)
 		{
-			float costToU = _A.DistFromU;
-			float costToV = _A.EdgeLen - _A.DistFromU;
-			return new[]
+			return AStarWithVirtual(graph, A, B, S, T);
+		}
+
+		private sealed class OpenItem : IComparable<OpenItem>
+		{
+			public NodeKey Node;
+			public float F; // g + h
+
+			public int CompareTo(OpenItem? other)
 			{
-				new LightEdge(_A.U, costToU),
-				new LightEdge(_A.V, costToV)
-			};
+				if (other is null) return 1;
+				return F.CompareTo(other.F);
+			}
 		}
 
-		// For base nodes: base adj plus (if this node is B.U or B.V) an extra edge to T
-		if (nodeId < _nBase)
+		private static List<NodeKey> AStarWithVirtual(
+			TiledRoadGraph g,
+			SnapResult A,
+			SnapResult B,
+			NodeKey start,
+			NodeKey goal)
 		{
-			var baseAdj = _base.GetAdj(nodeId);
-			// Copy base edges
-			var list = new List<LightEdge>(baseAdj.Count + 1);
-			for (int i = 0; i < baseAdj.Count; i++) list.Add(baseAdj[i]);
+			var gScore = new Dictionary<NodeKey, float>();
+			var cameFrom = new Dictionary<NodeKey, NodeKey?>();
 
-			// Add the terminal connector if applicable
-			if (nodeId == _B.U)
-				list.Add(new LightEdge(T, _B.DistFromU));                // nodeId -> T: partial to snap
-			else if (nodeId == _B.V)
-				list.Add(new LightEdge(T, _B.EdgeLen - _B.DistFromU));   // nodeId -> T: partial to snap
+			var open = new PriorityQueue<OpenItem, float>();
 
-			return list;
+			float h0 = Heuristic(g, start, goal, A, B);
+			gScore[start] = 0f;
+			cameFrom[start] = null;
+			open.Enqueue(new OpenItem { Node = start, F = h0 }, h0);
+
+			var closed = new HashSet<NodeKey>();
+
+			while (open.TryDequeue(out var currentItem, out _))
+			{
+				var current = currentItem.Node;
+
+				if (current.Equals(goal))
+					return ReconstructPath(cameFrom, current);
+
+				if (!closed.Add(current))
+					continue;
+
+				foreach (var (neighbor, cost) in GetNeighbors(g, current, A, B))
+				{
+					if (closed.Contains(neighbor))
+						continue;
+
+					float tentativeG = gScore[current] + cost;
+
+					if (!gScore.TryGetValue(neighbor, out var oldG) || tentativeG < oldG)
+					{
+						gScore[neighbor] = tentativeG;
+						cameFrom[neighbor] = current;
+
+						float f = tentativeG + Heuristic(g, neighbor, goal, A, B);
+						open.Enqueue(new OpenItem { Node = neighbor, F = f }, f);
+					}
+				}
+			}
+
+			// No path
+			return new List<NodeKey>();
 		}
 
-		// From T: sink (no outgoing)
-		if (nodeId == T) return Array.Empty<LightEdge>();
-		return Array.Empty<LightEdge>();
+		private static List<NodeKey> ReconstructPath(
+			Dictionary<NodeKey, NodeKey?> cameFrom,
+			NodeKey cur)
+		{
+			var path = new List<NodeKey> { cur };
+			while (cameFrom.TryGetValue(cur, out var prev) && prev != null)
+			{
+				cur = prev.Value;
+				path.Add(cur);
+			}
+			path.Reverse();
+			return path;
+		}
+
+
+		private static IEnumerable<(NodeKey Neighbor, float Cost)> GetNeighbors(
+			TiledRoadGraph g,
+			NodeKey n,
+			SnapResult A,
+			SnapResult B)
+		{
+			if (n == S)
+			{
+				if (!A.U.Equals(A.V))
+				{
+					yield return (A.U, A.DistFromU);
+					yield return (A.V, A.EdgeLen - A.DistFromU);
+				}
+				else
+				{
+					yield return (A.U, 0f);
+				}
+				yield break;
+			}
+
+			if (n == T)
+				yield break;
+
+			foreach (var (neighbor, cost) in g.GetNeighbors(n))
+				yield return (neighbor, cost);
+
+			if (n.Equals(B.U))
+			{
+				yield return (T, B.DistFromU);
+			}
+			if (!B.U.Equals(B.V) && n.Equals(B.V))
+			{
+				yield return (T, B.EdgeLen - B.DistFromU);
+			}
+		}
+
+		// Heuristic distance in meters between two
+		private static float Heuristic(
+			TiledRoadGraph g,
+			NodeKey u,
+			NodeKey v,
+			SnapResult A,
+			SnapResult B)
+		{
+			var (lat1, lon1) = GetLatLonForState(g, u, A, B);
+			var (lat2, lon2) = GetLatLonForState(g, v, A, B);
+
+			double dLat = lat1 - lat2;
+			double dLon = lon1 - lon2;
+			return (float)(Math.Sqrt(dLat * dLat + dLon * dLon) * 111_000.0);
+		}
+
+		private static (double Lat, double Lon) GetLatLonForState(
+			TiledRoadGraph g,
+			NodeKey n,
+			SnapResult A,
+			SnapResult B)
+		{
+			if (n == S) return A.Point;
+			if (n == T) return B.Point;
+			return g.GetNodeLatLon(n);
+		}
 	}
 }
-

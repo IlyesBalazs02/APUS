@@ -15,9 +15,9 @@ namespace APUS.Routing
 	public sealed class GdalElevationSampler : IElevationSampler
 	{
 		private readonly Dataset _ds;               // GDAL dataset
-		private readonly Band _band;                // First raster band (elevation values)
+		private readonly Band _band;                // First raster band
 		private readonly double[] _gt = new double[6]; // GeoTransform: maps geo coords <-> pixel coords
-		private readonly CoordinateTransformation _wgs84_to_dem; // Coordinate transformer WGS84 -> DEM CRS
+		private readonly CoordinateTransformation _wgs84_to_dem;
 
 		public GdalElevationSampler(string path)
 		{
@@ -38,19 +38,18 @@ namespace APUS.Routing
 
 			// Prepare coordinate transformation: WGS84 → DEM CRS
 			var src = new SpatialReference(""); src.ImportFromEPSG(4326); // WGS84 input
-			var dst = new SpatialReference(_ds.GetProjection());          // DEM projection
+			var dst = new SpatialReference(_ds.GetProjection());
 			_wgs84_to_dem = new CoordinateTransformation(src, dst);
 		}
 
 		public float? Sample(double lat, double lon)
 		{
-			// 1Transform geographic coordinates (lon/lat) from WGS84 to DEM CRS
+			// Transform geographic coordinates (lon/lat) from WGS84 to DEM CRS
 			double[] p = new double[] { lon, lat, 0 };
 			_wgs84_to_dem.TransformPoint(p);
 			double X = p[0], Y = p[1];
 
-			// 2Convert map coordinates → pixel coordinates using affine transform
-			// Assumes DEM is north-up (GT2=GT4=0)
+			// Convert map coordinates to pixel coordinates using affine transform
 			double col = (X - _gt[0]) / _gt[1];
 			double row = (Y - _gt[3]) / _gt[5];
 
@@ -59,17 +58,15 @@ namespace APUS.Routing
 			int x1 = x0 + 1;
 			int y1 = y0 + 1;
 
-			// 3Check if inside DEM bounds
+			// Check if inside DEM bounds
 			if (x0 < 0 || y0 < 0 || x1 >= _ds.RasterXSize || y1 >= _ds.RasterYSize)
 				return null;
 
-			// Read a small 2×2 window for bilinear interpolation
 			float[] win = new float[4];
 			_band.ReadRaster(x0, y0, 2, 2, win, 2, 2, 0, 0);
 
 			float z00 = win[0], z10 = win[1], z01 = win[2], z11 = win[3];
 
-			// Interpolate between the 4 elevations based on fractional pixel position
 			double fx = col - x0;
 			double fy = row - y0;
 			double z0 = z00 + (z10 - z00) * fx;
@@ -79,7 +76,6 @@ namespace APUS.Routing
 
 		public void Dispose()
 		{
-			// Properly release unmanaged GDAL resources
 			_band?.Dispose();
 			_ds?.Dispose();
 			_wgs84_to_dem?.Dispose();

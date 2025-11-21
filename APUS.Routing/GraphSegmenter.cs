@@ -1,241 +1,313 @@
 ﻿using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
-/*
- * Input:road graph
- * Output: many smaller tiles
- * */
-public static class GraphSegmenter
+namespace APUS.Routing
 {
-	public static void WriteSharded(RoadGraph g, string outDir,
-		double? desiredCellDeg = null, int targetTileMB = 12)
+	public readonly struct MacroKey
 	{
-		Directory.CreateDirectory(outDir);
-		string tilesDir = Path.Combine(outDir, "tiles");
-		Directory.CreateDirectory(tilesDir);
-
-		// Compute graph bbox
-		double minLat = double.PositiveInfinity, minLon = double.PositiveInfinity;
-		double maxLat = double.NegativeInfinity, maxLon = double.NegativeInfinity;
-		for (int i = 0; i < g.Nodes.Count; i++)
+		public readonly int LatInt;
+		public readonly int LonInt;
+		public MacroKey(int latInt, int lonInt)
 		{
-			var n = g.Nodes[i];
-			minLat = Math.Min(minLat, n.Lat); maxLat = Math.Max(maxLat, n.Lat);
-			minLon = Math.Min(minLon, n.Lon); maxLon = Math.Max(maxLon, n.Lon);
+			LatInt = latInt;
+			LonInt = lonInt;
 		}
 
-		// Choose grid cell size
-		// Start with 0.02 (~2km) and adjust a bit if  too big/small by density.
-		double cellDeg = desiredCellDeg ?? 0.02;
+		public override string ToString() => $"{LatInt}_{LonInt}";
+	}
 
-		// Assign nodes to cells
-		var nodeToTile = new int[g.Nodes.Count];
-		var tiles = new Dictionary<(int iy, int ix), List<int>>();
-		(int iy, int ix) Key(double lat, double lon) => ((int)Math.Floor(lat / cellDeg), (int)Math.Floor(lon / cellDeg));
+	public sealed class TileBuilder
+	{
+		public int GlobalTileId;
+		public MacroKey Macro;
+		public int LocalTileId;
 
-		for (int i = 0; i < g.Nodes.Count; i++)
+		public double MinLat, MaxLat;
+		public double MinLon, MaxLon;
+
+		public List<int> NodeIndices = new();
+		public List<(int FromLocal, LightEdgeOnDisk Edge)> Edges = new();
+	}
+
+	public static class GraphSegmenter
+	{
+		public static void WriteMultiLevel(RoadGraph g, string outDir,
+			int targetTileMB = 12, int maxNodesPerTile = 50_000)
 		{
-			var k = Key(g.Nodes[i].Lat, g.Nodes[i].Lon);
-			if (!tiles.TryGetValue(k, out var list)) tiles[k] = list = new List<int>();
-			list.Add(i);
-		}
+			Directory.CreateDirectory(outDir);
 
-		// Build tile metas, write nodes.bin and node_to_tile.bin first
-		var manifest = new DiskGraphManifest
-		{
-			CellDegrees = cellDeg,
-			NodeCount = g.Nodes.Count,
-			TilesDir = "tiles"
-		};
-
-		using (var headers = File.Create(Path.Combine(outDir, "nodes.bin")))
-		using (var bw = new BinaryWriter(headers))
-		{
+			// Group nodes by macro
+			var macroToNodeIds = new Dictionary<MacroKey, List<int>>();
 			for (int i = 0; i < g.Nodes.Count; i++)
 			{
 				var n = g.Nodes[i];
-				bw.Write(n.Lat);
-				bw.Write(n.Lon);
+				int latInt = (int)Math.Floor(n.Lat);
+				int lonInt = (int)Math.Floor(n.Lon);
+				var mk = new MacroKey(latInt, lonInt);
+
+				if (!macroToNodeIds.TryGetValue(mk, out var list))
+					macroToNodeIds[mk] = list = new List<int>();
+				list.Add(i);
 			}
-		}
 
-		// Write node->tile mapping
-		var tileList = tiles.Keys.ToList();
-		tileList.Sort((a, b) => a.iy != b.iy ? a.iy.CompareTo(b.iy) : a.ix.CompareTo(b.ix));
+			// For each macro, recursively split into subtiles based on density
+			var allTiles = new List<TileBuilder>();
+			int nextGlobalTileId = 0;
 
-		var keyToId = new Dictionary<(int iy, int ix), int>();
-		for (int t = 0; t < tileList.Count; t++) keyToId[tileList[t]] = t;
-
-		using (var mapStream = File.Create(Path.Combine(outDir, "node_to_tile.bin")))
-		{
-			var buf = new byte[4];
-			for (int t = 0; t < tileList.Count; t++)
+			foreach (var kvp in macroToNodeIds)
 			{
-				var k = tileList[t];
-				var list = tiles[k];
-				foreach (var nodeId in list)
+				var macro = kvp.Key;
+				var nodeIds = kvp.Value;
+
+				// Compute macro bbox
+				double minLat = double.PositiveInfinity, maxLat = double.NegativeInfinity;
+				double minLon = double.PositiveInfinity, maxLon = double.NegativeInfinity;
+				foreach (var idx in nodeIds)
 				{
-					nodeToTile[nodeId] = t;
-				}
-			}
-			// nodeId in index order → tileId
-			for (int i = 0; i < g.Nodes.Count; i++)
-			{
-				BinaryPrimitives.WriteInt32LittleEndian(buf, nodeToTile[i]);
-				mapStream.Write(buf, 0, 4);
-			}
-		}
-
-		// For each tile: collect local nodes, outbound edges, and write a compact binary
-		int tileId = 0;
-		foreach (var k in tileList)
-		{
-			var nids = tiles[k];
-			// Build a HashSet for quick membership
-			var local = new HashSet<int>(nids);
-			int localEdges = 0;
-			// bbox
-			double tMinLat = double.PositiveInfinity, tMinLon = double.PositiveInfinity;
-			double tMaxLat = double.NegativeInfinity, tMaxLon = double.NegativeInfinity;
-			foreach (var id in nids)
-			{
-				var n = g.Nodes[id];
-				tMinLat = Math.Min(tMinLat, n.Lat); tMaxLat = Math.Max(tMaxLat, n.Lat);
-				tMinLon = Math.Min(tMinLon, n.Lon); tMaxLon = Math.Max(tMaxLon, n.Lon);
-			}
-
-			// Count edges: include edges from local nodes (even if 'To' outside).
-			foreach (var u in nids) localEdges += g.Adj[u].Count;
-
-			string adjPath = Path.Combine(tilesDir, $"tile_{tileId}.adj.bin");
-			string geomPath = Path.Combine(tilesDir, $"tile_{tileId}.geom.bin");
-
-			// -------------- ADJACENCY TILE --------------
-			// Format:
-			// [magic: 8 bytes] "RGSHADJ1"
-			// [int32] nodeCount
-			// [int32] edgeTotalCount
-			// NODES: [int32] globalNodeId (no lat/lon; we already have headers)
-			// EDGES: per local node:
-			//   [int32] uGlobal
-			//   [int32] deg
-			//   repeat deg:
-			//     [int32] toGlobal
-			//     [single] weight
-
-			using (var fsAdj = File.Create(adjPath))
-			using (var bwAdj = new BinaryWriter(fsAdj))
-			{
-				// header
-				bwAdj.Write(Encoding.ASCII.GetBytes("RGSHADJ1"));
-				bwAdj.Write(nids.Count);
-				bwAdj.Write(localEdges);
-
-				// nodes
-				foreach (var u in nids)
-				{
-					bwAdj.Write(u);
+					var n = g.Nodes[idx];
+					minLat = Math.Min(minLat, n.Lat);
+					maxLat = Math.Max(maxLat, n.Lat);
+					minLon = Math.Min(minLon, n.Lon);
+					maxLon = Math.Max(maxLon, n.Lon);
 				}
 
-				// edges
-				foreach (var u in nids)
-				{
-					var adj = g.Adj[u];
-					bwAdj.Write(u);
-					bwAdj.Write(adj.Count);
+				// Recursive split into subtiles
+				var macroTiles = SplitMacroIntoTiles(
+					g, macro, nodeIds, minLat, maxLat, minLon, maxLon,
+					maxNodesPerTile);
 
-					for (int ei = 0; ei < adj.Count; ei++)
+				// Assign global tile IDs and local tile IDs
+				int localId = 0;
+				foreach (var t in macroTiles)
+				{
+					t.GlobalTileId = nextGlobalTileId++;
+					t.LocalTileId = localId++;
+					allTiles.Add(t);
+				}
+			}
+
+			// Build edges per tile
+			BuildTileEdges(g, allTiles);
+
+			// Write macros and tile-files
+			WriteTilesToDisk(outDir, allTiles, g);
+		}
+
+		private static List<TileBuilder> SplitMacroIntoTiles(
+	RoadGraph g,
+	MacroKey macro,
+	List<int> nodeIds,
+	double minLat, double maxLat,
+	double minLon, double maxLon,
+	int maxNodesPerTile,
+	int depth = 0)
+		{
+			if (nodeIds.Count <= maxNodesPerTile || depth > 10)
+			{
+				var tb = new TileBuilder
+				{
+					Macro = macro,
+					MinLat = minLat,
+					MaxLat = maxLat,
+					MinLon = minLon,
+					MaxLon = maxLon,
+					NodeIndices = nodeIds
+				};
+				return new List<TileBuilder> { tb };
+			}
+
+			// Split bbox into 4 quadrants
+			double midLat = 0.5 * (minLat + maxLat);
+			double midLon = 0.5 * (minLon + maxLon);
+
+			var quads = new[]
+			{
+			(minLat, midLat, minLon, midLon),
+			(minLat, midLat, midLon, maxLon),
+			(midLat, maxLat, minLon, midLon),
+			(midLat, maxLat, midLon, maxLon),
+		};
+
+			var result = new List<TileBuilder>();
+
+			foreach (var (la0, la1, lo0, lo1) in quads)
+			{
+				var subset = new List<int>();
+				foreach (var idx in nodeIds)
+				{
+					var n = g.Nodes[idx];
+					if (n.Lat >= la0 && n.Lat <= la1 &&
+						n.Lon >= lo0 && n.Lon <= lo1)
 					{
-						var e = adj[ei];
-						bwAdj.Write(e.To);
-						bwAdj.Write(e.Weight);
+						subset.Add(idx);
 					}
 				}
+
+				if (subset.Count == 0)
+					continue;
+
+				result.AddRange(SplitMacroIntoTiles(
+					g, macro, subset, la0, la1, lo0, lo1, maxNodesPerTile, depth + 1));
 			}
 
-			// -------------- GEOMETRY TILE --------------
-			// Format:
-			// [magic: 8 bytes] "RGSHGEO1"
-			// [int32] nodeCount
-			// [int32] edgeTotalCount
-			// NODES: [int32] globalNodeId
-			// EDGES: per local node:
-			//   [int32] uGlobal
-			//   [int32] deg
-			//   repeat deg:
-			//     [int32] toGlobal
-			//     [int32] geomCount
-			//       repeat geomCount: [double] lat, [double] lon
-			//     [int32] cumLenCount
-			//       repeat cumLenCount: [single] value
+			return result;
+		}
 
-			using (var fsGeom = File.Create(geomPath))
-			using (var bwGeom = new BinaryWriter(fsGeom))
+		private sealed class NodeLocation
+		{
+			public TileBuilder Tile = null!;
+			public int LocalIndex;
+		}
+
+		private static void BuildTileEdges(RoadGraph g, List<TileBuilder> tiles)
+		{
+			var locationByNode = new NodeLocation[g.Nodes.Count];
+
+			// Fill NodeLocation
+			foreach (var tile in tiles)
 			{
-				// header
-				bwGeom.Write(Encoding.ASCII.GetBytes("RGSHGEO1"));
-				bwGeom.Write(nids.Count);
-				bwGeom.Write(localEdges);
-
-				// nodes (for symmetry / simple reading)
-				foreach (var u in nids)
+				for (int i = 0; i < tile.NodeIndices.Count; i++)
 				{
-					bwGeom.Write(u);
+					int nodeIdx = tile.NodeIndices[i];
+					locationByNode[nodeIdx] = new NodeLocation
+					{
+						Tile = tile,
+						LocalIndex = i
+					};
+				}
+			}
+
+			// Initialize adjacency lists per tile
+			foreach (var tile in tiles)
+			{
+				tile.Edges = new List<(int, LightEdgeOnDisk)>();
+			}
+
+			for (int u = 0; u < g.Nodes.Count; u++)
+			{
+				var locU = locationByNode[u];
+				var fromTile = locU.Tile;
+				int fromLocal = locU.LocalIndex;
+
+				foreach (var e in g.Adj[u])
+				{
+					int v = e.To;
+					var locV = locationByNode[v];
+
+					var edge = new LightEdgeOnDisk
+					{
+						ToTileId = locV.Tile.GlobalTileId,
+						ToLocalNode = locV.LocalIndex,
+						Cost = e.Weight
+					};
+
+					fromTile.Edges.Add((fromLocal, edge));
+				}
+			}
+		}
+
+		private static void WriteTilesToDisk(string outDir, List<TileBuilder> allTiles, RoadGraph g)
+		{
+			// Group by macro
+			var byMacro = allTiles.GroupBy(t => t.Macro);
+
+			foreach (var macroGroup in byMacro)
+			{
+				var macro = macroGroup.Key;
+				string macroDir = Path.Combine(outDir, macro.ToString());
+				Directory.CreateDirectory(macroDir);
+
+				var tiles = macroGroup.OrderBy(t => t.LocalTileId).ToList();
+
+				// Write tiles.bin
+				string tilesBinPath = Path.Combine(macroDir, "tiles.bin");
+				using (var fs = File.Create(tilesBinPath))
+				using (var bw = new BinaryWriter(fs))
+				{
+					bw.Write(tiles.Count);
+					foreach (var t in tiles)
+					{
+						bw.Write(t.GlobalTileId);
+						bw.Write(t.LocalTileId);
+						bw.Write(t.MinLat);
+						bw.Write(t.MaxLat);
+						bw.Write(t.MinLon);
+						bw.Write(t.MaxLon);
+					}
 				}
 
-				// edges + geometry
-				foreach (var u in nids)
+				// Write each tile's nodes and adj
+				foreach (var t in tiles)
 				{
-					var adj = g.Adj[u];
-					bwGeom.Write(u);
-					bwGeom.Write(adj.Count);
+					string baseName = $"tile_{t.LocalTileId:0000}";
+					string nodesPath = Path.Combine(macroDir, baseName + ".nodes.bin");
+					string adjPath = Path.Combine(macroDir, baseName + ".adj.bin");
 
-					for (int ei = 0; ei < adj.Count; ei++)
+					// Nodes
+					using (var fs = File.Create(nodesPath))
+					using (var bw = new BinaryWriter(fs))
 					{
-						var e = adj[ei];
-						bwGeom.Write(e.To);
-
-						// geometry
-						bwGeom.Write(e.Geometry.Count);
-						for (int gi = 0; gi < e.Geometry.Count; gi++)
+						bw.Write(t.NodeIndices.Count);
+						foreach (var globalIdx in t.NodeIndices)
 						{
-							bwGeom.Write(e.Geometry[gi].Lat);
-							bwGeom.Write(e.Geometry[gi].Lon);
+							var n = g.Nodes[globalIdx];
+							bw.Write((float)n.Lat);
+							bw.Write((float)n.Lon);
 						}
-
-						// cumlen
-						var cum = e.CumulativeLength ?? Array.Empty<float>();
-						bwGeom.Write(cum.Length);
-						for (int ci = 0; ci < cum.Length; ci++) bwGeom.Write(cum[ci]);
 					}
+
+					// CSR adjacency
+					int nodeCount = t.NodeIndices.Count;
+					var perNodeEdges = new List<LightEdgeOnDisk>[nodeCount];
+					for (int i = 0; i < nodeCount; i++) perNodeEdges[i] = new List<LightEdgeOnDisk>();
+
+					foreach (var (fromLocal, edge) in t.Edges)
+					{
+						perNodeEdges[fromLocal].Add(edge);
+					}
+
+					int edgeCount = perNodeEdges.Sum(l => l.Count);
+					var edgeIndex = new int[nodeCount + 1];
+					var flatEdges = new LightEdgeOnDisk[edgeCount];
+
+					int cursor = 0;
+					for (int u = 0; u < nodeCount; u++)
+					{
+						edgeIndex[u] = cursor;
+						var list = perNodeEdges[u];
+						foreach (var e in list)
+						{
+							flatEdges[cursor++] = e;
+						}
+					}
+					edgeIndex[nodeCount] = cursor;
+
+					// Write adjacency
+					using (var fs = File.Create(adjPath))
+					using (var bw = new BinaryWriter(fs))
+					{
+						bw.Write(nodeCount);
+						bw.Write(edgeCount);
+						for (int i = 0; i < edgeIndex.Length; i++)
+							bw.Write(edgeIndex[i]);
+						for (int i = 0; i < flatEdges.Length; i++)
+						{
+							var e = flatEdges[i];
+							bw.Write(e.ToTileId);
+							bw.Write(e.ToLocalNode);
+							bw.Write(e.Cost);
+						}
+					}
+
+					// For now, geom.bin can reuse your existing logic, per tile; omitted here.
 				}
 			}
-
-			manifest.Tiles.Add(new TileMeta
-			{
-				TileId = tileId,
-				MinLat = tMinLat,
-				MinLon = tMinLon,
-				MaxLat = tMaxLat,
-				MaxLon = tMaxLon,
-				NodeCount = nids.Count,
-				EdgeCount = localEdges,
-				Path = $"tiles/tile_{tileId}.adj.bin",
-				GeomPath = $"tiles/tile_{tileId}.geom.bin"
-			});
-
-			tileId++;
 		}
-
-		manifest.TileCount = manifest.Tiles.Count;
-		manifest.NodesHeaderPath = "nodes.bin";
-
-		File.WriteAllText(Path.Combine(outDir, "graph.manifest.json"),
-			JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
 	}
+
+
 }
+
