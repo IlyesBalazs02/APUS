@@ -9,25 +9,49 @@
         </div>
     </div>
 
-    <!-- Route summary + elevation chart -->
+    <!-- Route summary + elevation chart (Gaia-like bottom bar) -->
     <div class="route-summary" *ngIf="fullRouteCoords.length > 1">
-        <div class="stats-row">
-            <span>
-                Distance: {{ totalDistanceMeters / 1000 | number : '1.2-2' }} km
-            </span>
+        <div class="route-toolbar">
+            <div class="stats-left">
+                <span class="stat-main">
+                    {{ totalDistanceMeters / 1000 | number : '1.1-1' }} km
+                </span>
+                <span class="stat-sub">
+                    ↑ {{ totalAscentMeters | number : '1.0-0' }} m
+                </span>
+                <span class="stat-sub">
+                    ↓ {{ totalDescentMeters | number : '1.0-0' }} m
+                </span>
+            </div>
 
-            <button type="button" (click)="downloadGpx()" [disabled]="totalDistanceMeters === 0">
-                Download GPX
-            </button>
+            <div class="actions-right">
+                <button type="button" class="toolbar-btn" (click)="undoLastSection()"
+                    [disabled]="routeSegments.length === 0 && snappedPoints.length <= 1">
+                    Undo last
+                </button>
+
+
+                <button type="button" class="toolbar-btn" (click)="addOutAndBack()"
+                    [disabled]="fullRouteCoords.length < 2">
+                    Out &amp; back
+                </button>
+
+                <button type="button" class="toolbar-btn" (click)="downloadGpx()"
+                    [disabled]="totalDistanceMeters === 0">
+                    GPX
+                </button>
+
+                <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="saveRoute()"
+                    [disabled]="fullRouteCoords.length < 2">
+                    Save
+                </button>
+            </div>
         </div>
 
-        <div *ngIf="hasElevationProfile">
-            <h6>Elevation Profile</h6>
-            <div style="display: block; width: 100%;">
-                <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
-                    [style.height.px]="300">
-                </canvas>
-            </div>
+        <div class="elevation-chart" *ngIf="hasElevationProfile">
+            <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
+                [style.height.px]="160">
+            </canvas>
         </div>
     </div>
 </div>

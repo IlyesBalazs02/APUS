@@ -41,23 +41,37 @@ namespace APUS.Routing
 		}
 
 		public void AddSegment(NodeKey fromNode, NodeKey toNode,
-							   double lat0, double lon0,
-							   double lat1, double lon1)
+					   double lat0, double lon0,
+					   double lat1, double lon1)
 		{
 			double minLat = Math.Min(lat0, lat1);
 			double maxLat = Math.Max(lat0, lat1);
 			double minLon = Math.Min(lon0, lon1);
 			double maxLon = Math.Max(lon0, lon1);
 
-			var cell = CellOf((minLat + maxLat) * 0.5, (minLon + maxLon) * 0.5);
-			if (!_grid.TryGetValue(cell, out var list))
-			{
-				list = new List<SegRef>();
-				_grid[cell] = list;
-			}
+			// Compute the range of cells this segment overlaps
+			var minCell = CellOf(minLat, minLon);
+			var maxCell = CellOf(maxLat, maxLon);
 
-			list.Add(new SegRef(fromNode, toNode, minLat, minLon, maxLat, maxLon));
+			var segRef = new SegRef(fromNode, toNode, minLat, minLon, maxLat, maxLon);
+
+			for (int iy = minCell.iy; iy <= maxCell.iy; iy++)
+			{
+				for (int ix = minCell.ix; ix <= maxCell.ix; ix++)
+				{
+					var cell = (iy, ix);
+					if (!_grid.TryGetValue(cell, out var list))
+					{
+						list = new List<SegRef>();
+						_grid[cell] = list;
+					}
+
+					list.Add(segRef);
+				}
+			}
 		}
+
+
 
 		public IEnumerable<SegRef> Candidates(double lat, double lon, double searchRadiusDeg)
 		{
@@ -77,5 +91,6 @@ namespace APUS.Routing
 				}
 			}
 		}
+
 	}
 }

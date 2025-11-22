@@ -55,7 +55,6 @@ namespace APUS.Routing
 		// Snap a coordinate to the nearest point on any nearby road segment.
 		public SnapResult Snap(double lat, double lon, double searchRadiusMeters = 200.0)
 		{
-			// Rough conversion: 1 deg ~ 111km
 			double searchDeg = searchRadiusMeters / 111_000.0;
 
 			SnapResult? best = null;
@@ -66,33 +65,66 @@ namespace APUS.Routing
 				var from = seg.FromNode;
 				var to = seg.ToNode;
 
-				var (uLat, uLon) = _graph.GetNodeLatLon(from);
-				var (vLat, vLon) = _graph.GetNodeLatLon(to);
-
-				var (snappedLat, snappedLon, t01) = ProjectOnSegment(uLat, uLon, vLat, vLon, lat, lon);
-				if (t01 < 0 || t01 > 1)
-					continue;
-
-				double dLat = snappedLat - lat;
-				double dLon = snappedLon - lon;
-				double d2 = dLat * dLat + dLon * dLon;
-				if (d2 >= bestDist2)
-					continue;
-
-				if (!_graph.TryGetEdgeCost(from, to, out float edgeLen))
-					continue;
-
-				float distFromU = edgeLen * (float)t01;
-
-				bestDist2 = d2;
-				best = new SnapResult
+				var geom = _graph.GetEdgeGeometry(from, to);
+				if (geom != null && geom.Count >= 2)
 				{
-					U = from,
-					V = to,
-					DistFromU = distFromU,
-					EdgeLen = edgeLen,
-					Point = (snappedLat, snappedLon)
-				};
+					if (!ProjectOnPolyline(geom, lat, lon,out double sLat,out double sLon,out double frac,out double d2))
+					{
+						continue;
+					}
+
+					if (d2 >= bestDist2)
+						continue;
+
+					if (!_graph.TryGetEdgeCost(from, to, out float edgeCost))
+						continue;
+
+					float distFromU = edgeCost * (float)frac;
+
+					bestDist2 = d2;
+					best = new SnapResult
+					{
+						U = from,
+						V = to,
+						DistFromU = distFromU,
+						EdgeLen = edgeCost,
+						Point = (sLat, sLon)
+					};
+
+					continue;
+				}
+
+				// Fallback
+				{
+					var (uLat, uLon) = _graph.GetNodeLatLon(from);
+					var (vLat, vLon) = _graph.GetNodeLatLon(to);
+
+					var (snappedLat, snappedLon, t01) =
+						ProjectOnSegment(uLat, uLon, vLat, vLon, lat, lon);
+					if (t01 < 0 || t01 > 1)
+						continue;
+
+					double dLat = snappedLat - lat;
+					double dLon = snappedLon - lon;
+					double d2 = dLat * dLat + dLon * dLon;
+					if (d2 >= bestDist2)
+						continue;
+
+					if (!_graph.TryGetEdgeCost(from, to, out float edgeLen))
+						continue;
+
+					float distFromU = edgeLen * (float)t01;
+
+					bestDist2 = d2;
+					best = new SnapResult
+					{
+						U = from,
+						V = to,
+						DistFromU = distFromU,
+						EdgeLen = edgeLen,
+						Point = (snappedLat, snappedLon)
+					};
+				}
 			}
 
 			if (best == null)
@@ -101,8 +133,86 @@ namespace APUS.Routing
 			return best;
 		}
 
-		// Orthogonal projection of point P onto segment AB in (lat, lon) space.
-		// Returns (projectionLat, projectionLon, t in [0,1]).
+
+		// Project a point (qLat,qLon) onto a polyline geometry.
+		// Returns the closest point on the polyline
+		private static bool ProjectOnPolyline(
+			System.Collections.Generic.IReadOnlyList<(double Lat, double Lon)> geom,
+			double qLat,
+			double qLon,
+			out double bestLat,
+			out double bestLon,
+			out double frac,
+			out double bestDist2)
+		{
+			bestLat = 0;
+			bestLon = 0;
+			frac = 0;
+			bestDist2 = double.PositiveInfinity;
+
+			if (geom == null || geom.Count < 2)
+				return false;
+
+			int n = geom.Count;
+			double totalLen = 0.0;
+
+			var segLen = new double[n - 1];
+			for (int i = 0; i < n - 1; i++)
+			{
+				var a = geom[i];
+				var b = geom[i + 1];
+				double dLat = b.Lat - a.Lat;
+				double dLon = b.Lon - a.Lon;
+				double len = Math.Sqrt(dLat * dLat + dLon * dLon);
+				segLen[i] = len;
+				totalLen += len;
+			}
+
+			if (totalLen <= 0)
+				return false;
+
+			double cumBefore = 0.0;
+			double bestCumBefore = 0.0;
+			double bestSegLen = 1.0;
+			double bestTSeg = 0.0;
+
+			for (int i = 0; i < n - 1; i++)
+			{
+				var a = geom[i];
+				var b = geom[i + 1];
+
+				var (pLat, pLon, t01) = ProjectOnSegment(a.Lat, a.Lon, b.Lat, b.Lon, qLat, qLon);
+				if (t01 < 0 || t01 > 1)
+				{
+					t01 = Math.Max(0, Math.Min(1, t01));
+					pLat = t01 == 0 ? a.Lat : b.Lat;
+					pLon = t01 == 0 ? a.Lon : b.Lon;
+				}
+
+				double dLat = pLat - qLat;
+				double dLon = pLon - qLon;
+				double d2 = dLat * dLat + dLon * dLon;
+
+				if (d2 < bestDist2)
+				{
+					bestDist2 = d2;
+					bestLat = pLat;
+					bestLon = pLon;
+					bestCumBefore = cumBefore;
+					bestSegLen = segLen[i];
+					bestTSeg = t01;
+				}
+
+				cumBefore += segLen[i];
+			}
+
+			double along = bestCumBefore + bestTSeg * bestSegLen;
+			frac = (totalLen > 0) ? (along / totalLen) : 0.0;
+
+			return true;
+		}
+
+
 		private static (double Lat, double Lon, double T01) ProjectOnSegment(
 			double latA, double lonA,
 			double latB, double lonB,
