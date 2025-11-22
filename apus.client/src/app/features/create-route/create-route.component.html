@@ -10,7 +10,7 @@
     </div>
 
     <!-- Route summary + elevation chart (Gaia-like bottom bar) -->
-    <div class="route-summary" *ngIf="fullRouteCoords.length > 1">
+    <div class="route-summary">
         <div class="route-toolbar">
             <div class="stats-left">
                 <span class="stat-main">
@@ -26,10 +26,9 @@
 
             <div class="actions-right">
                 <button type="button" class="toolbar-btn" (click)="undoLastSection()"
-                    [disabled]="routeSegments.length === 0 && snappedPoints.length <= 1">
+                    [disabled]="routeSegments.length === 0 && snappedPoints.length === 0">
                     Undo last
                 </button>
-
 
                 <button type="button" class="toolbar-btn" (click)="addOutAndBack()"
                     [disabled]="fullRouteCoords.length < 2">
@@ -48,10 +47,19 @@
             </div>
         </div>
 
-        <div class="elevation-chart" *ngIf="hasElevationProfile">
-            <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
-                [style.height.px]="160">
-            </canvas>
+        <div class="elevation-chart">
+            <ng-container *ngIf="hasElevationProfile; else noProfile">
+                <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
+                    [style.height.px]="160">
+                </canvas>
+            </ng-container>
+
+            <ng-template #noProfile>
+                <div class="no-profile-placeholder">
+                    No route yet – click on the map to start.
+                </div>
+            </ng-template>
         </div>
+
     </div>
 </div>

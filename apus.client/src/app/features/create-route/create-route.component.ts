@@ -415,6 +415,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.elevationProfile = [];
     this.distanceProfile = [];
     this.elevationChartData = { labels: [], datasets: [] };
+    this.totalDistanceMeters = 0;
     this.totalAscentMeters = 0;
     this.totalDescentMeters = 0;
     this.hasElevationProfile = false;
@@ -440,25 +441,38 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   // ---------- Toolbar actions ----------
 
   undoLastSection(): void {
-    if (this.routeSegments.length === 0) {
-      this.clearAll();
+    // Case 1: if we have route segments then undo the last segment
+    if (this.routeSegments.length > 0) {
+      const last = this.routeSegments.pop();
+      if (!last) {
+        return;
+      }
+
+      // Only remove a snapped point if this segment was created by a user click (not by Out & Back)
+      if (!last.isOutAndBack && this.snappedPoints.length > 1) {
+        this.snappedPoints.pop();
+        this.updatePointsSource();
+      }
+
+      this.rebuildRouteFromSegments();
       return;
     }
 
-    const last = this.routeSegments.pop();
-    if (!last) {
-      this.clearAll();
-      return;
-    }
-
-    // Only remove a snapped point if this segment was created by a user click (not by Out & Back)
-    if (!last.isOutAndBack && this.snappedPoints.length > 1) {
+    // Case 2: no segments yet, but at least one snapped point then remove the last point
+    if (this.snappedPoints.length > 0) {
       this.snappedPoints.pop();
       this.updatePointsSource();
+
+      // No actual route line anymore
+      this.fullRouteCoords = [];
+      this.updateRouteSourceEmpty();
+      this.clearProfiles(); // sets distance/ascent/descent to 0, hasElevationProfile = false
+      return;
     }
 
-    this.rebuildRouteFromSegments();
   }
+
+
 
 
   addOutAndBack(): void {
