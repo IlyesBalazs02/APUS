@@ -3,6 +3,7 @@ import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ChartData, ChartOptions } from 'chart.js';
+import { UndoContext, UndoService } from './undo.service';
 
 interface SnapResponseDto {
   nodeId: number;
@@ -42,6 +43,10 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   snappedPoints: { lat: number; lon: number }[] = [];
 
+  // Drag state for moving existing points
+  private dragPointIndex: number | null = null;
+  private dragOriginalCoords: { lat: number; lon: number } | null = null;
+
   fullRouteCoords: RouteCoordinateDto[] = [];
   routeSegments: RouteSegment[] = [];
 
@@ -74,7 +79,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private readonly pointsSourceId = 'route-points';
   private readonly pointsLayerId = 'route-points-layer';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, public undoService: UndoService) { }
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -107,61 +112,18 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     // click on map background → add new snapped point + route section
     this.map.on('click', (e) => this.onMapClick(e));
 
-    // interactions with node circles
-    this.map.on('click', this.pointsLayerId, (e) => {
-      (e.originalEvent as MouseEvent).stopPropagation();
+    // interactions with node circles → make them draggable
+    this.map.on('mousedown', this.pointsLayerId, (e: mapboxgl.MapLayerMouseEvent) => this.onPointMouseDown(e));
 
-      const feature = (e.features && e.features[0]) as any;
-      const index = feature?.properties?.index;
-      if (index !== undefined) {
-        console.log('Clicked node index:', index, 'coords:', this.snappedPoints[index]);
+    this.map.on('mouseenter', this.pointsLayerId, () => {
+      if (this.dragPointIndex === null) {
+        this.map.getCanvas().style.cursor = 'pointer';
       }
     });
 
-    this.map.on('mouseenter', this.pointsLayerId, () => {
-      this.map.getCanvas().style.cursor = 'pointer';
-    });
-
     this.map.on('mouseleave', this.pointsLayerId, () => {
-      this.map.getCanvas().style.cursor = 'crosshair';
-    });
-  }
-
-  private onMapClick(e: mapboxgl.MapMouseEvent): void {
-    const { lng, lat } = e.lngLat;
-
-    // temp local point (will be replaced by snapped coords)
-    this.snappedPoints.push({ lat, lon: lng });
-
-    const params = new HttpParams()
-      .set('lat', lat.toString())
-      .set('lon', lng.toString());
-
-    const url = `${this.apiBase}/api/routing/snap`;
-
-    this.http.get<SnapResponseDto>(url, { params }).subscribe({
-      next: (snap) => {
-        console.log(snap);
-
-        // update last snapped point to the server-snapped position
-        this.snappedPoints[this.snappedPoints.length - 1] = {
-          lat: snap.lat,
-          lon: snap.lon
-        };
-        this.updatePointsSource();
-
-        if (this.snappedPoints.length >= 2) {
-          const count = this.snappedPoints.length;
-          const from = this.snappedPoints[count - 2];
-          const to = this.snappedPoints[count - 1];
-          this.requestRoute(from, to);
-        }
-      },
-      error: (err) => {
-        console.error('[Snap] failed', err);
-        alert('Could not snap to road.');
-        this.snappedPoints.pop();
-        this.updatePointsSource();
+      if (this.dragPointIndex === null) {
+        this.map.getCanvas().style.cursor = 'crosshair';
       }
     });
   }
@@ -240,6 +202,122 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     src.setData(fc);
   }
 
+  // ---------- Dragging existing points ----------
+
+  private onPointMouseDown(e: mapboxgl.MapLayerMouseEvent): void {
+    e.preventDefault();
+    (e.originalEvent as MouseEvent).stopPropagation();
+
+    const feature = (e.features && e.features[0]) as any;
+    const index = feature?.properties?.index as number | undefined;
+    if (index === undefined) {
+      return;
+    }
+
+    this.dragPointIndex = index;
+    this.dragOriginalCoords = { ...this.snappedPoints[index] };
+
+    this.map.getCanvas().style.cursor = 'grabbing';
+
+    this.map.on('mousemove', this.onPointDragMove);
+    this.map.once('mouseup', this.onPointMouseUp);
+  }
+
+  private onPointDragMove = (e: mapboxgl.MapMouseEvent): void => {
+    if (this.dragPointIndex === null) {
+      return;
+    }
+
+    const { lng, lat } = e.lngLat;
+    this.snappedPoints[this.dragPointIndex] = { lat, lon: lng };
+    this.updatePointsSource();
+  };
+
+  private onPointMouseUp = (e: mapboxgl.MapMouseEvent): void => {
+    if (this.dragPointIndex === null || !this.dragOriginalCoords) {
+      this.map.getCanvas().style.cursor = 'crosshair';
+      this.map.off('mousemove', this.onPointDragMove);
+      return;
+    }
+
+    const idx = this.dragPointIndex;
+    const previousCoords = this.dragOriginalCoords;
+
+    this.dragPointIndex = null;
+    this.dragOriginalCoords = null;
+
+    this.map.off('mousemove', this.onPointDragMove);
+    this.map.getCanvas().style.cursor = 'crosshair';
+
+    const { lng, lat } = e.lngLat;
+
+    const params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lon', lng.toString());
+
+    const url = `${this.apiBase}/api/routing/snap`;
+
+    this.http.get<SnapResponseDto>(url, { params }).subscribe({
+      next: (snap) => {
+        this.snappedPoints[idx] = { lat: snap.lat, lon: snap.lon };
+        this.updatePointsSource();
+
+        this.undoService.pushMovePoint(idx, previousCoords, { lat: snap.lat, lon: snap.lon });
+
+        this.recalculateRouteForAllPoints();
+      },
+      error: (err) => {
+        console.error('[Snap after drag] failed', err);
+        this.snappedPoints[idx] = previousCoords;
+        this.updatePointsSource();
+      }
+    });
+  };
+
+  private onMapClick(e: mapboxgl.MapMouseEvent): void {
+    const { lng, lat } = e.lngLat;
+
+    // temp local point (will be replaced by snapped coords)
+    this.snappedPoints.push({ lat, lon: lng });
+
+    const params = new HttpParams()
+      .set('lat', lat.toString())
+      .set('lon', lng.toString());
+
+    const url = `${this.apiBase}/api/routing/snap`;
+
+    this.http.get<SnapResponseDto>(url, { params }).subscribe({
+      next: (snap) => {
+        console.log(snap);
+
+        // update last snapped point to the server-snapped position
+        this.snappedPoints[this.snappedPoints.length - 1] = {
+          lat: snap.lat,
+          lon: snap.lon
+        };
+        this.updatePointsSource();
+
+        // First point = add-point action
+        if (this.snappedPoints.length === 1) {
+          this.undoService.pushAddPoint();
+        }
+
+        if (this.snappedPoints.length >= 2) {
+          const count = this.snappedPoints.length;
+          const from = this.snappedPoints[count - 2];
+          const to = this.snappedPoints[count - 1];
+          this.requestRoute(from, to);
+        }
+      },
+      error: (err) => {
+        console.error('[Snap] failed', err);
+        alert('Could not snap to road.');
+        this.snappedPoints.pop();
+        this.updatePointsSource();
+      }
+    });
+  }
+
   // ---------- Routing ----------
 
   private requestRoute(
@@ -272,12 +350,97 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
           isOutAndBack: false
         });
         this.rebuildRouteFromSegments();
+
+        // New forward segment = add-point action
+        this.undoService.pushAddPoint();
       },
       error: (err) => {
         console.error('Route request failed', err);
         alert('Could not calculate route.');
       }
     });
+  }
+
+  // Rebuild the whole route geometry for the current snapped points.
+  private recalculateRouteForAllPoints(): void {
+    const hadOutAndBack =
+      this.routeSegments.length > 0 && this.routeSegments[this.routeSegments.length - 1].isOutAndBack;
+
+    if (this.snappedPoints.length < 2) {
+      this.routeSegments = [];
+      this.fullRouteCoords = [];
+      this.updateRouteSourceEmpty();
+      this.clearProfiles();
+      return;
+    }
+
+    const pairs: { from: { lat: number; lon: number }; to: { lat: number; lon: number } }[] = [];
+    for (let i = 1; i < this.snappedPoints.length; i++) {
+      pairs.push({
+        from: this.snappedPoints[i - 1],
+        to: this.snappedPoints[i]
+      });
+    }
+
+    const url = `${this.apiBase}/api/routing/route`;
+
+    const newSegments: RouteSegment[] = [];
+    const newFull: RouteCoordinateDto[] = [];
+
+    const doNext = (i: number) => {
+      if (i >= pairs.length) {
+        if (hadOutAndBack && newFull.length > 1) {
+          const reversed = [...newFull].reverse().slice(1);
+          newSegments.push({ coords: reversed, isOutAndBack: true });
+          newFull.push(...reversed);
+        }
+
+        this.routeSegments = newSegments;
+        this.fullRouteCoords = newFull;
+
+        this.updateRouteOnMap();
+        this.recomputeDistanceProfile();
+        this.fetchElevationProfile();
+        return;
+      }
+
+      const { from, to } = pairs[i];
+      const body: RouteRequestDto = {
+        fromLat: from.lat,
+        fromLon: from.lon,
+        toLat: to.lat,
+        toLon: to.lon
+      };
+
+      this.http.post<RouteCoordinateDto[]>(url, body).subscribe({
+        next: (coords) => {
+          if (coords && coords.length > 0) {
+            let segmentCoords = coords;
+
+            if (i > 0) {
+              segmentCoords = coords.slice(1);
+            }
+
+            newSegments.push({ coords: segmentCoords, isOutAndBack: false });
+
+            if (i === 0) {
+              newFull.push(...coords);
+            } else {
+              newFull.push(...segmentCoords);
+            }
+          } else {
+            console.warn('Empty route segment during recalc for pair', i);
+          }
+
+          doNext(i + 1);
+        },
+        error: (err) => {
+          console.error('Recalculate route failed for pair', i, err);
+        }
+      });
+    };
+
+    doNext(0);
   }
 
   private rebuildRouteFromSegments(): void {
@@ -293,7 +456,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.recomputeDistanceProfile();
     this.fetchElevationProfile();
   }
-
 
   private updateRouteSourceEmpty(): void {
     const src = this.map.getSource(this.routeSourceId) as mapboxgl.GeoJSONSource | undefined;
@@ -334,14 +496,13 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   private recomputeDistanceProfile(): void {
     const n = this.fullRouteCoords.length;
-    this.distanceProfile = [];
-    this.totalDistanceMeters = 0;
-
     if (n === 0) {
-      this.clearProfiles();
+      this.totalDistanceMeters = 0;
+      this.distanceProfile = [];
       return;
     }
 
+    this.totalDistanceMeters = 0;
     this.distanceProfile = new Array(n).fill(0);
     for (let i = 1; i < n; i++) {
       const prev = this.fullRouteCoords[i - 1];
@@ -393,21 +554,11 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
           data: this.elevationProfile,
           borderWidth: 2,
           fill: false,
-          tension: 0.1
+          tension: 0.2
         }
       ]
     };
 
-    let asc = 0;
-    let desc = 0;
-    for (let i = 1; i < this.elevationProfile.length; i++) {
-      const delta = this.elevationProfile[i] - this.elevationProfile[i - 1];
-      if (delta > 0) asc += delta;
-      else desc -= delta;
-    }
-
-    this.totalAscentMeters = asc;
-    this.totalDescentMeters = desc;
     this.hasElevationProfile = true;
   }
 
@@ -441,39 +592,25 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   // ---------- Toolbar actions ----------
 
   undoLastSection(): void {
-    // Case 1: if we have route segments then undo the last segment
-    if (this.routeSegments.length > 0) {
-      const last = this.routeSegments.pop();
-      if (!last) {
-        return;
-      }
-
-      // Only remove a snapped point if this segment was created by a user click (not by Out & Back)
-      if (!last.isOutAndBack && this.snappedPoints.length > 1) {
-        this.snappedPoints.pop();
-        this.updatePointsSource();
-      }
-
-      this.rebuildRouteFromSegments();
+    if (!this.undoService.canUndo()) {
       return;
     }
 
-    // Case 2: no segments yet, but at least one snapped point then remove the last point
-    if (this.snappedPoints.length > 0) {
-      this.snappedPoints.pop();
-      this.updatePointsSource();
-
-      // No actual route line anymore
-      this.fullRouteCoords = [];
-      this.updateRouteSourceEmpty();
-      this.clearProfiles(); // sets distance/ascent/descent to 0, hasElevationProfile = false
-      return;
-    }
-
+    this.undoService.undoLast(this.buildUndoContext());
   }
 
-
-
+  private buildUndoContext(): UndoContext {
+    return {
+      snappedPoints: this.snappedPoints,
+      routeSegments: this.routeSegments,
+      fullRouteCoords: this.fullRouteCoords,
+      updatePointsSource: () => this.updatePointsSource(),
+      updateRouteSourceEmpty: () => this.updateRouteSourceEmpty(),
+      rebuildRouteFromSegments: () => this.rebuildRouteFromSegments(),
+      clearProfiles: () => this.clearProfiles(),
+      recalculateRouteForAllPoints: () => this.recalculateRouteForAllPoints()
+    };
+  }
 
   addOutAndBack(): void {
     if (this.fullRouteCoords.length < 2) return;
@@ -488,7 +625,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
     this.rebuildRouteFromSegments();
   }
-
 
   saveRoute(): void {
     console.log('Save route clicked. Implement later.');
@@ -542,5 +678,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.updateRouteSourceEmpty();
     this.updatePointsSource();
     this.clearProfiles();
+    this.undoService.reset();
   }
 }

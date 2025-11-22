@@ -1,12 +1,6 @@
 <div class="create-route-page">
     <div class="map-container">
         <div id="map"></div>
-
-        <div class="coordinate-selector">
-            <div><strong>Create route</strong></div>
-            <div>1. Click on the map to snap to a road.</div>
-            <div>2. After 2+ points, a route is drawn between the last two.</div>
-        </div>
     </div>
 
     <!-- Route summary + elevation chart (Gaia-like bottom bar) -->
@@ -26,8 +20,8 @@
 
             <div class="actions-right">
                 <button type="button" class="toolbar-btn" (click)="undoLastSection()"
-                    [disabled]="routeSegments.length === 0 && snappedPoints.length === 0">
-                    Undo last
+                    [disabled]="!undoService.canUndo()">
+                    Undo
                 </button>
 
                 <button type="button" class="toolbar-btn" (click)="addOutAndBack()"
@@ -60,6 +54,5 @@
                 </div>
             </ng-template>
         </div>
-
     </div>
 </div>

@@ -15,10 +15,6 @@ namespace APUS.Server.Controllers.MapController
 				_routing = routing;
 			}
 
-			/// <summary>
-			/// Snap a clicked point to the nearest road node.
-			/// GET /api/routing/snap?lat=...&lon=...
-			/// </summary>
 			[HttpGet("snap")]
 			public ActionResult<SnapResponseDto> Snap([FromQuery] double lat, [FromQuery] double lon)
 			{
@@ -26,10 +22,6 @@ namespace APUS.Server.Controllers.MapController
 				return Ok(result);
 			}
 
-			/// <summary>
-			/// Route between two coordinates and return the polyline coordinates.
-			/// POST /api/routing/route
-			/// </summary>
 			[HttpPost("route")]
 			public ActionResult<IReadOnlyList<RouteCoordinateDto>> Route([FromBody] RouteRequestDto request)
 			{
