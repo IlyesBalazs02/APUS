@@ -23,6 +23,7 @@ namespace APUS.Routing
 
 		private readonly Dictionary<int, TileData> _cache = new();
 		private readonly LinkedList<int> _lru = new();
+		private readonly object _cacheLock = new();
 
 		public TiledRoadGraph(string rootDir, int maxTilesInMem = 16)
 		{
@@ -35,25 +36,28 @@ namespace APUS.Routing
 
 		private TileData GetTile(TileId id)
 		{
-			if (_cache.TryGetValue(id.Value, out var td))
+			lock (_cacheLock)
 			{
-				Touch(id.Value);
+				if (_cache.TryGetValue(id.Value, out var td))
+				{
+					Touch(id.Value);
+					return td;
+				}
+
+				while (_cache.Count >= _maxTilesInMem && _lru.Last != null)
+				{
+					int evict = _lru.Last.Value;
+					_lru.RemoveLast();
+					_cache.Remove(evict);
+				}
+
+				td = LoadTile(id);
+				_cache[id.Value] = td;
+				_lru.AddFirst(id.Value);
 				return td;
 			}
-
-			// Evict if necessary
-			while (_cache.Count >= _maxTilesInMem && _lru.Last != null)
-			{
-				int evict = _lru.Last.Value;
-				_lru.RemoveLast();
-				_cache.Remove(evict);
-			}
-
-			td = LoadTile(id);
-			_cache[id.Value] = td;
-			_lru.AddFirst(id.Value);
-			return td;
 		}
+
 
 		private void Touch(int tileId)
 		{

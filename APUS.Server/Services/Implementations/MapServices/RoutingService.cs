@@ -10,6 +10,8 @@ namespace APUS.Server.Services.Implementations.MapServices
 		private readonly Snapper _snapper;
 		private readonly IElevationSampler _elevationSampler;
 
+		private readonly object _elevLock = new();
+
 		public RoutingService(
 			TiledRoadGraph graph,
 			Snapper snapper,
@@ -71,10 +73,14 @@ namespace APUS.Server.Services.Implementations.MapServices
 			for (int i = 0; i < points.Count; i++)
 			{
 				var p = points[i];
-				result[i] = _elevationSampler.Sample(p.Lat, p.Lon);
+				lock (_elevLock)
+				{
+					result[i] = _elevationSampler.Sample(p.Lat, p.Lon);
+				}
 			}
 			return result;
 		}
+
 
 		/// Build the full polyline (lat/lon) between snapped endpoints
 		private static List<(double Lat, double Lon)> BuildRouteGeometry(
