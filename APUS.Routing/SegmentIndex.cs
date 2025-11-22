@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace APUS.Routing
 {
-	/// Simple spatial index over edge segments, using a lat/lon grid.
-	/// Each entry stores the FROM and TO NodeKey of the segment and its bounding box.
+
 	public sealed class SegmentIndex
 	{
 		public readonly struct SegRef
@@ -41,7 +40,6 @@ namespace APUS.Routing
 			return (iy, ix);
 		}
 
-		// Add a segment to the index.
 		public void AddSegment(NodeKey fromNode, NodeKey toNode,
 							   double lat0, double lon0,
 							   double lat1, double lon1)
@@ -61,7 +59,6 @@ namespace APUS.Routing
 			list.Add(new SegRef(fromNode, toNode, minLat, minLon, maxLat, maxLon));
 		}
 
-		// Enumerate candidate segments around a query point with a search radius in degrees.
 		public IEnumerable<SegRef> Candidates(double lat, double lon, double searchRadiusDeg)
 		{
 			int r = (int)Math.Ceiling(searchRadiusDeg / _cellDeg);

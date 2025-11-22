@@ -3,8 +3,12 @@ using System.Collections.Generic;
 
 namespace APUS.Routing
 {
-	// Routes between two snapped points  by creating two virtual
+	// Routes between two snapped points (SnapResult A,B) by creating two virtual
 	// nodes S (start) and T (target) on top of the tiled graph and running A*.
+	// 
+	// States are NodeKey. Normal nodes use real TileIds (>= 0).
+	// S and T are represented by special TileIds -1 and -2 and are never stored
+	// inside TiledRoadGraph – it handles their neighbors manually.
 	public static class VirtualEndpointsGraph
 	{
 		private static readonly TileId StartTile = new TileId(-1);
@@ -14,7 +18,7 @@ namespace APUS.Routing
 		private static readonly NodeKey T = new NodeKey(EndTile, 0);
 
 		// Route between two snapped positions A and B using the tiled graph.
-		// Returns a path of NodeKey from S to T
+		// Returns a path of NodeKey from S to T (including both).
 		public static List<NodeKey> RouteBetweenSnaps(
 			TiledRoadGraph graph,
 			SnapResult A,
@@ -22,6 +26,7 @@ namespace APUS.Routing
 		{
 			return AStarWithVirtual(graph, A, B, S, T);
 		}
+
 
 		private sealed class OpenItem : IComparable<OpenItem>
 		{
@@ -100,7 +105,6 @@ namespace APUS.Routing
 			return path;
 		}
 
-
 		private static IEnumerable<(NodeKey Neighbor, float Cost)> GetNeighbors(
 			TiledRoadGraph g,
 			NodeKey n,
@@ -136,8 +140,6 @@ namespace APUS.Routing
 				yield return (T, B.EdgeLen - B.DistFromU);
 			}
 		}
-
-		// Heuristic distance in meters between two
 		private static float Heuristic(
 			TiledRoadGraph g,
 			NodeKey u,

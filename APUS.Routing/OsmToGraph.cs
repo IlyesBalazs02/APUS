@@ -31,12 +31,12 @@ public sealed class RoadGraph : IReadOnlyGraph
 	// Represents an intersection or road endpoint
 	public sealed class Node
 	{
-		public int Idx;      
+		public int Idx;      // Internal numeric ID
 		public long OsmId;   // Original OSM node ID (unique globally)
 		public double Lat, Lon;
 	}
 
-	// Represents a directional road segment (edge) between two nodes
+	// road segment/edge between two nodes
 	public sealed class Edge
 	{
 		public int To;                             // Destination node index
@@ -50,8 +50,8 @@ public sealed class RoadGraph : IReadOnlyGraph
 
 	// Graph storage
 	public List<Node> Nodes { get; } = new();                    // All nodes in the graph
-	public List<List<Edge>> Adj { get; } = new();                // edges from each node
-	public Dictionary<long, int> OsmIdToIdx { get; } = new();   
+	public List<List<Edge>> Adj { get; } = new();                // Adjacency list: edges from each node
+	public Dictionary<long, int> OsmIdToIdx { get; } = new();  
 
 	// Adds a node if it doesn't exist, otherwise returns its existing index
 	public int GetOrAddNode(long osmId, double lat, double lon)
@@ -77,7 +77,7 @@ public static class ElevationCost
 	public const double G_FREE = 0.05;// 5% downhill = "free"
 	public const double K_STEEP = 6.0;// steep downhill penalty
 
-	// Compute a multiplier for a road segment based on elevation changes.
+	// Compute a multiplier for a road segment based on DEM elevation changes.
 	public static double ComputeMultiplier(List<(double Lat, double Lon)> geom, IElevationSampler? dem)
 	{
 		if (dem == null || geom.Count < 2) return 1.0;
@@ -105,7 +105,7 @@ public static class ElevationCost
 					mult = 1.0 + K_UP * grade;             // uphill -> slower
 				else
 				{
-					double d = -grade; // downhill magnitude
+					double d = -grade;
 					if (d <= G_FREE) mult = 1.0 - K_DOWN * d;        // gentle downhill -> bonus
 					else mult = 1.0 + K_STEEP * (d - G_FREE);        // steep downhill -> penalty
 				}
@@ -131,14 +131,16 @@ public static class ElevationCost
 	}
 }
 
-// GraphBuilder — creates the graph from OpenStreetMap data
+// reates the graph from OpenStreetMap data
 public static class GraphBuilder
 {
-	// accept only OSM ways that are roads to avoid building,...
+	// road filter: accept only OSM ways that are roads. So dont count in buildings, rivers,....
 	private static readonly HashSet<string> RoadHighways = new(StringComparer.OrdinalIgnoreCase)
 {
 	"motorway","trunk","primary","secondary","tertiary","unclassified","residential",
-	"motorway_link","trunk_link","primary_link","secondary_link","tertiary_link","service","living_street"
+	"motorway_link","trunk_link","primary_link","secondary_link","tertiary_link","service","living_street",
+
+    "path","footway","track","steps","bridleway","cycleway","pedestrian","road"
 };
 
 	private static bool IsRoutableWay(Way w)
@@ -155,13 +157,13 @@ public static class GraphBuilder
 	{
 		using var fs = File.OpenRead(pbfPath);
 		var source = new PBFOsmStreamSource(fs);
-		var all = source.ToList(); // loads OSM data (nodes + ways)
+		var all = source.ToList();
 
 		// Extract node coordinates
 		var nodes = all.OfType<Node>().ToDictionary(n => n.Id!.Value, n => (Lat: n.Latitude!.Value, Lon: n.Longitude!.Value));
 		var ways = all.OfType<Way>().Where(IsRoutableWay).ToList();
 
-		// Count how many roads reference each node to detect intersections
+		// Count how many roads reference each node -> detect intersections
 		var refCount = new Dictionary<long, int>(capacity: 1_000_000);
 		foreach (var w in ways)
 		{
@@ -173,6 +175,7 @@ public static class GraphBuilder
 
 		var g = new RoadGraph();
 
+		// Process every OSM way
 		foreach (var w in ways)
 		{
 			if (w.Nodes == null || w.Nodes.Length < 2) continue;
@@ -181,7 +184,7 @@ public static class GraphBuilder
 			var refs = w.Nodes.Where(n => nodes.ContainsKey(n)).ToArray();
 			if (refs.Length < 2) continue;
 
-			// intersection or road end
+			// A node is important if it's an intersection or road end
 			bool IsImportantIndex(int idx)
 			{
 				if (idx == 0 || idx == refs.Length - 1) return true;
@@ -191,7 +194,7 @@ public static class GraphBuilder
 			int segStartIdx = 0;
 			while (segStartIdx < refs.Length - 1)
 			{
-				// Find the next important node after the current one
+				// Find the next "important" node after the current one
 				int segEndIdx = segStartIdx + 1;
 				while (segEndIdx < refs.Length - 1 && !IsImportantIndex(segEndIdx))
 					segEndIdx++;
@@ -199,9 +202,9 @@ public static class GraphBuilder
 				var startId = refs[segStartIdx];
 				var endId = refs[segEndIdx];
 
-				// Build the list of coordinates for this segment (+ cumulative lengths)
+				// Build the list of coordinates for this segment
 				var geom = new List<(double, double)>();
-				var cumulative = new List<float>(); 
+				var cumulative = new List<float>(); // cumulative length along geom
 				double totalMeters = 0;
 				(double Lat, double Lon) prev = nodes[startId];
 				geom.Add((prev.Lat, prev.Lon));
@@ -221,6 +224,7 @@ public static class GraphBuilder
 					geom.Select(p => (Lat: p.Item1, Lon: p.Item2)).ToList(), dem);
 				float weight = (float)(totalMeters * mult); // Final edge weight
 
+				// Create graph nodes if missing
 				var (sLat, sLon) = nodes[startId];
 				var (tLat, tLon) = nodes[endId];
 				int u = g.GetOrAddNode(startId, sLat, sLon);
@@ -258,7 +262,6 @@ public static class GraphBuilder
 		return g;
 	}
 
-	// Distance between coordinates
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
 	{

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace APUS.Routing
 {
@@ -19,6 +18,27 @@ namespace APUS.Routing
 		public override string ToString() => $"{LatInt}_{LonInt}";
 	}
 
+	// A single edge in a tile, with both lightweight info for adj.bin ;  geom and cumulative length for geom.bin
+	public sealed class TileEdgeRecord
+	{
+		public int FromLocal;
+		public LightEdgeOnDisk Light;
+		public IReadOnlyList<(double Lat, double Lon)> Geometry;
+		public float[] CumulativeLength;
+
+		public TileEdgeRecord(
+			int fromLocal,
+			LightEdgeOnDisk light,
+			IReadOnlyList<(double Lat, double Lon)> geometry,
+			float[] cumulative)
+		{
+			FromLocal = fromLocal;
+			Light = light;
+			Geometry = geometry;
+			CumulativeLength = cumulative;
+		}
+	}
+
 	public sealed class TileBuilder
 	{
 		public int GlobalTileId;
@@ -29,13 +49,16 @@ namespace APUS.Routing
 		public double MinLon, MaxLon;
 
 		public List<int> NodeIndices = new();
-		public List<(int FromLocal, LightEdgeOnDisk Edge)> Edges = new();
+
+		public List<TileEdgeRecord> Edges = new();
 	}
 
 	public static class GraphSegmenter
 	{
-		public static void WriteMultiLevel(RoadGraph g, string outDir,
-			int targetTileMB = 12, int maxNodesPerTile = 50_000)
+		public static void WriteMultiLevel(
+			RoadGraph g,
+			string outDir,
+			int maxNodesPerTile = 50_000)
 		{
 			Directory.CreateDirectory(outDir);
 
@@ -62,7 +85,7 @@ namespace APUS.Routing
 				var macro = kvp.Key;
 				var nodeIds = kvp.Value;
 
-				// Compute macro bbox
+				// macro bbox
 				double minLat = double.PositiveInfinity, maxLat = double.NegativeInfinity;
 				double minLon = double.PositiveInfinity, maxLon = double.NegativeInfinity;
 				foreach (var idx in nodeIds)
@@ -79,7 +102,7 @@ namespace APUS.Routing
 					g, macro, nodeIds, minLat, maxLat, minLon, maxLon,
 					maxNodesPerTile);
 
-				// Assign global tile IDs and local tile IDs
+				// Assign global and local tile IDs
 				int localId = 0;
 				foreach (var t in macroTiles)
 				{
@@ -92,18 +115,18 @@ namespace APUS.Routing
 			// Build edges per tile
 			BuildTileEdges(g, allTiles);
 
-			// Write macros and tile-files
+			// Write macros (folders, tiles.bin) and tile-files (nodes, adj, geom)
 			WriteTilesToDisk(outDir, allTiles, g);
 		}
 
 		private static List<TileBuilder> SplitMacroIntoTiles(
-	RoadGraph g,
-	MacroKey macro,
-	List<int> nodeIds,
-	double minLat, double maxLat,
-	double minLon, double maxLon,
-	int maxNodesPerTile,
-	int depth = 0)
+			RoadGraph g,
+			MacroKey macro,
+			List<int> nodeIds,
+			double minLat, double maxLat,
+			double minLon, double maxLon,
+			int maxNodesPerTile,
+			int depth = 0)
 		{
 			if (nodeIds.Count <= maxNodesPerTile || depth > 10)
 			{
@@ -125,11 +148,11 @@ namespace APUS.Routing
 
 			var quads = new[]
 			{
-			(minLat, midLat, minLon, midLon),
-			(minLat, midLat, midLon, maxLon),
-			(midLat, maxLat, minLon, midLon),
-			(midLat, maxLat, midLon, maxLon),
-		};
+				(la0: minLat, la1: midLat, lo0: minLon, lo1: midLon),
+				(la0: minLat, la1: midLat, lo0: midLon, lo1: maxLon),
+				(la0: midLat, la1: maxLat, lo0: minLon, lo1: midLon),
+				(la0: midLat, la1: maxLat, lo0: midLon, lo1: maxLon),
+			};
 
 			var result = new List<TileBuilder>();
 
@@ -166,7 +189,7 @@ namespace APUS.Routing
 		{
 			var locationByNode = new NodeLocation[g.Nodes.Count];
 
-			// Fill NodeLocation
+			// Fill NodeLocation: for each tile, map its local node indices
 			foreach (var tile in tiles)
 			{
 				for (int i = 0; i < tile.NodeIndices.Count; i++)
@@ -180,10 +203,9 @@ namespace APUS.Routing
 				}
 			}
 
-			// Initialize adjacency lists per tile
 			foreach (var tile in tiles)
 			{
-				tile.Edges = new List<(int, LightEdgeOnDisk)>();
+				tile.Edges = new List<TileEdgeRecord>();
 			}
 
 			for (int u = 0; u < g.Nodes.Count; u++)
@@ -197,14 +219,21 @@ namespace APUS.Routing
 					int v = e.To;
 					var locV = locationByNode[v];
 
-					var edge = new LightEdgeOnDisk
+					var light = new LightEdgeOnDisk
 					{
 						ToTileId = locV.Tile.GlobalTileId,
 						ToLocalNode = locV.LocalIndex,
 						Cost = e.Weight
 					};
 
-					fromTile.Edges.Add((fromLocal, edge));
+					var geom = e.Geometry ?? new List<(double Lat, double Lon)>();
+					var cum = e.CumulativeLength ?? Array.Empty<float>();
+
+					fromTile.Edges.Add(new TileEdgeRecord(
+						fromLocal,
+						light,
+						geom,
+						cum));
 				}
 			}
 		}
@@ -239,14 +268,15 @@ namespace APUS.Routing
 					}
 				}
 
-				// Write each tile's nodes and adj
+				// Write each tile's nodes + adj + geom
 				foreach (var t in tiles)
 				{
 					string baseName = $"tile_{t.LocalTileId:0000}";
 					string nodesPath = Path.Combine(macroDir, baseName + ".nodes.bin");
 					string adjPath = Path.Combine(macroDir, baseName + ".adj.bin");
+					string geomPath = Path.Combine(macroDir, baseName + ".geom.bin");
 
-					// Nodes
+					//  NODES 
 					using (var fs = File.Create(nodesPath))
 					using (var bw = new BinaryWriter(fs))
 					{
@@ -259,40 +289,49 @@ namespace APUS.Routing
 						}
 					}
 
-					// CSR adjacency
 					int nodeCount = t.NodeIndices.Count;
-					var perNodeEdges = new List<LightEdgeOnDisk>[nodeCount];
-					for (int i = 0; i < nodeCount; i++) perNodeEdges[i] = new List<LightEdgeOnDisk>();
 
-					foreach (var (fromLocal, edge) in t.Edges)
+					// Group edges
+					var perNodeEdges = new List<TileEdgeRecord>[nodeCount];
+					for (int i = 0; i < nodeCount; i++) perNodeEdges[i] = new List<TileEdgeRecord>();
+
+					foreach (var edgeRec in t.Edges)
 					{
-						perNodeEdges[fromLocal].Add(edge);
+						perNodeEdges[edgeRec.FromLocal].Add(edgeRec);
 					}
 
+					// Build CSR for adjacency + a list for geometry
 					int edgeCount = perNodeEdges.Sum(l => l.Count);
 					var edgeIndex = new int[nodeCount + 1];
 					var flatEdges = new LightEdgeOnDisk[edgeCount];
+					var flatGeo = new TileEdgeRecord[edgeCount];
 
 					int cursor = 0;
 					for (int u = 0; u < nodeCount; u++)
 					{
 						edgeIndex[u] = cursor;
 						var list = perNodeEdges[u];
-						foreach (var e in list)
+						foreach (var rec in list)
 						{
-							flatEdges[cursor++] = e;
+							flatEdges[cursor] = rec.Light;
+							flatGeo[cursor] = rec;
+							cursor++;
 						}
 					}
 					edgeIndex[nodeCount] = cursor;
 
-					// Write adjacency
+					//  ADJACENCY 
 					using (var fs = File.Create(adjPath))
 					using (var bw = new BinaryWriter(fs))
 					{
 						bw.Write(nodeCount);
 						bw.Write(edgeCount);
+
+						// edgeIndex
 						for (int i = 0; i < edgeIndex.Length; i++)
 							bw.Write(edgeIndex[i]);
+
+						// Edges
 						for (int i = 0; i < flatEdges.Length; i++)
 						{
 							var e = flatEdges[i];
@@ -302,12 +341,37 @@ namespace APUS.Routing
 						}
 					}
 
-					// For now, geom.bin can reuse your existing logic, per tile; omitted here.
+					//  GEOMETRY 
+					using (var fs = File.Create(geomPath))
+					using (var bw = new BinaryWriter(fs))
+					{
+						bw.Write(nodeCount);
+						bw.Write(edgeCount);
+
+						for (int i = 0; i < edgeIndex.Length; i++)
+							bw.Write(edgeIndex[i]);
+
+						for (int i = 0; i < flatGeo.Length; i++)
+						{
+							var rec = flatGeo[i];
+
+							var geom = rec.Geometry ?? Array.Empty<(double Lat, double Lon)>();
+							bw.Write(geom.Count);
+							foreach (var (lat, lon) in geom)
+							{
+								bw.Write(lat);
+								bw.Write(lon);
+							}
+
+							// cumulative lengths
+							var cum = rec.CumulativeLength ?? Array.Empty<float>();
+							bw.Write(cum.Length);
+							foreach (var f in cum)
+								bw.Write(f);
+						}
+					}
 				}
 			}
 		}
 	}
-
-
 }
-

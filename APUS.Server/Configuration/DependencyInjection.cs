@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using OSGeo.GDAL;
 using System.Text;
+using APUS.Routing;
 
 namespace APUS.Server.Configuration
 {
@@ -57,16 +58,28 @@ namespace APUS.Server.Configuration
 				});
 			});
 
-			// Register PagedRoadGraph as a singleton (and dispose on shutdown)
-			services.AddSingleton<PagedRoadGraph>(sp =>
+			#region Routing
+
+			services.AddSingleton<TiledRoadGraph>(sp =>
 			{
 				var env = sp.GetRequiredService<IWebHostEnvironment>();
 
-				// Adjust this if your graph_store lives elsewhere
 				var rootDir = Path.Combine(env.ContentRootPath, "graph_store");
 
-				// maxTilesInMem same as your earlier tests
-				return new PagedRoadGraph(rootDir, maxTilesInMem: 8);
+				return new TiledRoadGraph(rootDir, maxTilesInMem: 16);
+			});
+
+			services.AddSingleton<SegmentIndex>(sp =>
+			{
+				var graph = sp.GetRequiredService<TiledRoadGraph>();
+				return Snapper.BuildGlobalIndex(graph, cellDegrees: 0.01);
+			});
+
+			services.AddSingleton<Snapper>(sp =>
+			{
+				var graph = sp.GetRequiredService<TiledRoadGraph>();
+				var index = sp.GetRequiredService<SegmentIndex>();
+				return new Snapper(graph, index);
 			});
 
 			// keep the using OSMGraphCreater; at the top
@@ -77,6 +90,8 @@ namespace APUS.Server.Configuration
 				const string demPath = @"C:\EU-DEM\EU_DEM_mosaic_5deg\eudem_dem_4258_europe.tif";
 				return new GdalElevationSampler(demPath);
 			});
+
+			#endregion
 
 
 

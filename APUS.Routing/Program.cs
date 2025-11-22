@@ -1,9 +1,9 @@
 ﻿namespace APUS.Routing
 {
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
+	internal class Program
+	{
+		static void Main(string[] args)
+		{
 			string pbfPath = "hungary-latest.osm.pbf";
 
 			string graphStoreDir = "graph_store";
@@ -16,7 +16,7 @@
 				return;
 			}
 
-			// 2) Build & slice graph
+			// 2) Build & slice graph (only if graph_store is missing/empty)
 			bool needRebuild =
 				!Directory.Exists(graphStoreDir) ||
 				!Directory.EnumerateFileSystemEntries(graphStoreDir).Any();
@@ -24,11 +24,11 @@
 			if (needRebuild)
 			{
 				Console.WriteLine("Building RoadGraph from PBF...");
-				RoadGraph g = GraphBuilder.BuildFromPbf(pbfPath, dem: null);
+				RoadGraph g = GraphBuilder.BuildFromPbf(pbfPath, dem: null); // or pass a GdalElevationSampler
 
 				Console.WriteLine($"Nodes: {g.Nodes.Count}, edges: {g.Adj.Sum(l => l.Count)}");
 				Console.WriteLine("Slicing into tiles (graph_store)...");
-				GraphSegmenter.WriteMultiLevel(g, graphStoreDir, maxNodesPerTile: 5_000);
+				GraphSegmenter.WriteMultiLevel(g, graphStoreDir, maxNodesPerTile: 15_000);
 
 				Console.WriteLine("Graph slicing finished.");
 			}
@@ -36,6 +36,8 @@
 			{
 				Console.WriteLine("graph_store already exists, skipping rebuild.");
 			}
+
+
 		}
 	}
 }

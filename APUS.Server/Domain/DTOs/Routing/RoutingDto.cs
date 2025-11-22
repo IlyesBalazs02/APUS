@@ -1,23 +1,28 @@
 ﻿namespace APUS.Server.Domain.DTOs.Routing
 {
-	public sealed class RouteCoordinateDto
+	public sealed class CoordinateDto
 	{
-		public double Lat { get; init; }
-		public double Lon { get; init; }
+		public double Lat { get; set; }
+		public double Lon { get; set; }
 	}
 
 	public sealed class SnapResponseDto
 	{
-		public int NodeId { get; init; }
-		public double Lat { get; init; }
-		public double Lon { get; init; }
+		public double Lat { get; set; }
+		public double Lon { get; set; }
 	}
 
 	public sealed class RouteRequestDto
 	{
-		public double FromLat { get; init; }
-		public double FromLon { get; init; }
-		public double ToLat { get; init; }
-		public double ToLon { get; init; }
+		public double FromLat { get; set; }
+		public double FromLon { get; set; }
+		public double ToLat { get; set; }
+		public double ToLon { get; set; }
+	}
+
+	public sealed class RouteCoordinateDto
+	{
+		public double Lat { get; set; }
+		public double Lon { get; set; }
 	}
 }

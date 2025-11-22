@@ -15,7 +15,7 @@ namespace APUS.Routing
 	public sealed class GdalElevationSampler : IElevationSampler
 	{
 		private readonly Dataset _ds;               // GDAL dataset
-		private readonly Band _band;                // First raster band
+		private readonly Band _band;                // First raster band 
 		private readonly double[] _gt = new double[6]; // GeoTransform: maps geo coords <-> pixel coords
 		private readonly CoordinateTransformation _wgs84_to_dem;
 
@@ -36,15 +36,14 @@ namespace APUS.Routing
 
 			_ds.GetGeoTransform(_gt);
 
-			// Prepare coordinate transformation: WGS84 → DEM CRS
-			var src = new SpatialReference(""); src.ImportFromEPSG(4326); // WGS84 input
-			var dst = new SpatialReference(_ds.GetProjection());
+			var src = new SpatialReference(""); src.ImportFromEPSG(4326); 
+			var dst = new SpatialReference(_ds.GetProjection());    
 			_wgs84_to_dem = new CoordinateTransformation(src, dst);
 		}
 
 		public float? Sample(double lat, double lon)
 		{
-			// Transform geographic coordinates (lon/lat) from WGS84 to DEM CRS
+			// Transform geographic coordinates from WGS84 to DEM CRS
 			double[] p = new double[] { lon, lat, 0 };
 			_wgs84_to_dem.TransformPoint(p);
 			double X = p[0], Y = p[1];
@@ -62,6 +61,7 @@ namespace APUS.Routing
 			if (x0 < 0 || y0 < 0 || x1 >= _ds.RasterXSize || y1 >= _ds.RasterYSize)
 				return null;
 
+			// Read a small 2x2 window for bilinear interpolation
 			float[] win = new float[4];
 			_band.ReadRaster(x0, y0, 2, 2, win, 2, 2, 0, 0);
 
@@ -76,6 +76,7 @@ namespace APUS.Routing
 
 		public void Dispose()
 		{
+			// Properly release unmanaged GDAL resources
 			_band?.Dispose();
 			_ds?.Dispose();
 			_wgs84_to_dem?.Dispose();

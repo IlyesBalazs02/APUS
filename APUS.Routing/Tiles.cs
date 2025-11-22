@@ -15,8 +15,8 @@ namespace APUS.Routing
 
 	public struct TileInfo
 	{
-		public int GlobalTileId;   // TileId.Value
-		public int LocalTileId;    // inside the macro
+		public int GlobalTileId; 
+		public int LocalTileId; 
 		public double MinLat, MaxLat;
 		public double MinLon, MaxLon;
 	}

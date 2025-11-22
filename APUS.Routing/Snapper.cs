@@ -4,11 +4,11 @@ namespace APUS.Routing
 {
 	public sealed class SnapResult
 	{
-		// Directed edge the point snapped to: U -> V in tiled graph
+		// Directed edge the point snapped to U -> V in tiled graph
 		public NodeKey U { get; init; }
 		public NodeKey V { get; init; }
 
-		// Distance from U along edge (in the edge's cost units, usually meters)
+		// Distance from U along edge
 		public float DistFromU { get; init; }
 		public float EdgeLen { get; init; }
 
@@ -28,7 +28,7 @@ namespace APUS.Routing
 			_index = index;
 		}
 
-		// Build a SegmentIndex that covers all tiles in the graph.
+		/// Build a SegmentIndex that covers all tiles in the graph.
 		public static SegmentIndex BuildGlobalIndex(TiledRoadGraph graph, double cellDegrees = 0.01)
 		{
 			var index = new SegmentIndex(cellDegrees);
@@ -101,8 +101,8 @@ namespace APUS.Routing
 			return best;
 		}
 
-		/// Orthogonal projection of point P onto segment AB in (lat, lon) space.
-		/// Returns (projectionLat, projectionLon, t in [0,1]).
+		// Orthogonal projection of point P onto segment AB in (lat, lon) space.
+		// Returns (projectionLat, projectionLon, t in [0,1]).
 		private static (double Lat, double Lon, double T01) ProjectOnSegment(
 			double latA, double lonA,
 			double latB, double lonB,

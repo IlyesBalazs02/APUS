@@ -1,5 +1,5 @@
 ﻿using APUS.Server.Domain.DTOs.Routing;
-using APUS.Server.Services.Implementations.MapServices;
+using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APUS.Server.Controllers.MapController

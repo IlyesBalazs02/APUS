@@ -24,6 +24,9 @@ namespace APUS.Routing
 
 			public string AdjPath(string root) =>
 				Path.Combine(MacroDirectory(root), $"tile_{LocalTileId:0000}.adj.bin");
+
+			public string GeomPath(string root) =>
+				Path.Combine(MacroDirectory(root), $"tile_{LocalTileId:0000}.geom.bin");
 		}
 
 		private readonly string _root;
@@ -91,10 +94,8 @@ namespace APUS.Routing
 			_byId.Values.Where(t => t.Macro.LatInt == macro.LatInt &&
 									t.Macro.LonInt == macro.LonInt);
 
-		// All tiles in the registry 
 		public IEnumerable<TileMeta> AllTiles => _byId.Values;
 
-		// Root directory of the graph_store
 		public string RootDirectory => _root;
 	}
 
