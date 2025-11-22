@@ -64,14 +64,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
         radius: 0
       }
     },
-    scales: {
-      x: {
-        title: { display: true, text: 'Distance (km)' }
-      },
-      y: {
-        title: { display: true, text: 'Elevation (m)' }
-      }
-    },
     plugins: {
       legend: { display: false }
     }
