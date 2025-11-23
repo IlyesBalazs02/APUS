@@ -40,7 +40,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   ngOnInit(): void {
     // 1) Load the gallery of images
     this.http
-      .get<string[]>(`/api/images/${this.activity.id}`)
+      .get<string[]>(`/api/images/${this.activity.id}/urls`)
       .subscribe(
         urls => this.images = urls,
         err => console.error('gallery load failed', err)

@@ -78,7 +78,7 @@ export class EditActivityComponent {
   // --------- Existing images from server ---------
 
   private loadImages() {
-    this.http.get<string[]>(`/api/images/${this.activityId}`)
+    this.http.get<string[]>(`/api/images/${this.activityId}/urls`)
       .subscribe({
         next: (files) => {
           if (!files || !Array.isArray(files)) {

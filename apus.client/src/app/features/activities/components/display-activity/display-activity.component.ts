@@ -4,8 +4,10 @@ import { createActivity, MainActivity } from '../../_models/ActivityClasses';
 import { HttpClient } from '@angular/common/http';
 import { catchError, forkJoin, of, throwError, Timestamp } from 'rxjs';
 import { Trackpoint } from '../../ActivityDto/TrackpointDto';
+import { ActivityImageDto } from '../../ActivityDto/ActivityImageDto';
 import { ChartData, ChartOptions, ChartType } from 'chart.js';
 import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-display-activity',
@@ -20,7 +22,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   activityId: string;
   activity: MainActivity = new MainActivity();
 
-  images: string[] = [];
+  images: ActivityImageDto[] = [];
   selectedIndex: number | null = null;
 
   trackpoints: Trackpoint[] = [];
@@ -31,13 +33,12 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     const activity$ = this.http.get<MainActivity>(`/api/activities/${this.activityId}`);
-    const images$ = this.http.get<string[]>(`/api/images/${this.activityId}`);
+    const images$ = this.http.get<ActivityImageDto[]>(`/api/images/${this.activityId}`);
 
     const trackpoints$ = this.http
       .get<Trackpoint[]>(`/api/activityfile/${this.activityId}`)
       .pipe(
         catchError(err => {
-          // ANY error (404, 500, etc.) → just behave as "no track"
           console.warn('Track loading failed, continuing without track', err);
           return of<Trackpoint[]>([]);
         })
@@ -48,9 +49,8 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
         next: ({ activity, images, trackpoints }) => {
           this.activity = createActivity(activity);
           this.images = images;
-          this.trackpoints = trackpoints ?? []; // safe default
+          this.trackpoints = trackpoints ?? [];
         },
-        // you can even drop the error handler here if everything is caught above
         error: err => console.error('Unexpected error in display-activity', err)
       });
   }
@@ -59,7 +59,6 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
   }
 
-  // map each activityType to the array of fields to show
   fieldConfig: Record<string, string[]> = {
     MainActivity: ['avgHr', 'totalCalories'],
     GpsRelatedActivity: ['distanceKm', 'elevationGain'],
@@ -93,6 +92,17 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
 
     return allFields;
   }
+
+  get imageMapData(): { lat: number; lon: number; url: string }[] {
+    return this.images
+      .filter(i => i.lat != null && i.lon != null)
+      .map(i => ({
+        lat: i.lat as number,
+        lon: i.lon as number,
+        url: i.url
+      }));
+  }
+
 
 
   editActivity() {

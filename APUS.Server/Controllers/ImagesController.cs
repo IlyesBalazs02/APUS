@@ -1,6 +1,7 @@
 ﻿using APUS.Server.Core.Helpers;
 using APUS.Server.Data.Repositories.Implementations;
 using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Image;
 using APUS.Server.Domain.DTOs.Routing;
 using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
@@ -45,16 +46,16 @@ namespace APUS.Server.Controllers
 		{
 			var userId = User.GetUserId();
 
-			// 1) parse EXIF from client (filename -> ExifMetadataDto)
+			// parse EXIF from client (filename -> ExifMetadataDto)
 			var exifDict = string.IsNullOrWhiteSpace(exifJson)
 				? new Dictionary<string, ExifMetadataDto>()
 				: JsonSerializer.Deserialize<Dictionary<string, ExifMetadataDto>>(exifJson)
 				  ?? new Dictionary<string, ExifMetadataDto>();
 
-			// 2) save physical files
+			// save physical files
 			await _storageService.SaveImagesAsync(activityId, images, userId);
 
-			// 3) build ActivityImage entities
+			// build ActivityImage entities
 			var now = DateTime.UtcNow;
 			var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
@@ -80,7 +81,7 @@ namespace APUS.Server.Controllers
 						metaDto.dateTaken,
 						formats,
 						CultureInfo.InvariantCulture,
-						DateTimeStyles.AssumeLocal,     // or AssumeUniversal
+						DateTimeStyles.AssumeLocal,
 						out var parsed))
 				{
 					dateTaken = parsed.ToUniversalTime();
@@ -90,7 +91,7 @@ namespace APUS.Server.Controllers
 				double? gpsLat = null;
 				double? gpsLon = null;
 
-				// 4) If we know when the photo was taken, find closest trackpoint in TCX/GPX
+				// If we know when the photo was taken, find closest trackpoint in TCX/GPX
 				if (dateTaken.HasValue)
 				{
 					var closest = await _activityTrackLookupService.FindClosestPointAsync(
@@ -113,8 +114,8 @@ namespace APUS.Server.Controllers
 					Url = url,
 					UploadedAt = now,
 					DateTaken = dateTaken,   // EXIF timestamp
-					GpsLat = gpsLat,      // from track
-					GpsLon = gpsLon,      // from track
+					GpsLat = gpsLat,
+					GpsLon = gpsLon, 
 					RawMetadataJson = metaDto != null
 						? JsonSerializer.Serialize(metaDto)
 						: null
@@ -133,24 +134,43 @@ namespace APUS.Server.Controllers
 
 		[HttpGet("{id}")]
 		[Authorize]
+		[ProducesResponseType(typeof(ActivityImageDto[]), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<IEnumerable<ActivityImageDto>>> GetPictures(string id)
+		{
+			var images = await _activityImageRepository.GetByActivityIdAsync(id);
+
+			if (images == null || images.Count == 0)
+				return Ok(Array.Empty<ActivityImageDto>());
+
+			var result = images
+				.Select(img => new ActivityImageDto
+				{
+					Url = img.Url,
+					Lat = img.GpsLat,
+					Lon = img.GpsLon,
+					DateTaken = img.DateTaken
+				})
+				.ToList();
+
+			return Ok(result);
+		}
+
+		[HttpGet("{id}/urls")]
+		[Authorize]
 		[ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<IEnumerable<string>>> GetPictures(string id)
+		public async Task<ActionResult<IEnumerable<string>>> GetImageUrls(string id)
 		{
-			// Activity is needed for it's id and userid to know the path of the images
-			var activity = await _activityRepository.ReadByIdAsync(id);
+			var images = await _activityImageRepository.GetByActivityIdAsync(id);
+			if (images == null || images.Count == 0)
+				return Ok(Array.Empty<string>());
 
-			if (activity == null) return NoContent();
+			var urls = images.Select(img => img.Url).ToList();
 
-			var names = _storageService.GetImageFileNames(id, activity.UserId);
-			// always return 200, even if the array is empty
-			var baseUrl = $"{Request.Scheme}://{Request.Host}";
-			var urls = names
-			  .Select(fn => $"{baseUrl}/Users/{activity.UserId}/Activities/{id}/Images/{fn}")
-			  .ToArray();
 			return Ok(urls);
-
 		}
+
 
 		// Path to the activity's trak PNG ( if it exists)
 		[HttpGet("{id}/track")]
@@ -176,10 +196,8 @@ namespace APUS.Server.Controllers
 		{
 			var userId = User.GetUserId();
 
-			// 1) delete physical files
 			_storageService.DeleteImages(activityId, userId, fileNames);
 
-			// 2) delete metadata records
 			await _activityImageRepository.DeleteByFileNamesAsync(activityId, fileNames);
 
 			return NoContent();

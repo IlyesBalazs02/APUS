@@ -23,7 +23,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.Where(x => x.ActivityId == activityId)
 				.OrderBy(x => x.DateTaken ?? x.UploadedAt)
 				.AsNoTracking()
-				.ToListAsync();     // <-- Now works because DbContext + EF Core using are present
+				.ToListAsync();
 		}
 
 		public async Task DeleteByFileNamesAsync(string activityId, IEnumerable<string> fileNames)
