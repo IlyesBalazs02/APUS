@@ -25,7 +25,7 @@ namespace APUS.Server.Controllers
 		private readonly ITrackpointLoader _loader;
 		private readonly ICreateOsmMapPng _createOsmMapPng;
 		private readonly Func<string, IActivityImportService> _importerFactory;
-		private readonly ILinearAggression _linearAggression;
+		private readonly IHuberRegressor _linearAggression;
 
 
 		public ActivityFileController(
@@ -35,7 +35,7 @@ namespace APUS.Server.Controllers
 			ITrackpointLoader loader,
 			ICreateOsmMapPng createOsmMapPng,
 			Func<string, IActivityImportService> importerFactory,
-			ILinearAggression linearaggression
+			IHuberRegressor linearaggression
 			)
 		{
 			_logger = logger;

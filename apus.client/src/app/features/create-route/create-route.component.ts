@@ -57,6 +57,11 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   totalAscentMeters = 0;
   totalDescentMeters = 0;
 
+
+  predictedSeconds: number | null = null;
+  isPredicting = false;
+
+
   hasElevationProfile = false;
   elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
   elevationChartOptions: ChartOptions<'line'> = {
@@ -364,6 +369,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   // Rebuild the whole route geometry for the current snapped points.
   private recalculateRouteForAllPoints(): void {
+    this.predictedSeconds = null;
+
     const hadOutAndBack =
       this.routeSegments.length > 0 && this.routeSegments[this.routeSegments.length - 1].isOutAndBack;
 
@@ -445,6 +452,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   }
 
   private rebuildRouteFromSegments(): void {
+    this.predictedSeconds = null;
+
     if (this.routeSegments.length === 0) {
       this.fullRouteCoords = [];
       this.updateRouteSourceEmpty();
@@ -680,6 +689,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.updatePointsSource();
     this.clearProfiles();
     this.undoService.reset();
+    this.predictedSeconds = null;
   }
 
   // ---------- Import GPX ----------
@@ -738,6 +748,48 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  // --------- Predict ---------
+
+  predictTime(): void {
+    if (this.totalDistanceMeters === 0 || this.fullRouteCoords.length < 2) {
+      return;
+    }
+
+    this.isPredicting = true;
+
+    const url = `${this.apiBase}/api/routing/predict-time`;
+
+    this.http.post<number>(url, this.fullRouteCoords).subscribe({
+      next: (seconds) => {
+        console.log(seconds);
+        this.isPredicting = false;
+        this.predictedSeconds = seconds;
+      },
+      error: (err) => {
+        this.isPredicting = false;
+        console.error('Predict time failed', err);
+        alert('Could not predict time for this route.');
+      }
+    });
+  }
+
+  formatPredictedTime(): string {
+    if (this.predictedSeconds == null) {
+      return '';
+    }
+
+    const total = Math.round(this.predictedSeconds);
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+
+    if (hours <= 0) {
+      return `${minutes} min`;
+    }
+    if (minutes === 0) {
+      return `${hours} h`;
+    }
+    return `${hours} h ${minutes} min`;
+  }
 
 
 }

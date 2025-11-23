@@ -118,7 +118,7 @@ namespace APUS.Server.Configuration
 			services.AddSingleton<IRoutingService, RoutingService>();
 			services.AddScoped<IActivityImageRepository, ActivityImageRepository>();
 			services.AddScoped<IActivityTrackLookupService, ActivityTrackLookupService>();
-			services.AddSingleton<ILinearAggression, LinearAggression>();
+			services.AddSingleton<IHuberRegressor, HuberRegressor>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

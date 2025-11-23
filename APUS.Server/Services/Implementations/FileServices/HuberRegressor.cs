@@ -8,16 +8,16 @@ using System.Text.Json.Serialization;
 
 namespace APUS.Server.Services.Implementations.FileServices
 {
-	public class LinearAggression : ILinearAggression
+	public class HuberRegressor : IHuberRegressor
 	{
 		private readonly IWebHostEnvironment _env;
-		private readonly ILogger<LinearAggression> _logger;
+		private readonly ILogger<HuberRegressor> _logger;
 
-		private const string ScriptFileName = "LinearAgression.py";
+		private const string ScriptFileName = "HuberRegressor.py";
 
-		public LinearAggression(
+		public HuberRegressor(
 			IWebHostEnvironment env,
-			ILogger<LinearAggression> logger)
+			ILogger<HuberRegressor> logger)
 		{
 			_env = env;
 			_logger = logger;
@@ -50,6 +50,9 @@ namespace APUS.Server.Services.Implementations.FileServices
 				scriptPath,
 				args: $"predict \"{filePath}\""
 			);
+
+			_logger.LogInformation("Prediction raw JSON: {Json}", json);
+
 
 			try
 			{
@@ -165,8 +168,17 @@ namespace APUS.Server.Services.Implementations.FileServices
 				throw new InvalidOperationException($"Python script failed with exit code {proc.ExitCode}");
 			}
 
-			return stdout;
+			// IMPORTANT: many prints → take the last non-empty line as JSON
+			var lines = stdout
+				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+			var jsonLine = lines.Length > 0 ? lines[^1].Trim() : string.Empty;
+
+			_logger.LogInformation("Python stdout (last line as JSON): {JsonLine}", jsonLine);
+
+			return jsonLine;
 		}
+
 
 		// JSON DTOs
 
