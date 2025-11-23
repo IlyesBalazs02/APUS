@@ -17,7 +17,6 @@ interface UploadResponse {
   templateUrl: './upload-activity.component.html',
   styleUrls: ['./upload-activity.component.scss'],
 })
-
 export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});
@@ -32,13 +31,35 @@ export class UploadActivityComponent {
   isUploadingImages = false;
   uploadMessage = '';
 
-  constructor(private http: HttpClient, private router: Router, private exifService: ExifService) { }
+  // ---- NEW: activity type selection ----
+  activityTypes = [
+    { value: 'MainActivity', label: 'Activity' },
+    { value: 'Running', label: 'Running' },
+    { value: 'Hiking', label: 'Hiking' },
+    { value: 'Cycling', label: 'Cycling' },
+    { value: 'GpsRelatedActivity', label: 'Gps-related' },
+  ];
+
+  // default – adjust if you prefer another default
+  selectedActivityType = 'GpsRelatedActivity';
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private exifService: ExifService
+  ) { }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
       this.selectedFile = input.files[0];
     }
+  }
+
+  // NEW: activity type change handler
+  onActivityTypeChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.selectedActivityType = select.value;
   }
 
   // Drag & Drop handlers
@@ -66,6 +87,7 @@ export class UploadActivityComponent {
   }
 
   exifDataMap: Map<string, any> = new Map();
+
   private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
 
@@ -92,11 +114,8 @@ export class UploadActivityComponent {
     }
   }
 
-
-
   removeImage(i: number) {
     this.previewUrls.splice(i, 1);
-
     this.files.splice(i, 1);
   }
 
@@ -108,6 +127,9 @@ export class UploadActivityComponent {
 
     const formData = new FormData();
     formData.append('trackFile', this.selectedFile, this.selectedFile.name);
+
+    // ---- NEW: send selected activity type ----
+    formData.append('activityType', this.selectedActivityType);
 
     this.isUploadingTrack = true;
     this.isUploadingImages = false;

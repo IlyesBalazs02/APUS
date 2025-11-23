@@ -48,7 +48,7 @@ namespace APUS.Server.Controllers
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile)
+		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile, [FromForm] string? activityType)
 		{
 			if (trackFile == null || trackFile.Length == 0)
 				return BadRequest("No file provided.");
@@ -59,23 +59,57 @@ namespace APUS.Server.Controllers
 
 			//Select the correct import service based on the extension
 			var ext = Path.GetExtension(trackFile.FileName);
-			var importerFactory = _importerFactory(ext);
+			var importer = _importerFactory(ext);
 
 			try
 			{
-				var importedActivity = importerFactory.ImportActivity(ms);
+				var importedActivity = importer.ImportActivity(ms);
 
-				MainActivity newActivity = importedActivity.HasGpsTrack == true
-					? new GpsRelatedActivity
+				bool hasGps = importedActivity.HasGpsTrack == true;
+				var type = string.IsNullOrWhiteSpace(activityType)
+					? null
+					: activityType.Trim();
+
+				GpsRelatedActivity CreateGps<T>() where T : GpsRelatedActivity, new()
+					=> new T
 					{
 						TotalAscentMeters = importedActivity.TotalAscentMeters,
 						TotalDescentMeters = importedActivity.TotalDescentMeters,
 						TotalDistanceKm = importedActivity.TotalDistanceKm,
 						AvgPace = importedActivity.AvgPace,
 						FinishTimeUtc = importedActivity.FinishTimeUtc
-					}
-					: new MainActivity();
+					};
 
+				MainActivity CreatePlain<T>() where T : MainActivity, new()
+					=> new T();
+
+				MainActivity newActivity;
+
+				if (type is null)
+				{
+					newActivity = hasGps
+						? CreateGps<GpsRelatedActivity>()
+						: CreatePlain<MainActivity>();
+				}
+				else
+				{
+					newActivity = type switch
+					{
+						"Running" when hasGps => CreateGps<Running>(),
+						"Hiking" when hasGps => CreateGps<Hiking>(),
+						"Cycling" when hasGps => CreateGps<Ride>(),
+						"GpsRelatedActivity" when hasGps => CreateGps<GpsRelatedActivity>(),
+
+						// Non-GPS / generic
+						"MainActivity" => CreatePlain<MainActivity>(),
+
+						_ => hasGps
+							? CreateGps<GpsRelatedActivity>()
+							: CreatePlain<MainActivity>()
+					};
+				}
+
+				// Common properties
 				newActivity.Title = "Imported Activity";
 				newActivity.Date = importedActivity.StartTime;
 				newActivity.Duration = importedActivity.Duration;
@@ -86,25 +120,24 @@ namespace APUS.Server.Controllers
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 				newActivity.UserId = userId;
 
-				//Create the activity into the EF database
+				// Create the activity into the EF database
 				await _activityRepository.CreateAsync(newActivity);
 
-				//Create a folder for the activity in the blob storage
+				// Create a folder for the activity in the blob storage
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
-				//Save the uploaded file into the activity's folder
-				await _storageService.SaveTrackAsync(newActivity.Id,newActivity.UserId, trackFile);
+				// Save the uploaded file into the activity's folder
+				await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
 
-				//If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
-				if (importedActivity.HasGpsTrack) await _createOsmMapPng.GeneratePng(newActivity);
-
+				// If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
+				if (importedActivity.HasGpsTrack)
+					await _createOsmMapPng.GeneratePng(newActivity);
 
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
 					routeValues: new { id = newActivity.Id },
 					value: newActivity
 				);
-
 			}
 			catch (XmlException xmlEx)
 			{

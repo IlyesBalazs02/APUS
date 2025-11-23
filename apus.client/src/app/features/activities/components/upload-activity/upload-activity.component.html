@@ -1,6 +1,15 @@
-<p>upload-activity works!</p>
-
 <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- NEW: Activity type selection -->
+    <div class="form-group">
+        <label for="activityType">Activity type</label>
+        <select id="activityType" class="form-select" [value]="selectedActivityType"
+            (change)="onActivityTypeChange($event)">
+            <option *ngFor="let t of activityTypes" [value]="t.value">
+                {{ t.label }}
+            </option>
+        </select>
+    </div>
 
     <!-- file input -->
     <div class="form-group">
