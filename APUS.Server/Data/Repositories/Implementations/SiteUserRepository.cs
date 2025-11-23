@@ -44,6 +44,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 				_storageService.CreateUserFolder(user.Id);
 				_storageService.CreateLAModelFolder(user.Id);
+				_storageService.CreateTrackFile(user.Id);
 			}
 
 			return result;

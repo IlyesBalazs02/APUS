@@ -47,15 +47,29 @@ namespace APUS.Server.Services.Implementations.FileServices
 			var source = Path.Combine(_root, "Perm", "Running.pkl");
 			var destuination = Path.Combine(path, "Running.pkl");
 			File.Copy(source, destuination);
+
+			source = Path.Combine(_root, "Perm", "Running.csv");
+			destuination = Path.Combine(path, "Running.csv");
+			File.Copy(source, destuination);
 		}
 
-		public async Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile)
+		public void CreateTrackFile(string userId)
 		{
+			var path = Path.Combine(_uploadsRoot, userId, "Tracks");
+			Directory.CreateDirectory(path);
+		}
+
+		public async Task<string> SaveTrackAsync(string activityId, string userId, IFormFile trackFile)
+		{
+			var target = Path.Combine(GetTrackPath(userId, activityId), Path.GetFileName(trackFile.FileName));
+
 			if (trackFile?.Length > 0)
 			{
-				var target = Path.Combine(GetTrackPath(userId, activityId), Path.GetFileName(trackFile.FileName));
 				await WriteFileAsync(trackFile, target).ConfigureAwait(false);
+
 			}
+
+			return target;
 		}
 
 

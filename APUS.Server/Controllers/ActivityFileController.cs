@@ -1,6 +1,7 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Domain.DTOs.Routing;
 using APUS.Server.Domain.Models;
+using APUS.Server.Services.Implementations.FileServices;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace APUS.Server.Controllers
 		private readonly ITrackpointLoader _loader;
 		private readonly ICreateOsmMapPng _createOsmMapPng;
 		private readonly Func<string, IActivityImportService> _importerFactory;
+		private readonly ILinearAggression _linearAggression;
 
 
 		public ActivityFileController(
@@ -32,7 +34,8 @@ namespace APUS.Server.Controllers
 			IStorageService storageService,
 			ITrackpointLoader loader,
 			ICreateOsmMapPng createOsmMapPng,
-			Func<string, IActivityImportService> importerFactory
+			Func<string, IActivityImportService> importerFactory,
+			ILinearAggression linearaggression
 			)
 		{
 			_logger = logger;
@@ -41,6 +44,7 @@ namespace APUS.Server.Controllers
 			_loader = loader;
 			_createOsmMapPng = createOsmMapPng;
 			_importerFactory = importerFactory;
+			_linearAggression = linearaggression;
 		}
 
 		[HttpPost("upload-activity")]
@@ -127,11 +131,34 @@ namespace APUS.Server.Controllers
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
 				// Save the uploaded file into the activity's folder
-				await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
+				var savedTrackPath = await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
 
 				// If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
 				if (importedActivity.HasGpsTrack)
 					await _createOsmMapPng.GeneratePng(newActivity);
+
+				//if it's running, train the model
+				if (importedActivity.HasGpsTrack &&
+					newActivity is Running &&
+					(ext.Equals(".tcx", StringComparison.OrdinalIgnoreCase) ||
+					 ext.Equals(".gpx", StringComparison.OrdinalIgnoreCase)))
+				{
+					try
+					{
+						await _linearAggression.TrainAsync(userId, savedTrackPath);
+					}
+					catch (Exception laEx)
+					{
+						// Log, but DO NOT stop the upload
+						_logger.LogError(
+							laEx,
+							"LinearAggression training failed for user {UserId}, activity {ActivityId}. Track: {TrackPath}",
+							userId,
+							newActivity.Id,
+							savedTrackPath);
+						// Just continue – the activity upload should still succeed
+					}
+				}
 
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
@@ -139,6 +166,8 @@ namespace APUS.Server.Controllers
 					value: newActivity
 				);
 			}
+
+
 			catch (XmlException xmlEx)
 			{
 				_logger.LogWarning(xmlEx, "Malformed XML in uploaded file");

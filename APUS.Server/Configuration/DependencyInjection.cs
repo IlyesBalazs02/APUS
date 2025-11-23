@@ -118,6 +118,7 @@ namespace APUS.Server.Configuration
 			services.AddSingleton<IRoutingService, RoutingService>();
 			services.AddScoped<IActivityImageRepository, ActivityImageRepository>();
 			services.AddScoped<IActivityTrackLookupService, ActivityTrackLookupService>();
+			services.AddSingleton<ILinearAggression, LinearAggression>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();
@@ -127,8 +128,8 @@ namespace APUS.Server.Configuration
 				ext = ext?.Trim().ToLowerInvariant();
 				return ext switch
 				{
-					".tcx" => sp.GetRequiredService<ITCXFileService>(),   // ← interface, not concrete
-					".gpx" => sp.GetRequiredService<IGPXFileService>(),   // ← interface, not concrete
+					".tcx" => sp.GetRequiredService<ITCXFileService>(),
+					".gpx" => sp.GetRequiredService<IGPXFileService>(),
 					_ => throw new NotSupportedException($"No importer for '{ext}'")
 				};
 			});
