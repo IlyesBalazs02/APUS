@@ -19,6 +19,14 @@
             </div>
 
             <div class="actions-right">
+                <!-- Import GPX -->
+                <input type="file" accept=".gpx,application/gpx+xml" (change)="onGpxFileSelected($event)"
+                    style="display: none" #gpxFileInput />
+
+                <button type="button" class="toolbar-btn" (click)="gpxFileInput.click()">
+                    Import GPX
+                </button>
+
                 <button type="button" class="toolbar-btn" (click)="undoLastSection()"
                     [disabled]="!undoService.canUndo()">
                     Undo
@@ -39,6 +47,7 @@
                     Save
                 </button>
             </div>
+
         </div>
 
         <div class="elevation-chart">

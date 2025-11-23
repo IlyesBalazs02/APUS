@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ChartData, ChartOptions } from 'chart.js';
 import { UndoContext, UndoService } from './undo.service';
+import { GpxImportService } from './import.service';
 
 interface SnapResponseDto {
   nodeId: number;
@@ -79,7 +80,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private readonly pointsSourceId = 'route-points';
   private readonly pointsLayerId = 'route-points-layer';
 
-  constructor(private http: HttpClient, public undoService: UndoService) { }
+  constructor(private http: HttpClient, public undoService: UndoService, public gpxImportService: GpxImportService) { }
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -680,4 +681,63 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.clearProfiles();
     this.undoService.reset();
   }
+
+  // ---------- Import GPX ----------
+  onGpxFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    // Optional: allow re-selecting the same file later
+    input.value = '';
+
+    this.gpxImportService.parseGpx(file)
+      .then(coords => {
+        if (!coords || coords.length < 2) {
+          alert('The GPX file does not contain enough track points.');
+          return;
+        }
+
+        // 1) Clear everything currently on the map / state
+        this.clearAll();
+
+        // 2) Use the GPX points as the route geometry directly
+        this.fullRouteCoords = coords.map(c => ({
+          lat: c.lat,
+          lon: c.lon
+        }));
+
+        this.routeSegments = [
+          {
+            coords: this.fullRouteCoords,
+            isOutAndBack: false
+          }
+        ];
+
+        // 3) Put 2 circles at the ends of the route
+        const start = this.fullRouteCoords[0];
+        const end = this.fullRouteCoords[this.fullRouteCoords.length - 1];
+
+        this.snappedPoints = [
+          { lat: start.lat, lon: start.lon },
+          { lat: end.lat, lon: end.lon }
+        ];
+
+        // 4) Refresh map sources + stats
+        this.updateRouteOnMap();
+        this.updatePointsSource();
+        this.recomputeDistanceProfile();
+        this.fetchElevationProfile();
+      })
+      .catch(err => {
+        console.error('Failed to import GPX', err);
+        alert('Could not read GPX file.');
+      });
+  }
+
+
+
 }
