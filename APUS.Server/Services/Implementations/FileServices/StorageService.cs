@@ -7,6 +7,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 	public class StorageService : IStorageService
 	{
 		private readonly string _uploadsRoot;
+		private readonly string _root;
 
 		private const string UsersFolder = "Users";
 		private const string ActivitiesFolder = "Activities";
@@ -19,6 +20,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 		{
 			if (env == null) throw new ArgumentNullException(nameof(env));
 			_uploadsRoot = Path.Combine(env.WebRootPath, UsersFolder);
+			_root = env.WebRootPath;
 		}
 
 		public void CreateUserFolder(string userId)
@@ -35,6 +37,16 @@ namespace APUS.Server.Services.Implementations.FileServices
 			Directory.CreateDirectory(activityBase);
 			Directory.CreateDirectory(Path.Combine(activityBase, ImagesFolder));
 			Directory.CreateDirectory(Path.Combine(activityBase, TrackFolder));
+		}
+
+		public void CreateLAModelFolder(string userId)
+		{
+			var path = Path.Combine(_uploadsRoot, userId, "LAModels");
+			Directory.CreateDirectory(path);
+
+			var source = Path.Combine(_root, "Perm", "Running.pkl");
+			var destuination = Path.Combine(path, "Running.pkl");
+			File.Copy(source, destuination);
 		}
 
 		public async Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile)

@@ -43,6 +43,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 				await _context.SaveChangesAsync();
 
 				_storageService.CreateUserFolder(user.Id);
+				_storageService.CreateLAModelFolder(user.Id);
 			}
 
 			return result;
