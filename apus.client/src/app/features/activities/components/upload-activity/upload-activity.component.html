@@ -21,9 +21,17 @@
         <div class="thumb" *ngFor="let url of previewUrls; let i = index">
             <button type="button" class="remove-btn" (click)="removeImage(i)">×</button>
             <img [src]="url" alt="Preview" />
-
         </div>
     </div>
 
-    <button type="submit" [disabled]="!form.valid">Submit</button>
+    <!-- Loading indicator -->
+    <div class="upload-status" *ngIf="isUploadingTrack || isUploadingImages">
+        <span class="spinner"></span>
+        <span>{{ uploadMessage }}</span>
+    </div>
+
+    <button type="submit" [disabled]="isUploadingTrack || isUploadingImages || !selectedFile">
+        {{ (isUploadingTrack || isUploadingImages) ? 'Uploading...' : 'Submit' }}
+    </button>
+
 </form>

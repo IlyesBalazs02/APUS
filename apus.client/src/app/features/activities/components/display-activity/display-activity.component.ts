@@ -94,14 +94,49 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
   }
 
   get imageMapData(): { lat: number; lon: number; url: string }[] {
+    if (!this.trackpoints?.length) {
+      return [];
+    }
+
+    // Collect valid trackpoint times
+    const trackTimes: Date[] = this.trackpoints
+      .map(tp => {
+        const t = (tp as any).time as string | null | undefined;
+        if (!t) return null;
+        const d = new Date(t);
+        return isNaN(d.getTime()) ? null : d;
+      })
+      .filter((d): d is Date => d !== null);
+
+    if (!trackTimes.length) {
+
+      return [];
+    }
+
+    const minTimeMs = Math.min(...trackTimes.map(d => d.getTime()));
+    const maxTimeMs = Math.max(...trackTimes.map(d => d.getTime()));
+
+    const fiveHoursMs = 5 * 60 * 60 * 1000;
+
+    const lowerBound = minTimeMs - fiveHoursMs;
+    const upperBound = maxTimeMs + fiveHoursMs;
+
+    // Keep only images whose time is within the track time and have coordinates
     return this.images
-      .filter(i => i.lat != null && i.lon != null)
-      .map(i => ({
-        lat: i.lat as number,
-        lon: i.lon as number,
-        url: i.url
+      .filter(img => img.lat != null && img.lon != null && img.dateTaken)
+      .filter(img => {
+        const d = new Date(img.dateTaken!);
+        if (isNaN(d.getTime())) return false;
+        const t = d.getTime();
+        return t >= lowerBound && t <= upperBound;
+      })
+      .map(img => ({
+        lat: img.lat as number,
+        lon: img.lon as number,
+        url: img.url
       }));
   }
+
 
 
 
