@@ -19,6 +19,8 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   public trackImage: string | null = null;
   selectedIndex: number | null = null;
 
+  commentsOpen = false;
+
   constructor(private http: HttpClient) { }
 
   //Which properties to display
@@ -82,15 +84,13 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       }));
   }
 
-  toggleLike() {
-    this.http.post<{ likesCount: number, isLiked: boolean }>(
-      `/api/activities/${this.activity.id}/like`, {}
-    ).subscribe(res => {
-      this.activity.likescount = res.likesCount;
-      this.activity.isLikedByCurrentUser = res.isLiked;
-    });
+  openCommentsModal() {
+    this.commentsOpen = true;
   }
 
+  closeCommentsModal() {
+    this.commentsOpen = false;
+  }
 
   openViewer(i: number) {
     this.selectedIndex = i;

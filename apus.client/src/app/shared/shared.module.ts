@@ -7,19 +7,23 @@ import { ActivityCardComponent } from "./activity-card/activity-card.component";
 import { SearchBarComponent } from "../features/search/search-bar/search-bar.component";
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from "@angular/forms";
+import { CommentsModalComponent } from "./comments-modal/comments-modal.component";
 
 @NgModule({
     declarations: [
         FooterComponent,
         NavigationComponent,
         ActivityCardComponent,
+        CommentsModalComponent
     ],
     imports: [
         CommonModule,
         RouterModule,
         SearchBarComponent,
         MatBadgeModule,
-        MatButtonModule
+        MatButtonModule,
+        FormsModule
     ],
     exports: [
         CommonModule,
@@ -28,6 +32,7 @@ import { MatButtonModule } from '@angular/material/button';
         NavigationComponent,
         ActivityCardComponent,
         SearchBarComponent,
+        CommentsModalComponent
     ]
 })
 

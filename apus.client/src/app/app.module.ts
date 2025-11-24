@@ -39,7 +39,7 @@ import { NgChartsModule } from 'ng2-charts';
     LoginComponent,
     HomeComponentComponent,
     CreateRouteComponent,
-    UserProfileComponent
+    UserProfileComponent,
   ],
   imports: [
     BrowserModule,

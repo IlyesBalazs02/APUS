@@ -220,28 +220,6 @@
   text-align: center;
 }
 
-.like-icon {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 4px 8px;
-  margin: 6px 0;
-
-  i {
-    font-size: 1.3rem;
-    transition: transform .15s ease, color .15s ease;
-  }
-
-  &:hover i {
-    transform: scale(1.1);
-  }
-
-  .liked {
-    color: #0d6efd; /* Bootstrap primary */
-  }
-}
-
 
 
 

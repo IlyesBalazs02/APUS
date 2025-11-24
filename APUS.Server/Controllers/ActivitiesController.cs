@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs;
 using APUS.Server.Domain.DTOs.Feature.Activity;
 using APUS.Server.Domain.DTOs.Feature.Search;
 using APUS.Server.Domain.Models;
@@ -23,17 +24,20 @@ namespace APUS.Server.Controllers
 		private readonly IActivityRepository _activityRepository;
 		private readonly IStorageService _storageService;
 		private readonly IActivityService _activityService;
+		private readonly IActivityCommentRepository _activityCommentRepository;
 
 		public ActivitiesController(
 			ILogger<ActivitiesController> logger,
 			IActivityRepository activityRepository,
 			IStorageService storageService,
-			IActivityService activityService)
+			IActivityService activityService,
+			IActivityCommentRepository activityCommentRepository)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
 			_activityService = activityService;
+			_activityCommentRepository = activityCommentRepository;
 		}
 
 		//TODO Create DTO for mainactivity
@@ -287,6 +291,70 @@ namespace APUS.Server.Controllers
 				return NotFound();
 
 			return Ok(new { likesCount = updated.Value.likes, isLiked = updated.Value.isLiked });
+		}
+
+		[HttpPost("{id}/comments")]
+		[Authorize]
+		[ProducesResponseType(typeof(ActivityCommentDto), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<ActivityCommentDto>> AddComment(string id,[FromBody] CreateActivityCommentRequest req)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var act = await _activityRepository.ReadByIdAsync(id);
+			if (act == null) return NotFound();
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var entity = new ActivityComment
+			{
+				ActivityId = id,
+				AuthorUserId = userId,
+				Text = req.Text.Trim(),
+				CreatedAtUtc = DateTime.UtcNow
+			};
+
+			entity = await _activityCommentRepository.AddAsync(entity);
+
+			var dto = new ActivityCommentDto
+			{
+				Id = entity.Id,
+				AuthorUserId = entity.AuthorUserId,
+				AuthorFullName = entity.AuthorUser.FirstName + " " + entity.AuthorUser.LastName,
+				AuthorAvatarUrl = entity.AuthorUser.AvatarUrl,
+				Text = entity.Text,
+				CreatedAtUtc = entity.CreatedAtUtc
+			};
+
+			return Ok(dto);
+		}
+
+
+		[HttpGet("{id}/comments")]
+		[Authorize]
+		[ProducesResponseType(typeof(IEnumerable<ActivityCommentDto>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<IEnumerable<ActivityCommentDto>>> GetComments(string id)
+		{
+			// ensure activity exists
+			var act = await _activityRepository.ReadByIdAsync(id);
+			if (act == null) return NotFound();
+
+			var comments = await _activityCommentRepository.GetByActivityIdAsync(id);
+
+			var dtos = comments.Select(c => new ActivityCommentDto
+			{
+				Id = c.Id,
+				AuthorUserId = c.AuthorUserId,
+				AuthorFullName = c.AuthorUser.FirstName + " " + c.AuthorUser.LastName,
+				AuthorAvatarUrl = c.AuthorUser.AvatarUrl,
+				Text = c.Text,
+				CreatedAtUtc = c.CreatedAtUtc
+			}).ToList();
+
+			return Ok(dtos);
 		}
 
 

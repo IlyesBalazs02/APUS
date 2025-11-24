@@ -1,0 +1,38 @@
+<div class="modal-backdrop" *ngIf="isOpen" (click)="close()"></div>
+
+<div class="comments-modal" *ngIf="isOpen">
+    <div class="modal-header">
+        <h5>{{ title }}</h5>
+        <button class="close-btn" (click)="close()">✕</button>
+    </div>
+
+    <div class="modal-body">
+        <div *ngIf="loading">Loading…</div>
+        <div *ngIf="loadError" class="error">{{ loadError }}</div>
+
+        <div *ngIf="!loading">
+            <div class="empty" *ngIf="comments.length === 0">
+                No comments yet.
+            </div>
+
+            <div *ngFor="let c of comments" class="comment">
+                <div class="top">
+                    <img [src]="c.authorAvatarUrl || '/Perm/DefaultProfile.png'" />
+                    <div class="meta">
+                        <div class="name">{{ c.authorFullName }}</div>
+                        <div class="date">{{ c.createdAtUtc | date:'short' }}</div>
+                    </div>
+                </div>
+                <div class="text">{{ c.text }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <textarea [(ngModel)]="newComment" rows="2" placeholder="Write a comment…">
+    </textarea>
+        <button (click)="submit()" [disabled]="posting || !newComment.trim()">
+            Post
+        </button>
+    </div>
+</div>

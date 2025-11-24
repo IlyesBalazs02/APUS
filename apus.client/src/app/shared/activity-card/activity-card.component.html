@@ -51,15 +51,16 @@
     </div>
 
     <!-- Like bar -->
-    <div class="like-icon" (click)="toggleLike()">
-        <i class="bi" [ngClass]="activity.isLikedByCurrentUser 
-                  ? 'bi-hand-thumbs-up-fill liked' 
-                  : 'bi-hand-thumbs-up'">
-        </i>
+    <div class="like-icon">
+        <i class="bi bi-hand-thumbs-up"></i>
         <span>{{ activity.likescount }}</span>
     </div>
-
 </div>
+
+<app-comments-modal [isOpen]="commentsOpen" [loadUrl]="'/api/activities/' + activity.id + '/comments'"
+    [postUrl]="'/api/activities/' + activity.id + '/comments'" (closed)="closeCommentsModal()" title="Comments">
+</app-comments-modal>
+
 
 <!-- Lightbox (unchanged) -->
 <div class="lightbox-overlay" *ngIf="selectedIndex !== null" (click)="closeViewer()">

@@ -1,4 +1,5 @@
 ﻿using APUS.Server.Domain.Entities.User;
+using System.ComponentModel.DataAnnotations;
 
 namespace APUS.Server.Domain.Models
 {
