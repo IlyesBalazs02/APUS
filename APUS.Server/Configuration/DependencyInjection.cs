@@ -82,14 +82,19 @@ namespace APUS.Server.Configuration
 				return new Snapper(graph, index);
 			});
 
-			// keep the using OSMGraphCreater; at the top
-			services.AddSingleton<IElevationSampler>(_ =>
+			services.AddSingleton<IElevationSampler>(sp =>
 			{
-				GdalConfiguration.Configure();
+				var configuration = sp.GetRequiredService<IConfiguration>();
+				var demConnStr = configuration.GetConnectionString("DemConnection")
+					?? throw new InvalidOperationException("Missing DemConnection connection string.");
 
-				const string demPath = @"C:\EU-DEM\EU_DEM_mosaic_5deg\eudem_dem_4258_europe.tif";
-				return new GdalElevationSampler(demPath);
+				return new PostgisElevationSampler(
+					demConnStr,
+					tableName: "public.eu_dem",
+					rasterSrid: 4258
+				);
 			});
+
 
 			#endregion
 

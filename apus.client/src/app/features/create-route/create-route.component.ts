@@ -581,6 +581,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       ]
     };
 
+    this.recomputeAscentDescent();
+
     this.hasElevationProfile = true;
   }
 
@@ -610,6 +612,39 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
+
+  private recomputeAscentDescent(): void {
+    const n = this.elevationProfile.length;
+
+    if (n === 0) {
+      this.totalAscentMeters = 0;
+      this.totalDescentMeters = 0;
+      return;
+    }
+
+    let ascent = 0;
+    let descent = 0;
+
+    for (let i = 1; i < n; i++) {
+      const prev = this.elevationProfile[i - 1];
+      const curr = this.elevationProfile[i];
+
+      if (!Number.isFinite(prev) || !Number.isFinite(curr)) {
+        continue;
+      }
+
+      const diff = curr - prev;
+      if (diff > 0) {
+        ascent += diff;
+      } else if (diff < 0) {
+        descent -= diff; // diff is negative
+      }
+    }
+
+    this.totalAscentMeters = Math.round(ascent);
+    this.totalDescentMeters = Math.round(descent);
+  }
+
 
   // ---------- Toolbar actions ----------
 
