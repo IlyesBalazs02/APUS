@@ -56,6 +56,12 @@ namespace APUS.Server.Domain.Models
 		[System.Text.Json.Serialization.JsonIgnore]
 		public ICollection<ActivityImage> Images { get; set; } = new List<ActivityImage>();
 
+		[BindNever]
+		[ValidateNever]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public ICollection<ActivityComment> Comments { get; set; } = new List<ActivityComment>();
+
+
 		public MainActivity()
 		{
 			ActivityType = GetType().Name;
@@ -195,5 +201,12 @@ namespace APUS.Server.Domain.Models
 		{
 			DisplayName = "Tennis";
 		}
+	}
+
+	public sealed class ActivityComment : CommentBase
+	{
+		[Required]
+		public string ActivityId { get; set; } = null!;
+		public MainActivity Activity { get; set; } = null!;
 	}
 }

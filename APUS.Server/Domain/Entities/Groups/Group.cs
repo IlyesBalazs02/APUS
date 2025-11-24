@@ -1,4 +1,7 @@
 ﻿using APUS.Server.Domain.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace APUS.Server.Domain.Entities.Groups
 {
@@ -48,5 +51,23 @@ namespace APUS.Server.Domain.Entities.Groups
 		public required string Text { get; set; } = null!;
 
 		public DateTime CreatedAtUtc { get; set; }
+
+		[BindNever]
+		[ValidateNever]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public ICollection<SiteUser> LikedBy { get; set; } = new List<SiteUser>();
+
+		[BindNever]
+		[ValidateNever]
+		[System.Text.Json.Serialization.JsonIgnore]
+		public ICollection<GroupPostComment> Comments { get; set; } = new List<GroupPostComment>();
+
+	}
+
+	public sealed class GroupPostComment : CommentBase
+	{
+		[Required]
+		public long GroupPostId { get; set; }
+		public GroupPost GroupPost { get; set; } = null!;
 	}
 }

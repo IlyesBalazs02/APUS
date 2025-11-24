@@ -21,6 +21,12 @@ namespace APUS.Server.Data
 		public DbSet<GroupJoinRequest> GroupJoinRequests { get; set; }
 		public DbSet<GroupPost> GroupPosts { get; set; }
 
+		//comments
+		public DbSet<CommentBase> Comments { get; set; }
+		public DbSet<ActivityComment> ActivityComments { get; set; }
+		public DbSet<GroupPostComment> GroupPostComments { get; set; }
+
+
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
 
@@ -238,6 +244,73 @@ namespace APUS.Server.Data
 				b.HasIndex(x => new { x.GroupId, x.CreatedAtUtc, x.Id });
 			});
 
+			modelBuilder.Entity<GroupPost>()
+				.HasMany(p => p.LikedBy)
+				.WithMany()
+				.UsingEntity<Dictionary<string, object>>(
+					"GroupPostLikes",
+					j => j
+						.HasOne<SiteUser>()
+						.WithMany()
+						.HasForeignKey("LikedByUsersId")
+						.OnDelete(DeleteBehavior.Cascade),
+					j => j
+						.HasOne<GroupPost>()
+						.WithMany()
+						.HasForeignKey("LikedPostsId")
+						.OnDelete(DeleteBehavior.Cascade),
+					j =>
+					{
+						j.ToTable("GroupPostLikes", "Social");
+						j.HasKey("LikedByUsersId", "LikedPostsId");
+					});
+
+			// Comments
+			modelBuilder.Entity<CommentBase>(b =>
+			{
+				b.ToTable("Comments", "Social");
+				b.HasKey(x => x.Id);
+
+				b.Property(x => x.Text)
+				 .IsRequired()
+				 .HasMaxLength(1000);
+
+				b.Property(x => x.CreatedAtUtc)
+				 .IsRequired();
+
+				b.HasOne(x => x.AuthorUser)
+				 .WithMany()
+				 .HasForeignKey(x => x.AuthorUserId)
+				 .OnDelete(DeleteBehavior.Restrict);
+
+				b.HasDiscriminator<string>("CommentType")
+				 .HasValue<ActivityComment>("Activity")
+				 .HasValue<GroupPostComment>("GroupPost");
+			});
+
+			modelBuilder.Entity<ActivityComment>(b =>
+			{
+				b.Property(x => x.ActivityId).IsRequired();
+
+				b.HasOne(x => x.Activity)
+				 .WithMany(a => a.Comments)
+				 .HasForeignKey(x => x.ActivityId)
+				 .OnDelete(DeleteBehavior.Cascade);
+
+				b.HasIndex(x => new { x.ActivityId, x.CreatedAtUtc, x.Id });
+			});
+
+			modelBuilder.Entity<GroupPostComment>(b =>
+			{
+				b.Property(x => x.GroupPostId).IsRequired();
+
+				b.HasOne(x => x.GroupPost)
+				 .WithMany(p => p.Comments)
+				 .HasForeignKey(x => x.GroupPostId)
+				 .OnDelete(DeleteBehavior.Cascade);
+
+				b.HasIndex(x => new { x.GroupPostId, x.CreatedAtUtc, x.Id });
+			});
 
 		}
 
