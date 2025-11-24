@@ -15,6 +15,7 @@ export interface ActivityDto {
     pace?: number;
 
     likescount?: number;
+    isLikedByCurrentUser: boolean;
 
     userFullName: string;
     avatarUrl?: string;

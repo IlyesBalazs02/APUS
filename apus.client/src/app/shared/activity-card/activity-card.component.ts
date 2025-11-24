@@ -82,6 +82,16 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       }));
   }
 
+  toggleLike() {
+    this.http.post<{ likesCount: number, isLiked: boolean }>(
+      `/api/activities/${this.activity.id}/like`, {}
+    ).subscribe(res => {
+      this.activity.likescount = res.likesCount;
+      this.activity.isLikedByCurrentUser = res.isLiked;
+    });
+  }
+
+
   openViewer(i: number) {
     this.selectedIndex = i;
   }

@@ -6,5 +6,6 @@ namespace APUS.Server.Services.Interfaces
 	public interface IActivityService
 	{
 		Task EditActivityAsync(MainActivity existing, EditActivityRequest req);
+		Task<(int likes, bool isLiked)?> ToggleLikeAsync(string activityId, string userId);
 	}
 }

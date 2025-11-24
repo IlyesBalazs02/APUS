@@ -276,6 +276,20 @@ namespace APUS.Server.Controllers
 			return activity.LikedBy.Count();
 		}
 
+		[HttpPost("{id}/like")]
+		[Authorize]
+		public async Task<ActionResult> ToggleLike(string id)
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+			var updated = await _activityService.ToggleLikeAsync(id, userId);
+			if (!updated.HasValue)
+				return NotFound();
+
+			return Ok(new { likesCount = updated.Value.likes, isLiked = updated.Value.isLiked });
+		}
+
+
 		private TDto CopyBaseProps<TDto>(MainActivity activity)
 			where TDto : ActivityDto, new()
 		{
@@ -293,6 +307,7 @@ namespace APUS.Server.Controllers
 				Type = activity.GetType().Name,
 				DisplayName = activity.DisplayName,
 				LikesCount = activity.LikedBy.Count(),
+				IsLikedByCurrentUser = activity.LikedBy.Any(u => u.Id == User.FindFirstValue(ClaimTypes.NameIdentifier)),
 				UserFullName = activity.User != null
 			? $"{activity.User.FirstName} {activity.User.LastName}"
 			: "Unknown",

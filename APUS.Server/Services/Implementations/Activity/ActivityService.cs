@@ -51,5 +51,28 @@ namespace APUS.Server.Services.Implementations.Activity
 			await _repo.ReplaceAsync(existing, replacement);
 		}
 
+		public async Task<(int likes, bool isLiked)?> ToggleLikeAsync(string activityId, string userId)
+		{
+			var act = await _repo.ReadByIdAsync(activityId);
+			if (act == null)
+				return null;
+
+			var user = act.User;
+
+			if (act.LikedBy.Any(u => u.Id == userId))
+			{
+				act.LikedBy.Remove(user);
+				await _repo.SaveAsync(act);
+				return (act.LikedBy.Count, false);
+			}
+			else
+			{
+				act.LikedBy.Add(user);
+				await _repo.SaveAsync(act);
+				return (act.LikedBy.Count, true);
+			}
+		}
+
+
 	}
 }
