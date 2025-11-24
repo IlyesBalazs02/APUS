@@ -5,6 +5,7 @@ using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APUS.Server.Controllers.MapController
 {
@@ -116,6 +117,39 @@ namespace APUS.Server.Controllers.MapController
 			}
 		}
 
+		[HttpPost("save-planned-gpx")]
+		[Authorize]
+		public ActionResult SavePlannedGpx([FromBody] SavePlannedGpxRequestDto request)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
+
+			if (request.Points == null || request.Points.Count < 2)
+				return BadRequest("At least two points are required.");
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (string.IsNullOrEmpty(userId))
+				return Unauthorized();
+
+			var tracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
+			Directory.CreateDirectory(tracksDir);
+
+			var baseName = ClearFileName(request.FileName);
+			if (string.IsNullOrWhiteSpace(baseName))
+			{
+				baseName = "Route_" + DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+			}
+
+			var filePath = Path.Combine(tracksDir, baseName + ".gpx");
+
+			var elevations = _routing.SampleElevation(request.Points);
+
+			WriteGpx(filePath, request.Points, elevations);
+
+			return Ok();
+		}
+
+
 		private static void WriteGpx(
 			string path,
 			IReadOnlyList<RouteCoordinateDto> points,
@@ -141,6 +175,29 @@ namespace APUS.Server.Controllers.MapController
 
 			sw.WriteLine("</trkseg></trk></gpx>");
 		}
+
+		private static string ClearFileName(string? name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				return string.Empty;
+
+			var baseName = name.Trim();
+
+			// Strip .gpx extension if user typed it
+			if (baseName.EndsWith(".gpx", StringComparison.OrdinalIgnoreCase))
+			{
+				baseName = baseName.Substring(0, baseName.Length - 4);
+			}
+
+			var invalid = Path.GetInvalidFileNameChars();
+			foreach (var ch in invalid)
+			{
+				baseName = baseName.Replace(ch, '_');
+			}
+
+			return baseName;
+		}
+
 
 	}
 

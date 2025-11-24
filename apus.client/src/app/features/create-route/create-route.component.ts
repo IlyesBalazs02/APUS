@@ -30,6 +30,12 @@ interface RouteRequestDto {
   toLon: number;
 }
 
+interface SavePlannedRouteDto {
+  fileName: string;
+  points: RouteCoordinateDto[];
+}
+
+
 @Component({
   selector: 'app-create-route',
   standalone: false,
@@ -59,7 +65,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   totalAscentMeters = 0;
   totalDescentMeters = 0;
 
-
   predictedSeconds: number | null = null;
   isPredicting = false;
 
@@ -69,6 +74,11 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   private sunriseMarker: mapboxgl.Marker | null = null;
   private sunsetMarker: mapboxgl.Marker | null = null;
+
+  showSaveModal = false;
+  saveFileName = '';
+  isSavingRoute = false;
+
 
   hasElevationProfile = false;
   elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
@@ -683,10 +693,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.rebuildRouteFromSegments();
   }
 
-  saveRoute(): void {
-    console.log('Save route clicked. Implement later.');
-  }
-
   downloadGpx(): void {
     if (this.totalDistanceMeters === 0 || this.fullRouteCoords.length === 0) {
       return;
@@ -893,4 +899,69 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
         .addTo(this.map);
     }
   }
+
+  // ------------- Save route -------------------
+  saveRoute(): void {
+    if (this.fullRouteCoords.length < 2) {
+      return;
+    }
+
+    const today = new Date();
+    const iso = today.toISOString().substring(0, 10);
+    this.saveFileName = `route-${iso}`;
+
+    this.showSaveModal = true;
+    this.setModalOpenState(true);
+  }
+
+  confirmSaveRoute(): void {
+    const name = this.saveFileName?.trim();
+    if (!name || this.fullRouteCoords.length < 2) {
+      return;
+    }
+
+    const body: SavePlannedRouteDto = {
+      fileName: name,
+      points: this.fullRouteCoords.map(c => ({ lat: c.lat, lon: c.lon }))
+    };
+
+    const url = `${this.apiBase}/api/routing/save-planned-gpx`;
+
+    this.isSavingRoute = true;
+
+    this.http.post<void>(url, body).subscribe({
+      next: () => {
+        this.isSavingRoute = false;
+        this.showSaveModal = false;
+        this.setModalOpenState(false);
+        alert(`Route saved as "${name}.gpx" in your Tracks folder.`);
+      },
+      error: (err) => {
+        this.isSavingRoute = false;
+        console.error('Save route failed', err);
+        alert('Could not save the route.');
+      }
+    });
+  }
+
+  cancelSaveRoute(): void {
+    this.showSaveModal = false;
+    this.setModalOpenState(false);
+  }
+
+
+  private setModalOpenState(isOpen: boolean): void {
+    if (!this.map) {
+      return;
+    }
+
+    const canvas = this.map.getCanvas();
+    if (canvas) {
+      canvas.style.pointerEvents = isOpen ? 'none' : 'auto';
+    }
+  }
+
+
+
+
 }

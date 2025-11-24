@@ -90,3 +90,32 @@
         </div>
     </div>
 </div>
+
+<!-- Save GPX modal -->
+<div class="modal-backdrop" *ngIf="showSaveModal" [ngStyle]="{ 'pointer-events': 'auto', 'z-index': 100000 }">
+    <div class="modal-dialog" style="pointer-events: auto; position: relative; z-index: 100001;">
+        <h3>Save route as GPX</h3>
+
+        <div class="modal-body">
+            <label class="modal-label">
+                File name:
+                <input type="text" [(ngModel)]="saveFileName" placeholder="my-route"
+                    style="pointer-events: auto; position: relative; z-index: 100002;" />
+                <span class="modal-ext" style="pointer-events: none;">.gpx</span>
+            </label>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="confirmSaveRoute()"
+                [disabled]="!saveFileName || !saveFileName.trim() || isSavingRoute"
+                style="pointer-events: auto; position: relative; z-index: 100002;">
+                {{ isSavingRoute ? 'Saving…' : 'Save' }}
+            </button>
+
+            <button type="button" class="toolbar-btn" (click)="cancelSaveRoute()" [disabled]="isSavingRoute"
+                style="pointer-events: auto; position: relative; z-index: 100002;">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
