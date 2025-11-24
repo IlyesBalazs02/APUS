@@ -1,5 +1,6 @@
 ﻿using APUS.Server.Domain.DTOs.Routing;
 using APUS.Server.Services.Implementations.FileServices;
+using APUS.Server.Services.Implementations.MapServices;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,43 +8,46 @@ using System.Text;
 
 namespace APUS.Server.Controllers.MapController
 {
-		[ApiController]
-		[Route("api/[controller]")]
-		public sealed class RoutingController : ControllerBase
-		{
+	[ApiController]
+	[Route("api/[controller]")]
+	public sealed class RoutingController : ControllerBase
+	{
 		private readonly IRoutingService _routing;
 		private readonly IHuberRegressor _huberRegression;
 		private readonly IWebHostEnvironment _env;
+		private readonly ISolarService _solarService;
 
 		public RoutingController(
 			IRoutingService routing,
 			IHuberRegressor linearAggression,
-			IWebHostEnvironment env)
+			IWebHostEnvironment env,
+			ISolarService solarService)
 		{
 			_routing = routing;
 			_huberRegression = linearAggression;
 			_env = env;
+			_solarService = solarService;
 		}
 
 		[HttpGet("snap")]
-			public ActionResult<SnapResponseDto> Snap([FromQuery] double lat, [FromQuery] double lon)
-			{
-				var result = _routing.SnapToRoad(lat, lon);
-				return Ok(result);
-			}
+		public ActionResult<SnapResponseDto> Snap([FromQuery] double lat, [FromQuery] double lon)
+		{
+			var result = _routing.SnapToRoad(lat, lon);
+			return Ok(result);
+		}
 
-			[HttpPost("route")]
-			public ActionResult<IReadOnlyList<RouteCoordinateDto>> Route([FromBody] RouteRequestDto request)
-			{
-				if (!ModelState.IsValid)
-					return ValidationProblem(ModelState);
+		[HttpPost("route")]
+		public ActionResult<IReadOnlyList<RouteCoordinateDto>> Route([FromBody] RouteRequestDto request)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
 
-				var coords = _routing.RouteBetweenCoords(
-					request.FromLat, request.FromLon,
-					request.ToLat, request.ToLon);
+			var coords = _routing.RouteBetweenCoords(
+				request.FromLat, request.FromLon,
+				request.ToLat, request.ToLon);
 
-				return Ok(coords);
-			}
+			return Ok(coords);
+		}
 
 		[HttpPost("elevation")]
 		public ActionResult<IReadOnlyList<float?>> Elevation([FromBody] List<RouteCoordinateDto> points)
@@ -52,6 +56,27 @@ namespace APUS.Server.Controllers.MapController
 				return ValidationProblem(ModelState);
 
 			var result = _routing.SampleElevation(points);
+			return Ok(result);
+		}
+
+		[HttpPost("predict-daylight")]
+		public async Task<ActionResult<DaylightResponseDto>> PredictDaylight(
+			[FromBody] DaylightRequestDto request)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
+
+			if (request.Points == null || request.Points.Count < 2)
+				return BadRequest("At least two points are required.");
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (string.IsNullOrEmpty(userId))
+				return Unauthorized();
+
+			var result = await _solarService.PredictDaylightAsync(request, userId);
+			if (result is null)
+				return StatusCode(500, "Prediction failed.");
+
 			return Ok(result);
 		}
 

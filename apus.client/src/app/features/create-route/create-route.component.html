@@ -3,7 +3,6 @@
         <div id="map"></div>
     </div>
 
-    <!-- Route summary + elevation chart (Gaia-like bottom bar) -->
     <div class="route-summary">
         <div class="route-toolbar">
             <div class="stats-left">
@@ -19,9 +18,27 @@
                 <span class="stat-sub" *ngIf="predictedSeconds != null">
                     ~ {{ formatPredictedTime() }}
                 </span>
+
+                <span class="stat-sub" *ngIf="daylightInfo">
+                    {{ daylightInfo.percentBeforeNightfall | number:'1.0-0' }}% before nightfall
+                </span>
+                <span class="stat-sub" *ngIf="daylightInfo">
+                    finish ~ {{ daylightInfo.finishTime | date:'shortTime' }}
+                </span>
             </div>
 
             <div class="actions-right">
+
+                <div class="start-time-group">
+                    <label>
+                        Start date:
+                        <input type="date" [(ngModel)]="startDateInput">
+                    </label>
+                    <label>
+                        Start time:
+                        <input type="time" [(ngModel)]="startTimeInput">
+                    </label>
+                </div>
 
                 <input type="file" accept=".gpx,application/gpx+xml" (change)="onGpxFileSelected($event)"
                     style="display: none" #gpxFileInput />

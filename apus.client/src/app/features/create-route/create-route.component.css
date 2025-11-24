@@ -1,4 +1,3 @@
-/* The route page fills the main area (already 1fr from app-grid) */
 .create-route-page {
   display: grid;
   grid-template-rows: 1fr 230px;  /* map row, summary row */
@@ -116,4 +115,34 @@
   font-size: 0.9rem;
   color: #888;
   height: 100%;
+}
+
+
+.sun-marker,.moon-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #000;
+}
+
+.sun-marker {
+  background: radial-gradient(circle at 30% 30%, #fff 0, #ffeb3b 40%, #f9a825 100%);
+}
+
+.moon-marker {
+  background: radial-gradient(circle at 30% 30%, #fff 0, #b0bec5 40%, #455a64 100%);
+}
+
+
+.start-time-group {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.start-time-group label {
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
 }

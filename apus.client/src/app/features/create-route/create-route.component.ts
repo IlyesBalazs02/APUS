@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ChartData, ChartOptions } from 'chart.js';
 import { UndoContext, UndoService } from './undo.service';
 import { GpxImportService } from './import.service';
+import { DaylightResponseDto, solarService } from './solar.service';
 
 interface SnapResponseDto {
   nodeId: number;
@@ -33,7 +34,8 @@ interface RouteRequestDto {
   selector: 'app-create-route',
   standalone: false,
   templateUrl: './create-route.component.html',
-  styleUrls: ['./create-route.component.css']
+  styleUrls: ['./create-route.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   map!: mapboxgl.Map;
@@ -61,6 +63,12 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   predictedSeconds: number | null = null;
   isPredicting = false;
 
+  startDateInput: string | null = null;   // yyyy-MM-dd
+  startTimeInput: string | null = null;   // HH:mm
+  daylightInfo: DaylightResponseDto | null = null;
+
+  private sunriseMarker: mapboxgl.Marker | null = null;
+  private sunsetMarker: mapboxgl.Marker | null = null;
 
   hasElevationProfile = false;
   elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
@@ -85,9 +93,13 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private readonly pointsSourceId = 'route-points';
   private readonly pointsLayerId = 'route-points-layer';
 
-  constructor(private http: HttpClient, public undoService: UndoService, public gpxImportService: GpxImportService) { }
+  constructor(private http: HttpClient, public undoService: UndoService, public gpxImportService: GpxImportService, public solarService: solarService) { }
 
   ngAfterViewInit(): void {
+    const now = new Date();
+    this.startDateInput = now.toISOString().substring(0, 10); // yyyy-MM-dd
+    this.startTimeInput = now.toTimeString().substring(0, 5); // HH:mm
+
     this.initMap();
   }
 
@@ -690,7 +702,11 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.clearProfiles();
     this.undoService.reset();
     this.predictedSeconds = null;
+
+    this.daylightInfo = null;
+    this.clearDaylightMarkers();
   }
+
 
   // ---------- Import GPX ----------
   onGpxFileSelected(event: Event): void {
@@ -751,27 +767,37 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   // --------- Predict ---------
 
   predictTime(): void {
-    if (this.totalDistanceMeters === 0 || this.fullRouteCoords.length < 2) {
-      return;
-    }
+    if (this.fullRouteCoords.length < 2) return;
 
     this.isPredicting = true;
+    this.daylightInfo = null;
+    this.clearDaylightMarkers();
 
-    const url = `${this.apiBase}/api/routing/predict-time`;
+    const startIso = this.solarService.buildStartIso(
+      this.startDateInput,
+      this.startTimeInput
+    );
 
-    this.http.post<number>(url, this.fullRouteCoords).subscribe({
-      next: (seconds) => {
-        console.log(seconds);
-        this.isPredicting = false;
-        this.predictedSeconds = seconds;
-      },
-      error: (err) => {
-        this.isPredicting = false;
-        console.error('Predict time failed', err);
-        alert('Could not predict time for this route.');
-      }
-    });
+    this.solarService
+      .predictDaylight({
+        points: this.fullRouteCoords.map(c => ({ lat: c.lat, lon: c.lon })),
+        startLocalTime: startIso
+      })
+      .subscribe({
+        next: (res) => {
+          this.isPredicting = false;
+          this.daylightInfo = res;
+          this.predictedSeconds = res.predictedSeconds;
+          this.updateDaylightMarkersOnMap();
+        },
+        error: (err) => {
+          this.isPredicting = false;
+          console.error(err);
+        }
+      });
   }
+
+
 
   formatPredictedTime(): string {
     if (this.predictedSeconds == null) {
@@ -791,5 +817,45 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     return `${hours} h ${minutes} min`;
   }
 
+  private clearDaylightMarkers(): void {
+    if (this.sunriseMarker) {
+      this.sunriseMarker.remove();
+      this.sunriseMarker = null;
+    }
+    if (this.sunsetMarker) {
+      this.sunsetMarker.remove();
+      this.sunsetMarker = null;
+    }
+  }
 
+  private updateDaylightMarkersOnMap(): void {
+    if (!this.map) {
+      return;
+    }
+
+    this.clearDaylightMarkers();
+    if (!this.daylightInfo) {
+      return;
+    }
+
+    if (this.daylightInfo.sunriseMarker?.progress != null) {
+      console.log(this.daylightInfo);
+      const m = this.daylightInfo.sunriseMarker;
+      const el = document.createElement('div');
+      el.className = 'sun-marker';
+      this.sunriseMarker = new mapboxgl.Marker(el)
+        .setLngLat([m.lon, m.lat])
+        .addTo(this.map);
+    }
+
+    if (this.daylightInfo.sunsetMarker?.progress != null) {
+      const m = this.daylightInfo.sunsetMarker;
+      const el = document.createElement('div');
+      el.className = 'moon-marker';
+
+      this.sunsetMarker = new mapboxgl.Marker(el)
+        .setLngLat([m.lon, m.lat])
+        .addTo(this.map);
+    }
+  }
 }
