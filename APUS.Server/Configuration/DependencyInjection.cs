@@ -126,6 +126,7 @@ namespace APUS.Server.Configuration
 			services.AddSingleton<IHuberRegressor, HuberRegressor>();
 			services.AddScoped<ISolarService, SolarService>();
 			services.AddScoped<IActivityCommentRepository, ActivityCommentRepository>();
+			services.AddScoped<ITrackFileService, TrackFileService>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();
