@@ -1,6 +1,28 @@
 <div class="create-route-page">
     <div class="map-container">
         <div id="map"></div>
+
+        <!-- Search overlay -->
+        <div class="route-search">
+            <input type="text" [formControl]="searchControl" (focus)="showSearchResults = true"
+                placeholder="Search place or street..." />
+
+            <div class="search-results" *ngIf="showSearchResults && (searchResults.length > 0 || isSearching)">
+                <div class="search-result" *ngIf="isSearching">
+                    Searching…
+                </div>
+
+                <div class="search-result" *ngFor="let r of searchResults" (click)="selectSearchResult(r)">
+                    <div class="name">{{ r.name }}</div>
+                    <div class="meta">{{ r.class }} · {{ r.type }}</div>
+                </div>
+
+                <div class="search-result no-results"
+                    *ngIf="!isSearching && searchResults.length === 0 && searchControl.value">
+                    No results
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="route-summary">

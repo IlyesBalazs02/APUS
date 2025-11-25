@@ -6,6 +6,9 @@ import { ChartData, ChartOptions } from 'chart.js';
 import { UndoContext, UndoService } from './undo.service';
 import { GpxImportService } from './import.service';
 import { DaylightResponseDto, solarService } from './solar.service';
+import { FormControl } from '@angular/forms';
+import { GeocodeService, PlaceSearchResult } from './GeocodeService';
+import { debounceTime, distinctUntilChanged, filter, finalize, Subscription, switchMap, tap } from 'rxjs';
 
 interface SnapResponseDto {
   nodeId: number;
@@ -80,6 +83,15 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   isSavingRoute = false;
 
 
+  // --- Search state ---
+  searchControl = new FormControl<string>('');
+  searchResults: PlaceSearchResult[] = [];
+  isSearching = false;
+  showSearchResults = false;
+
+  private searchSub?: Subscription;
+
+
   hasElevationProfile = false;
   elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
   elevationChartOptions: ChartOptions<'line'> = {
@@ -103,7 +115,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private readonly pointsSourceId = 'route-points';
   private readonly pointsLayerId = 'route-points-layer';
 
-  constructor(private http: HttpClient, public undoService: UndoService, public gpxImportService: GpxImportService, public solarService: solarService) { }
+  constructor(private http: HttpClient, public undoService: UndoService, public gpxImportService: GpxImportService, public solarService: solarService, private geocodeService: GeocodeService) { }
 
   ngAfterViewInit(): void {
     const now = new Date();
@@ -111,13 +123,9 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.startTimeInput = now.toTimeString().substring(0, 5); // HH:mm
 
     this.initMap();
+    this.setupSearch();
   }
 
-  ngOnDestroy(): void {
-    if (this.map) {
-      this.map.remove();
-    }
-  }
 
   // ---------- Map init & events ----------
 
@@ -962,6 +970,65 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   }
 
 
+  // --------- search ---------------
+  private setupSearch(): void {
+    this.searchSub = this.searchControl.valueChanges.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      tap(() => {
+        this.isSearching = true;
+        this.showSearchResults = true;
+      }),
+      filter(q => !!q && q.trim().length > 0),
+      switchMap(q => {
+        const trimmed = q!.trim();
+        const center = this.map?.getCenter();
+        const mapCenter = center ? { lat: center.lat, lon: center.lng } : undefined;
+        return this.geocodeService.search(trimmed, mapCenter).pipe(
+          finalize(() => this.isSearching = false)
+        );
+      })
+    ).subscribe({
+      next: (results) => {
+        this.searchResults = results;
+      },
+      error: (err) => {
+        console.error('Geocode error', err);
+        this.searchResults = [];
+        this.isSearching = false;
+      }
+    });
+  }
+
+  selectSearchResult(place: PlaceSearchResult): void {
+    this.showSearchResults = false;
+    this.searchResults = [];
+    this.searchControl.setValue(place.name, { emitEvent: false });
+
+    const center: [number, number] = [place.lon, place.lat];
+
+    if (this.map) {
+      this.map.flyTo({
+        center,
+        zoom: 15
+      });
+    }
+  }
+
+  clearSearchResults(): void {
+    this.showSearchResults = false;
+    this.searchResults = [];
+  }
+
+
+
+
+  ngOnDestroy(): void {
+    if (this.map) {
+      this.map.remove();
+    }
+    this.searchSub?.unsubscribe();
+  }
 
 
 }

@@ -1,4 +1,5 @@
 ﻿using APUS.Routing;
+using APUS.Routing;
 using APUS.Server.Data;
 using APUS.Server.Data.Repositories.Implementations;
 using APUS.Server.Data.Repositories.Interfaces;
@@ -15,9 +16,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Npgsql;
 using OSGeo.GDAL;
+using System.Data;
 using System.Text;
-using APUS.Routing;
 
 namespace APUS.Server.Configuration
 {
@@ -93,6 +95,15 @@ namespace APUS.Server.Configuration
 					tableName: "public.eu_dem",
 					rasterSrid: 4258
 				);
+			});
+
+			services.AddScoped<IDbConnection>(sp =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+				var connString = config.GetConnectionString("GeoConnection");
+				var conn = new NpgsqlConnection(connString);
+				conn.Open();
+				return conn;
 			});
 
 
