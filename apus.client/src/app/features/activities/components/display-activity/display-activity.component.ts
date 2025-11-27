@@ -48,6 +48,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       .subscribe({
         next: ({ activity, images, trackpoints }) => {
           this.activity = createActivity(activity);
+          console.log('activityType =', this.activity.activityType, this.activity);
           this.images = images;
           this.trackpoints = trackpoints ?? [];
         },

@@ -130,6 +130,7 @@ export class ActivityChartComponentComponent implements OnChanges {
   public elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
   public elevationChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     elements: {
       line: {
         borderWidth: 3,
@@ -157,6 +158,7 @@ export class ActivityChartComponentComponent implements OnChanges {
   public hrChartData: ChartData<'line'> = { labels: [], datasets: [] };
   public hrChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     elements: {
       line: { borderWidth: 3, borderColor: 'rgb(211, 30, 6)' },
       point: { radius: 0 }
