@@ -35,6 +35,7 @@ namespace APUS.Server.Controllers.MapController
 				return BadRequest("Query cannot be empty.");
 
 			q = q.Trim();
+			Console.WriteLine($"q:{q}   lat:{lat}   lon:{lon}");
 
 			string sql;
 			object args;
@@ -57,20 +58,21 @@ LIMIT 10;
 			{
 				sql = @"
 SELECT
-    id, name, class, type, importance,
+    id,
+    name,
+    class,
+    type,
+    importance,
     ST_Y(geom) AS lat,
     ST_X(geom) AS lon,
     ts_rank(search_vector, plainto_tsquery('simple', @q)) AS score,
-    CASE
-        WHEN @lon IS NULL OR @lat IS NULL THEN NULL
-        ELSE ST_Distance(
-            geom,
-            ST_SetSRID(ST_MakePoint(@lon, @lat), 4326)
-        )
-    END AS dist
+    ST_Distance(
+        geom,
+        ST_SetSRID(ST_MakePoint(@lon, @lat), 4326)
+    ) AS dist
 FROM public.places
 WHERE search_vector @@ plainto_tsquery('simple', @q)
-ORDER BY score DESC, importance DESC, dist ASC NULLS LAST
+ORDER BY score DESC, importance DESC, dist ASC
 LIMIT 10;
 ";
 				args = new { q, lat, lon };

@@ -131,7 +131,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 		{
 			var psi = new ProcessStartInfo
 			{
-				FileName = "py",
+				FileName = "\"C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.PythonManager_25.0.240.0_x64__3847v3x7pw1km\\py.exe\"",
 				Arguments = $"\"{scriptPath}\" {args}",
 				WorkingDirectory = workingDir,
 				RedirectStandardOutput = true,
