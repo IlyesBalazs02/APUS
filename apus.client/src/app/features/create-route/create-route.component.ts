@@ -1030,5 +1030,53 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.searchSub?.unsubscribe();
   }
 
+  // Temporary: request offline map export for a hardcoded track file ("Panorámakör")
+  downloadOfflineMap_Panoramakor(): void {
+    const url = `${this.apiBase}/api/mapsforge/from-track-file`;
+
+    // Adjust property name if your controller expects something else
+    const body = { trackFileName: 'Panorámakör' };
+
+    this.http.post(url, body, { responseType: 'blob', observe: 'response' }).subscribe({
+      next: (res) => {
+        const blob = res.body;
+        if (!blob) {
+          alert('No file received.');
+          return;
+        }
+
+        // Try to pick filename from Content-Disposition; fallback if missing
+        const cd = res.headers.get('content-disposition') ?? '';
+        const fileName =
+          this.tryGetFilenameFromContentDisposition(cd) ?? 'Panoramakor.map';
+
+        this.downloadBlob(blob, fileName);
+      },
+      error: (err) => {
+        console.error('Mapsforge export failed', err);
+        alert('Could not export map.');
+      }
+    });
+  }
+
+  private downloadBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private tryGetFilenameFromContentDisposition(cd: string): string | null {
+    // Example: Content-Disposition: attachment; filename="track_user_....map"
+    const match = /filename\*?=(?:UTF-8''|")?([^\";]+)"?/i.exec(cd);
+    if (!match?.[1]) return null;
+
+    // decode RFC5987 if present (best-effort)
+    try { return decodeURIComponent(match[1]); } catch { return match[1]; }
+  }
+
+
 
 }

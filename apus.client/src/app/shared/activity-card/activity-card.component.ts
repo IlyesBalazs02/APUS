@@ -74,15 +74,36 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   }
 
   private buildDisplayProps(a: ActivityDto): DisplayProp[] {
-    const entries = this.propMap[a.type] || this.propMap['default'];
+    const typeKey = (a as any).activityType ?? 'default';
+    const entries = this.propMap[typeKey] || this.propMap['default'];
 
     return entries
       .filter(({ key }) => a[key] != null)
-      .map(({ key, label }) => ({
-        label,
-        value: a[key] as string | number
-      }));
+      .map(({ key, label }) => {
+        const raw = a[key];
+        let value: string | number = raw as any;
+
+        if (key === 'pace' && typeof raw === 'number') {
+          value = this.formatPace(raw);
+        }
+
+        return { label, value };
+      });
   }
+
+  private formatPace(speed: number | null | undefined): string {
+    if (speed == null || speed <= 0) {
+      return '-';
+    }
+
+    const secondsPerKm = 1000 / speed; // speed is m/s
+    const minutes = Math.floor(secondsPerKm / 60);
+    const seconds = Math.round(secondsPerKm % 60);
+    const secStr = seconds.toString().padStart(2, '0');
+
+    return `${minutes}:${secStr}`;
+  }
+
 
   openCommentsModal() {
     this.commentsOpen = true;

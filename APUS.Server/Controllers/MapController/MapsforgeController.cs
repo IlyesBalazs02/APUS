@@ -40,6 +40,21 @@ namespace APUS.Server.Controllers.MapController
 				result.FileName
 			);
 		}
+
+		[HttpPost("gpx-from-track-file")]
+		[Authorize]
+		public async Task<IActionResult> DownloadTrackGpx([FromBody] MapsforgeTrackFileRequest request)
+		{
+			if (request == null || string.IsNullOrWhiteSpace(request.TrackFileName))
+				return BadRequest("TrackFileName is required.");
+
+			var userId = User.GetUserId();
+
+			var (bytes, fileName) = await _mapsforge.GetTrackGpxAsync(userId, request.TrackFileName);
+
+			return File(bytes, "application/gpx+xml", fileName);
+		}
+
 	}
 
 	public sealed class MapsforgeTrackFileRequest

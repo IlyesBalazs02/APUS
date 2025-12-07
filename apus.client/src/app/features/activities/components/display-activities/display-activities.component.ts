@@ -55,6 +55,7 @@ export class DisplayActivitiesComponent implements OnInit {
     this.subs.add(
       this.activityService.getActivitiesPaged(this.skip, this.pageSize).subscribe({
         next: (res: PagedResponse<ActivityDto>) => {
+          console.log(res);
           if (token !== this.requestToken) return; // drop stale responses
           this.activities.push(...res.items);
           this.hasMore = res.hasMore;

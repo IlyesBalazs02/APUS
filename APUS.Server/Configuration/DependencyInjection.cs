@@ -126,7 +126,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IProfilePictureService, ProfilePictureService>();
 			services.AddScoped<IFriendService, FriendService>();
 			services.AddScoped<IUserRelationRepository, UserRelationRepository>();
-			services.AddTransient<ITrackpointLoader, TcxXmlTrackpointLoader>();
+			services.AddTransient<ITrackpointLoader, TrackpointLoader>();
 			services.AddTransient<ICreateOsmMapPng, CreateOsmMapPng>();
 			services.AddTransient<IActivityService, ActivityService>();
 			services.AddScoped<IGroupRepository, GroupRepository>();

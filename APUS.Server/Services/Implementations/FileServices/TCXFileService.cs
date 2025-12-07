@@ -213,21 +213,28 @@ namespace APUS.Server.Services.Implementations.FileServices
 					? points.Last().Time
 					: null;
 
+			totalDistanceKm = Math.Round(totalDistanceKm, 2);
+			avgSpeedTmp = Math.Round(avgSpeedTmp, 2);
+			ascentTmp = Math.Round(ascentTmp, 2);
+			descentTmp = Math.Round(descentTmp, 2);
+
+
 			var stats = new ImportActivityModel
 			{
 				StartTime = laps.First().StartTime,
 				TotalTimeSeconds = totalTime,
 				Duration = TimeSpan.FromSeconds(Math.Floor(totalTime)),
 				TotalDistanceMeters = totalDistanceMeters,
-				TotalDistanceKm = totalDistanceKm,
-				AvgPace = avgSpeedTmp,
+				TotalDistanceKm = totalDistanceKm,   
+				AvgPace = avgSpeedTmp,                
 				TotalCalories = laps.Sum(l => l.Calories ?? 0),
 				AverageHeartRate = (int)avgHrDouble,
 				MaximumHeartRate = maxHr,
-				TotalAscentMeters = ascentTmp,
-				TotalDescentMeters = descentTmp,
+				TotalAscentMeters = ascentTmp,       
+				TotalDescentMeters = descentTmp,      
 				FinishTimeUtc = finishTimeUtc
 			};
+
 
 			return stats;
 		}

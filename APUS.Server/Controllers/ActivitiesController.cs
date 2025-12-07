@@ -379,7 +379,8 @@ namespace APUS.Server.Controllers
 				UserFullName = activity.User != null
 			? $"{activity.User.FirstName} {activity.User.LastName}"
 			: "Unknown",
-				avatarUrl = avatarUrl
+				avatarUrl = avatarUrl,
+				activityType = activity.ActivityType
 
 			};
 		}

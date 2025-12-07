@@ -6,7 +6,7 @@
             <h5 class="card-title clickable-heading" [routerLink]="['/activities', activity.id]">
                 {{ activity.title }}
             </h5>
-            <small class="text-muted">{{ activity.displayname ?? 'Activity' }}</small>
+            <small class="text-muted">{{ activity.activityType }}</small>
 
             <p *ngIf="activity.description" class="activity-description">
                 {{ activity.description }}

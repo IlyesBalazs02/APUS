@@ -10,7 +10,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 {
 	public sealed class MapsforgeService : IMapsforgeService
 	{
-		private readonly IHostEnvironment _env;
+		private readonly IWebHostEnvironment _env;
 
 		// Limits
 		private const double MaxWidthDeg = 0.5;
@@ -27,7 +27,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 		private readonly string _osmosisExe =
 			@"C:\Program Files (x86)\osmosis\bin\osmosis.bat";
 
-		public MapsforgeService(IHostEnvironment env)
+		public MapsforgeService(IWebHostEnvironment env)
 		{
 			_env = env;
 		}
@@ -129,6 +129,19 @@ namespace APUS.Server.Services.Implementations.MapServices
 			};
 		}
 
+		public async Task<(byte[] bytes, string fileName)> GetTrackGpxAsync(string userId, string trackFileName)
+		{
+			string userTracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
+			string trackPath = Path.Combine(userTracksDir, trackFileName + ".gpx");
+
+			if (!System.IO.File.Exists(trackPath))
+				throw new FileNotFoundException("Track file not found", trackPath);
+
+			var bytes = await System.IO.File.ReadAllBytesAsync(trackPath);
+			return (bytes, trackFileName + ".gpx");
+		}
+
+
 		// ---------- TRACK FILE LOADING (GPX) ----------
 
 		private async Task<List<CoordinateDto>> LoadCoordinatesFromTrackFileAsync(
@@ -136,8 +149,8 @@ namespace APUS.Server.Services.Implementations.MapServices
 			string trackFileName)
 		{
 			// adjust this path to your real storage
-			string userTracksDir = Path.Combine(_env.ContentRootPath, "UserTracks", userId);
-			string trackPath = Path.Combine(userTracksDir, trackFileName);
+			string userTracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
+			string trackPath = Path.Combine(userTracksDir, trackFileName + ".gpx");
 
 			if (!File.Exists(trackPath))
 				throw new FileNotFoundException("Track file not found", trackPath);

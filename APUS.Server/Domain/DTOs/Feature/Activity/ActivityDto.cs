@@ -17,6 +17,7 @@
 		//owner information
 		public string UserFullName { get; set; }
 		public string avatarUrl { get; set; }
+		public string activityType { get; set; }
 	}
 
 	public record GpsActivityDto : ActivityDto

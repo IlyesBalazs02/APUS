@@ -19,6 +19,9 @@ export interface ActivityDto {
 
     userFullName: string;
     avatarUrl?: string;
+
+    activityType: 'MainActivity' | 'GpsRelatedActivity' | 'Running' | 'Hiking' | 'Ride' | string;
+
 }
 
 export interface DisplayProp {

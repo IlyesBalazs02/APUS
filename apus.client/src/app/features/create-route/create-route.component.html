@@ -93,6 +93,10 @@
                     [disabled]="totalDistanceMeters === 0 || isPredicting">
                     {{ isPredicting ? 'Predicting…' : 'Predict' }}
                 </button>
+
+                <button type="button" class="toolbar-btn" (click)="downloadOfflineMap_Panoramakor()">
+                    Export map (Panorámakör)
+                </button>
             </div>
 
         </div>

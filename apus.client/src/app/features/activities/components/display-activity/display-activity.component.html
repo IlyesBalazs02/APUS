@@ -31,14 +31,39 @@
                 <div class="summary-grid">
                     <div class="summary-item" *ngFor="let field of fieldsToShow">
                         <div class="summary-value">
-                            {{ activity[field] }}
+                            <ng-container [ngSwitch]="field">
+
+                                <!-- pace: m/s -> mm:ss /km -->
+                                <span *ngSwitchCase="'pace'">
+                                    {{ formatPace(activity[field]) }}
+                                </span>
+
+                                <!-- distance: 2 decimals + km -->
+                                <span *ngSwitchCase="'distanceKm'">
+                                    {{ activity[field] | number:'1.2-2' }} km
+                                </span>
+
+                                <!-- elevation: 2 decimals + m (or 0 decimals if you prefer) -->
+                                <span *ngSwitchCase="'elevationGain'">
+                                    {{ activity[field] | number:'1.2-2' }} m
+                                </span>
+
+                                <!-- everything else exactly as before -->
+                                <span *ngSwitchDefault>
+                                    {{ activity[field] }}
+                                </span>
+                            </ng-container>
                         </div>
+
                         <div class="summary-label">
                             {{ labels[field] || field }}
                         </div>
                     </div>
                 </div>
             </div>
+
+
+
 
             <!-- MAIN LAYOUT: MAP + CHARTS + PHOTOS -->
             <div class="activity-main-layout">

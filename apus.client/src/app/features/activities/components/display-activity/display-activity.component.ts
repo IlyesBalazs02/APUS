@@ -138,6 +138,20 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       }));
   }
 
+  public formatPace(value: any): string {
+    const speed = typeof value === 'number' ? value : Number(value);
+
+    if (!isFinite(speed) || speed <= 0) {
+      return '-';
+    }
+
+    const secondsPerKm = 1000 / speed; // m/s -> s/km
+    const minutes = Math.floor(secondsPerKm / 60);
+    const seconds = Math.round(secondsPerKm % 60);
+    const secStr = seconds.toString().padStart(2, '0');
+
+    return `${minutes}:${secStr}`;
+  }
 
 
 

@@ -7,5 +7,7 @@ namespace APUS.Server.Services.Interfaces
 		Task<MapsforgeFileResult?> GenerateMapAsync(string userId, double top, double bottom, double left, double right);
 		Task<MapsforgeFileResult?> GenerateMapFromTrackFileAsync(string userId, string trackFileName);
 		(bool ok, string message) ValidateBbox(double top, double bottom, double left, double right);
+		Task<(byte[] bytes, string fileName)> GetTrackGpxAsync(string userId, string trackFileName);
+
 	}
 }
