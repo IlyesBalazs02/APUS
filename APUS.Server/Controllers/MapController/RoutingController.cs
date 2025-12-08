@@ -206,6 +206,40 @@ namespace APUS.Server.Controllers.MapController
 			}
 		}
 
+		[HttpDelete("tracks/{fileName}")]
+		[Authorize]
+		public IActionResult DeleteTrack(string fileName)
+		{
+			if (string.IsNullOrWhiteSpace(fileName))
+				return BadRequest("File name is required.");
+
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (string.IsNullOrEmpty(userId))
+				return Unauthorized();
+
+			var tracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
+			if (!Directory.Exists(tracksDir))
+				return NotFound("No Tracks folder for user.");
+
+			var baseName = ClearFileName(fileName);
+			var filePath = Path.Combine(tracksDir, baseName + ".gpx");
+
+			if (!System.IO.File.Exists(filePath))
+				return NotFound("Track file not found.");
+
+			try
+			{
+				System.IO.File.Delete(filePath);
+				return NoContent();
+			}
+			catch (Exception)
+			{
+				return StatusCode(500, "Failed to delete track.");
+			}
+		}
+
+
+
 		private static List<CoordinateDto> ParseGpxTrackPoints(string path)
 		{
 			var result = new List<CoordinateDto>();

@@ -23,7 +23,60 @@
                 </div>
             </div>
         </div>
+
+        <!-- Handle on the right edge -->
+        <div class="track-panel-handle" (click)="toggleTrackPanel()">
+            {{ isTrackPanelOpen ? 'Tracks ‹' : 'Tracks ›' }}
+        </div>
+
+        <!-- Sliding tracks panel -->
+        <div class="track-panel" [class.open]="isTrackPanelOpen">
+            <div class="track-panel-header">
+                <h4>My tracks</h4>
+            </div>
+
+            <div *ngIf="isLoadingTracks" class="track-loading">
+                Loading tracks…
+            </div>
+
+            <div *ngIf="!isLoadingTracks && trackNames.length === 0 && !trackLoadError">
+                No saved tracks yet.
+            </div>
+
+            <ul *ngIf="!isLoadingTracks && trackNames.length > 0" class="track-list">
+                <li *ngFor="let name of trackNames" class="track-list-item" [class.active]="name === selectedTrackName"
+                    (click)="loadTrack(name)">
+                    <div class="track-item-main">
+                        <span class="track-name">
+                            {{ name }}
+                        </span>
+                        <span *ngIf="isLoadingSelectedTrack && name === selectedTrackName">
+                            …
+                        </span>
+                    </div>
+
+                    <!-- 3-dot menu -->
+                    <button type="button" class="track-menu-toggle" (click)="openTrackDeletePopover($event, name)">
+                        ⋮
+                    </button>
+
+                    <div class="track-menu" *ngIf="trackMenuOpenFor === name" (click)="$event.stopPropagation()">
+                        <button type="button" class="track-menu-item track-menu-item-danger"
+                            (click)="openDeleteTrackModal($event, name)">
+                            Delete
+                        </button>
+                    </div>
+
+
+                </li>
+            </ul>
+
+            <div *ngIf="trackLoadError" class="track-error">
+                {{ trackLoadError }}
+            </div>
+        </div>
     </div>
+
 
     <div class="route-summary">
         <div class="route-toolbar">
@@ -93,10 +146,6 @@
                     [disabled]="totalDistanceMeters === 0 || isPredicting">
                     {{ isPredicting ? 'Predicting…' : 'Predict' }}
                 </button>
-
-                <button type="button" class="toolbar-btn" (click)="downloadOfflineMap_Panoramakor()">
-                    Export map (Panorámakör)
-                </button>
             </div>
 
         </div>
@@ -142,6 +191,35 @@
                 style="pointer-events: auto; position: relative; z-index: 100002;">
                 Cancel
             </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Small delete popover for tracks -->
+<div class="track-popover-backdrop" *ngIf="isDeletePopoverOpen" (click)="closeTrackDeletePopover()">
+    <div class="track-popover" [ngStyle]="{ top: deletePopoverY + 'px', left: deletePopoverX + 'px' }"
+        (click)="$event.stopPropagation()">
+
+        <div class="track-popover-title">Delete track?</div>
+        <div class="track-popover-name">
+            {{ deletePopoverTrackName }}
+        </div>
+
+        <div class="track-popover-actions">
+            <button type="button" class="track-popover-btn track-popover-btn-danger" (click)="confirmTrackDelete()"
+                [disabled]="isDeletingTrack">
+                {{ isDeletingTrack ? 'Deleting…' : 'Delete' }}
+            </button>
+
+            <button type="button" class="track-popover-btn" (click)="closeTrackDeletePopover()"
+                [disabled]="isDeletingTrack">
+                Cancel
+            </button>
+        </div>
+
+        <div *ngIf="trackDeleteError" class="track-popover-error">
+            {{ trackDeleteError }}
         </div>
     </div>
 </div>

@@ -91,6 +91,30 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   private searchSub?: Subscription;
 
+  // --- Tracks side panel ---
+  isTrackPanelOpen = false;
+  isLoadingTracks = false;
+  tracksLoaded = false;
+  trackNames: string[] = [];
+  trackLoadError: string | null = null;
+
+  selectedTrackName: string | null = null;
+  isLoadingSelectedTrack = false;
+
+  // 3-dot menu + delete
+  trackMenuOpenFor: string | null = null;
+  isDeletingTrack = false;
+  deletingTrackName: string | null = null;
+  trackDeleteError: string | null = null;
+  showDeleteTrackModal = false;
+  trackToDelete: string | null = null;
+
+  // --- Tracks delete popover (small modal near 3 dots) ---
+  isDeletePopoverOpen = false;
+  deletePopoverTrackName: string | null = null;
+  deletePopoverX = 0;
+  deletePopoverY = 0;
+
 
   hasElevationProfile = false;
   elevationChartData: ChartData<'line'> = { labels: [], datasets: [] };
@@ -757,6 +781,70 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   }
 
 
+  /**
+   * Apply a route geometry (lat/lon array) to the map and make it editable.
+   * Used by both GPX import and loading saved tracks.
+   */
+  private applyRouteFromCoords(coords: { lat: number; lon: number }[]): void {
+    if (!coords || coords.length < 2) {
+      alert('The route does not contain enough points.');
+      return;
+    }
+
+    // Clear current route
+    this.clearAll();
+
+    // Use coords as the route geometry
+    this.fullRouteCoords = coords.map(c => ({
+      lat: c.lat,
+      lon: c.lon
+    }));
+
+    this.routeSegments = [
+      {
+        coords: this.fullRouteCoords,
+        isOutAndBack: false
+      }
+    ];
+
+    // Start/end editable points
+    const start = this.fullRouteCoords[0];
+    const end = this.fullRouteCoords[this.fullRouteCoords.length - 1];
+
+    this.snappedPoints = [
+      { lat: start.lat, lon: start.lon },
+      { lat: end.lat, lon: end.lon }
+    ];
+
+    // Refresh map & charts
+    this.updateRouteOnMap();
+    this.updatePointsSource();
+    this.recomputeDistanceProfile();
+    this.fetchElevationProfile();
+
+    // Fit map to route
+    if (this.map && this.fullRouteCoords.length > 0) {
+      let minLat = this.fullRouteCoords[0].lat;
+      let maxLat = this.fullRouteCoords[0].lat;
+      let minLon = this.fullRouteCoords[0].lon;
+      let maxLon = this.fullRouteCoords[0].lon;
+
+      for (const p of this.fullRouteCoords) {
+        if (p.lat < minLat) minLat = p.lat;
+        if (p.lat > maxLat) maxLat = p.lat;
+        if (p.lon < minLon) minLon = p.lon;
+        if (p.lon > maxLon) maxLon = p.lon;
+      }
+
+      const bounds = new mapboxgl.LngLatBounds(
+        [minLon, minLat],
+        [maxLon, maxLat]
+      );
+
+      this.map.fitBounds(bounds, { padding: 40 });
+    }
+  }
+
   // ---------- Import GPX ----------
   onGpxFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -766,46 +854,12 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
     const file = input.files[0];
 
-    // Optional: allow re-selecting the same file later
+    // allow re-selecting same file later
     input.value = '';
 
     this.gpxImportService.parseGpx(file)
       .then(coords => {
-        if (!coords || coords.length < 2) {
-          alert('The GPX file does not contain enough track points.');
-          return;
-        }
-
-        // 1) Clear everything currently on the map / state
-        this.clearAll();
-
-        // 2) Use the GPX points as the route geometry directly
-        this.fullRouteCoords = coords.map(c => ({
-          lat: c.lat,
-          lon: c.lon
-        }));
-
-        this.routeSegments = [
-          {
-            coords: this.fullRouteCoords,
-            isOutAndBack: false
-          }
-        ];
-
-        // 3) Put 2 circles at the ends of the route
-        const start = this.fullRouteCoords[0];
-        const end = this.fullRouteCoords[this.fullRouteCoords.length - 1];
-
-        this.snappedPoints = [
-          { lat: start.lat, lon: start.lon },
-          { lat: end.lat, lon: end.lon }
-        ];
-
-        // 4) Refresh map sources + stats
-        this.updateRouteOnMap();
-        this.updatePointsSource();
-        this.recomputeDistanceProfile();
-        this.fetchElevationProfile();
+        this.applyRouteFromCoords(coords);
       })
       .catch(err => {
         console.error('Failed to import GPX', err);
@@ -1021,6 +1075,215 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   }
 
 
+  // ---------- Tracks side panel ----------
+
+  toggleTrackPanel(): void {
+    this.isTrackPanelOpen = !this.isTrackPanelOpen;
+
+    if (!this.isTrackPanelOpen) {
+      this.trackMenuOpenFor = null;
+    } else {
+      this.ensureTracksLoaded();
+    }
+  }
+
+  private ensureTracksLoaded(): void {
+    if (!this.tracksLoaded && !this.isLoadingTracks) {
+      this.loadUserTracks();
+    }
+  }
+
+  private loadUserTracks(): void {
+    this.isLoadingTracks = true;
+    this.trackLoadError = null;
+    this.trackDeleteError = null;
+
+    const url = `${this.apiBase}/api/routing/tracks`;
+
+    this.http.get<string[]>(url).subscribe({
+      next: names => {
+        this.isLoadingTracks = false;
+        this.tracksLoaded = true;
+        this.trackNames = names ?? [];
+      },
+      error: err => {
+        console.error('Failed to load user tracks', err);
+        this.isLoadingTracks = false;
+        if (err.status === 401 || err.status === 403) {
+          this.trackLoadError = 'Please log in to see your tracks.';
+        } else {
+          this.trackLoadError = 'Could not load tracks.';
+        }
+      }
+    });
+  }
+
+  loadTrack(name: string): void {
+    if (!name) {
+      return;
+    }
+
+    this.selectedTrackName = name;
+    this.isLoadingSelectedTrack = true;
+    this.trackLoadError = null;
+    this.trackDeleteError = null;
+    this.trackMenuOpenFor = null;
+
+    const encoded = encodeURIComponent(name);
+    const url = `${this.apiBase}/api/routing/tracks/${encoded}`;
+
+    this.http.get<any[]>(url).subscribe({
+      next: points => {
+        this.isLoadingSelectedTrack = false;
+
+        if (!points || points.length < 2) {
+          this.trackLoadError = 'Track does not contain enough points.';
+          return;
+        }
+
+        const coords = points.map(p => ({
+          lat: p.lat ?? p.Lat,
+          lon: p.lon ?? p.Lon
+        }));
+
+        this.applyRouteFromCoords(coords);
+      },
+      error: err => {
+        console.error('Failed to load track file', err);
+        this.isLoadingSelectedTrack = false;
+
+        if (err.status === 404) {
+          this.trackLoadError = 'Track not found on server.';
+        } else if (err.status === 401 || err.status === 403) {
+          this.trackLoadError = 'Please log in to load tracks.';
+        } else {
+          this.trackLoadError = 'Could not load this track.';
+        }
+      }
+    });
+  }
+
+  // ---------- 3-dot menu + delete modal ----------
+
+  toggleTrackMenu(event: MouseEvent, name: string): void {
+    event.stopPropagation();
+    this.trackDeleteError = null;
+
+    this.trackMenuOpenFor =
+      this.trackMenuOpenFor === name ? null : name;
+  }
+
+  openDeleteTrackModal(event: MouseEvent, name: string): void {
+    event.stopPropagation();
+
+    this.trackMenuOpenFor = null;      // close the dropdown
+    this.trackToDelete = name;
+    this.trackDeleteError = null;
+    this.showDeleteTrackModal = true;
+
+    // disable map interaction while modal open
+    this.setModalOpenState(true);
+  }
+
+  confirmTrackDelete(): void {
+    const name = this.deletePopoverTrackName;
+    if (!name || this.isDeletingTrack) {
+      return;
+    }
+
+    const encoded = encodeURIComponent(name);
+    const url = `${this.apiBase}/api/routing/tracks/${encoded}`;
+
+    this.isDeletingTrack = true;
+    this.trackDeleteError = null;
+
+    this.http.delete(url).subscribe({
+      next: () => {
+        this.isDeletingTrack = false;
+
+        // Remove from list
+        this.trackNames = this.trackNames.filter(n => n !== name);
+        if (this.selectedTrackName === name) {
+          this.selectedTrackName = null;
+        }
+
+        this.closeTrackDeletePopover();
+      },
+      error: err => {
+        console.error('Failed to delete track', err);
+        this.isDeletingTrack = false;
+
+        if (err.status === 404) {
+          this.trackDeleteError = 'Track not found on server.';
+        } else if (err.status === 401 || err.status === 403) {
+          this.trackDeleteError = 'Please log in to delete tracks.';
+        } else {
+          this.trackDeleteError = 'Could not delete this track.';
+        }
+      }
+    });
+  }
+
+
+  cancelDeleteTrack(): void {
+    this.showDeleteTrackModal = false;
+    this.trackToDelete = null;
+    this.trackDeleteError = null;
+    this.isDeletingTrack = false;
+    this.setModalOpenState(false);
+  }
+
+
+  openTrackDeletePopover(event: MouseEvent, trackName: string): void {
+    event.stopPropagation();
+
+    this.trackDeleteError = null;
+    this.deletePopoverTrackName = trackName;
+    this.isDeletePopoverOpen = true;
+
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+
+    const scrollX = window.scrollX || document.documentElement.scrollLeft;
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+    // Approximate popover size (should match your CSS)
+    const POPOVER_WIDTH = 240;
+    const POPOVER_HEIGHT = 120;
+
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+
+    // We want: popover top-right = button bottom-left
+    let x = rect.left + scrollX - POPOVER_WIDTH;     // move left by popover width
+    let y = rect.bottom + scrollY + 4;               // a little below the button
+
+    // Clamp horizontally so it stays on screen
+    const minX = scrollX + 8;
+    const maxX = scrollX + viewportWidth - POPOVER_WIDTH - 8;
+    if (x < minX) x = minX;
+    if (x > maxX) x = maxX;
+
+    // Clamp vertically: if it would go below screen, flip above the button
+    if (y + POPOVER_HEIGHT > scrollY + viewportHeight - 8) {
+      y = rect.top + scrollY - POPOVER_HEIGHT - 4;   // above the button
+    }
+    if (y < scrollY + 8) {
+      y = scrollY + 8;
+    }
+
+    this.deletePopoverX = x;
+    this.deletePopoverY = y;
+  }
+
+
+  closeTrackDeletePopover(): void {
+    this.isDeletePopoverOpen = false;
+    this.deletePopoverTrackName = null;
+    this.trackDeleteError = null;
+    this.isDeletingTrack = false;
+  }
+
 
 
   ngOnDestroy(): void {
@@ -1029,54 +1292,5 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     }
     this.searchSub?.unsubscribe();
   }
-
-  // Temporary: request offline map export for a hardcoded track file ("Panorámakör")
-  downloadOfflineMap_Panoramakor(): void {
-    const url = `${this.apiBase}/api/mapsforge/from-track-file`;
-
-    // Adjust property name if your controller expects something else
-    const body = { trackFileName: 'Panorámakör' };
-
-    this.http.post(url, body, { responseType: 'blob', observe: 'response' }).subscribe({
-      next: (res) => {
-        const blob = res.body;
-        if (!blob) {
-          alert('No file received.');
-          return;
-        }
-
-        // Try to pick filename from Content-Disposition; fallback if missing
-        const cd = res.headers.get('content-disposition') ?? '';
-        const fileName =
-          this.tryGetFilenameFromContentDisposition(cd) ?? 'Panoramakor.map';
-
-        this.downloadBlob(blob, fileName);
-      },
-      error: (err) => {
-        console.error('Mapsforge export failed', err);
-        alert('Could not export map.');
-      }
-    });
-  }
-
-  private downloadBlob(blob: Blob, fileName: string): void {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  private tryGetFilenameFromContentDisposition(cd: string): string | null {
-    // Example: Content-Disposition: attachment; filename="track_user_....map"
-    const match = /filename\*?=(?:UTF-8''|")?([^\";]+)"?/i.exec(cd);
-    if (!match?.[1]) return null;
-
-    // decode RFC5987 if present (best-effort)
-    try { return decodeURIComponent(match[1]); } catch { return match[1]; }
-  }
-
-
 
 }
