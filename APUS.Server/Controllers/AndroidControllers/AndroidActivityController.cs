@@ -1,8 +1,15 @@
 ﻿using APUS.Server.Data.Repositories.Interfaces;
 using APUS.Server.Domain.Models;
+using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Xml;
+
+// NEW usings you already use in ActivityFileController
+using APUS.Server.Services.Implementations.FileServices; // if needed for interfaces
+														 // using APUS.Server.Domain.DTOs.Routing; // only if you use DTOs here, otherwise omit
 
 namespace APUS.Server.Controllers.AndroidControllers
 {
@@ -13,11 +20,32 @@ namespace APUS.Server.Controllers.AndroidControllers
 	{
 		private readonly IActivityRepository _activityRepo;
 
-		public AndroidActivityController(IActivityRepository activityRepo)
+		// NEW: same services as ActivityFileController
+		private readonly IStorageService _storageService;
+		private readonly ICreateOsmMapPng _createOsmMapPng;
+		private readonly Func<string, IActivityImportService> _importerFactory;
+		private readonly IHuberRegressor _linearAggression;
+		private readonly ILogger<AndroidActivityController> _logger;
+
+		public AndroidActivityController(
+			IActivityRepository activityRepo,
+			IStorageService storageService,
+			ICreateOsmMapPng createOsmMapPng,
+			Func<string, IActivityImportService> importerFactory,
+			IHuberRegressor linearAggression,
+			ILogger<AndroidActivityController> logger)
 		{
 			_activityRepo = activityRepo;
+
+			// NEW assignments
+			_storageService = storageService;
+			_createOsmMapPng = createOsmMapPng;
+			_importerFactory = importerFactory;
+			_linearAggression = linearAggression;
+			_logger = logger;
 		}
 
+		// ----------------- EXISTING NON-GPS ENDPOINT -----------------
 		[HttpPost("nongps")]
 		public async Task<IActionResult> CreateNonGps([FromBody] NonGpsActivityUploadRequest request)
 		{
@@ -49,7 +77,9 @@ namespace APUS.Server.Controllers.AndroidControllers
 			activity.UserId = userId;
 
 			// convert Unix seconds to DateTime (UTC)
-			var startUtc = DateTimeOffset.FromUnixTimeSeconds(request.StartTimeUnixSeconds).UtcDateTime;
+			var startUtc = DateTimeOffset
+				.FromUnixTimeSeconds(request.StartTimeUnixSeconds)
+				.UtcDateTime;
 			activity.Date = startUtc;
 
 			// duration
@@ -58,11 +88,147 @@ namespace APUS.Server.Controllers.AndroidControllers
 			// optional: can set Title to something simple
 			activity.Title = activity.DisplayName ?? activity.ActivityType;
 
-			await _activityRepo.CreateAsync(activity); // repo already exists :contentReference[oaicite:2]{index=2}
+			await _activityRepo.CreateAsync(activity);
 
 			// return ID so Android could use it later if needed
 			return Ok(new { activityId = activity.Id });
 		}
+
+		// ----------------- GPS ENDPOINT FOR ANDROID (file-based, like ActivityFileController) -----------------
+		/// <summary>
+		/// Uploads a recorded GPX/TCX from the Android app,
+		/// imports it and creates an activity in the DB (same logic as ActivityFileController).
+		/// </summary>
+		[HttpPost("gps")]
+		public async Task<IActionResult> CreateGps(
+			[FromForm] IFormFile trackFile,
+			[FromForm] string? activityType)
+		{
+			if (trackFile == null || trackFile.Length == 0)
+				return BadRequest("No file provided.");
+
+			await using var ms = new MemoryStream();
+			await trackFile.CopyToAsync(ms);
+			ms.Position = 0;
+
+			// Select the correct import service based on the extension
+			var ext = Path.GetExtension(trackFile.FileName);
+			var importer = _importerFactory(ext);
+
+			try
+			{
+				var importedActivity = importer.ImportActivity(ms);
+
+				bool hasGps = importedActivity.HasGpsTrack == true;
+				var type = string.IsNullOrWhiteSpace(activityType)
+					? null
+					: activityType.Trim();
+
+				GpsRelatedActivity CreateGps<T>() where T : GpsRelatedActivity, new()
+					=> new T
+					{
+						TotalAscentMeters = importedActivity.TotalAscentMeters,
+						TotalDescentMeters = importedActivity.TotalDescentMeters,
+						TotalDistanceKm = importedActivity.TotalDistanceKm,
+						AvgPace = importedActivity.AvgPace,
+						FinishTimeUtc = importedActivity.FinishTimeUtc
+					};
+
+				MainActivity CreatePlain<T>() where T : MainActivity, new()
+					=> new T();
+
+				MainActivity newActivity;
+
+				if (type is null)
+				{
+					newActivity = hasGps
+						? CreateGps<GpsRelatedActivity>()
+						: CreatePlain<MainActivity>();
+				}
+				else
+				{
+					newActivity = type switch
+					{
+						"Running" when hasGps => CreateGps<Running>(),
+						"Hiking" when hasGps => CreateGps<Hiking>(),
+						"Cycling" when hasGps => CreateGps<Ride>(),
+						"GpsRelatedActivity" when hasGps => CreateGps<GpsRelatedActivity>(),
+
+						// Non-GPS / generic
+						"MainActivity" => CreatePlain<MainActivity>(),
+
+						_ => hasGps
+							? CreateGps<GpsRelatedActivity>()
+							: CreatePlain<MainActivity>()
+					};
+				}
+
+				// Common properties (same as web importer)
+				newActivity.Title = "Imported Activity";
+				newActivity.Date = importedActivity.StartTime;
+				newActivity.Duration = importedActivity.Duration;
+				newActivity.Calories = importedActivity.TotalCalories;
+				newActivity.AvgHeartRate = importedActivity.AverageHeartRate;
+				newActivity.MaxHeartRate = importedActivity.MaximumHeartRate;
+
+				var userId = User.GetUserId();
+				newActivity.UserId = userId;
+
+				// Create the activity in EF
+				await _activityRepo.CreateAsync(newActivity);
+
+				// Create folder + save original GPX/TCX
+				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
+				var savedTrackPath = await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
+
+				// Generate PNG for feed cards if we have a GPS track
+				if (importedActivity.HasGpsTrack)
+					await _createOsmMapPng.GeneratePng(newActivity);
+
+				// If it's a Running activity with GPS, train the model
+				if (importedActivity.HasGpsTrack &&
+					newActivity is Running &&
+					(ext.Equals(".tcx", StringComparison.OrdinalIgnoreCase) ||
+					 ext.Equals(".gpx", StringComparison.OrdinalIgnoreCase)))
+				{
+					try
+					{
+						await _linearAggression.TrainAsync(userId, savedTrackPath);
+					}
+					catch (Exception laEx)
+					{
+						// Log, but do not fail the upload
+						_logger.LogError(
+							laEx,
+							"LinearAggression training failed for user {UserId}, activity {ActivityId}. Track: {TrackPath}",
+							userId,
+							newActivity.Id,
+							savedTrackPath);
+					}
+				}
+
+				// For Android it's enough to return the id
+				return Ok(new { activityId = newActivity.Id });
+			}
+			catch (XmlException xmlEx)
+			{
+				_logger.LogWarning(xmlEx, "Malformed XML in uploaded file (Android GPS)");
+				return BadRequest("The uploaded file contains invalid XML.");
+			}
+			catch (FormatException fmtEx)
+			{
+				_logger.LogWarning(fmtEx, "Invalid data in uploaded file (Android GPS)");
+				return BadRequest("The uploaded file contains invalid numeric or date values.");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error processing uploaded Android GPS activity");
+				return StatusCode(500, "An unexpected error occurred while processing the file.");
+			}
+		}
+
+
+
 	}
 
 	public static class UserExtensions
