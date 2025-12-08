@@ -50,11 +50,18 @@
         </div>
     </div>
 
-    <!-- Like bar -->
-    <div class="like-icon">
-        <i class="bi bi-hand-thumbs-up"></i>
-        <span>{{ activity.likescount }}</span>
+    <!-- Action bar (like + comments) -->
+    <div class="action-bar">
+        <button type="button" class="icon-btn like-icon">
+            <i class="bi bi-hand-thumbs-up"></i>
+            <span>{{ activity.likescount }}</span>
+        </button>
+
+        <button type="button" class="icon-btn comment-icon" (click)="openCommentsModal()" title="Comments">
+            <i class="bi bi-chat-dots"></i>
+        </button>
     </div>
+
 </div>
 
 <app-comments-modal [isOpen]="commentsOpen" [loadUrl]="'/api/activities/' + activity.id + '/comments'"

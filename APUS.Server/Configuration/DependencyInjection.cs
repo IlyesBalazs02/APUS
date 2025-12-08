@@ -139,6 +139,7 @@ namespace APUS.Server.Configuration
 			services.AddScoped<IActivityCommentRepository, ActivityCommentRepository>();
 			services.AddScoped<ITrackFileService, TrackFileService>();
 			services.AddScoped<IMapsforgeService, MapsforgeService>();
+			services.AddScoped<IGroupPostCommentRepository, GroupPostCommentRepository>();
 
 			services.AddTransient<ITCXFileService, TCXFileService>();
 			services.AddTransient<IGPXFileService, GPXFileService>();

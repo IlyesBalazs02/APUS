@@ -5,6 +5,10 @@ import { GroupService } from '../groupService';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
+type GroupPostVm = GroupPostDto & {
+  _expanded: boolean;
+  _commentsOpen: boolean;
+};
 
 @Component({
   selector: 'app-groups-post',
@@ -12,11 +16,14 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './groups-post.component.html',
   styleUrls: ['./groups-post.component.scss']
 })
+
+
 export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
+
   groupId!: number;
   group: GroupDto | null = null;
 
-  posts: (GroupPostDto & { _expanded?: boolean })[] = [];
+  posts: GroupPostVm[] = [];
   loading = false;
   loadingMore = false;
   hasMore = true;
@@ -37,6 +44,8 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // delete popup
   deleteTargetId: number | null = null;
+
+  commentsOpenPostId: number | null = null;
 
   // infinite scroll
   @ViewChild('sentinel') sentinelRef?: ElementRef<HTMLDivElement>;
@@ -106,7 +115,11 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       const resp = await this.groupService.getPosts(this.groupId, this.skip, this.pageSize).toPromise();
       if (!resp) return;
-      this.posts = resp.items.map(p => ({ ...p, _expanded: false }));
+      this.posts = resp.items.map(p => ({
+        ...p,
+        _expanded: false,
+        _commentsOpen: false
+      }));
       this.hasMore = resp.hasMore;
       this.skip += resp.items.length;
     } finally {
@@ -121,7 +134,11 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
       const resp = await this.groupService.getPosts(this.groupId, this.skip, this.pageSize).toPromise();
       if (!resp) return;
       this.posts = this.posts.concat(
-        resp.items.map(p => ({ ...p, _expanded: false }))
+        resp.items.map(p => ({
+          ...p,
+          _expanded: false,
+          _commentsOpen: false
+        }))
       );
       this.hasMore = resp.hasMore;
       this.skip += resp.items.length;
@@ -129,6 +146,7 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadingMore = false;
     }
   }
+
 
   async createPost() {
     if (!this.groupId || !this.canPost || this.creating) return;
@@ -147,10 +165,14 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       const created = await this.groupService.createPost(this.groupId, dto).toPromise();
       if (created) {
-        this.posts = [{ ...created, _expanded: false }, ...this.posts];
+        this.posts = [
+          { ...created, _expanded: false, _commentsOpen: false },
+          ...this.posts
+        ];
         this.title = '';
         this.text = '';
       }
+
     } catch {
       this.createError = 'Could not create post.';
     } finally {
@@ -189,7 +211,21 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
     this.deleteTargetId = null;
   }
 
-  toggleExpand(post: GroupPostDto & { _expanded?: boolean }) {
+  toggleExpand(post: GroupPostVm) {
     post._expanded = !post._expanded;
+  }
+
+
+  // ----------- Comments --------------
+  openCommentsModal(post: GroupPostDto) {
+    this.commentsOpenPostId = post.id;
+  }
+
+  closeCommentsModal() {
+    this.commentsOpenPostId = null;
+  }
+
+  commentsUrl(post: GroupPostDto): string {
+    return `/api/groups/posts/${post.id}/comments`;
   }
 }

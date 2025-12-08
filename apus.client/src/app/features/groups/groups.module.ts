@@ -10,6 +10,7 @@ import { GroupsRequestComponent } from './groups-request/groups-request.componen
 import { GroupsPostComponent } from './groups-post/groups-post.component';
 import { GroupsSettingsComponent } from './groups-settings/groups-settings.component';
 
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
     declarations: [
@@ -24,7 +25,8 @@ import { GroupsSettingsComponent } from './groups-settings/groups-settings.compo
         RouterModule,
         GroupsRoutingModule,
         ReactiveFormsModule,
-        FormsModule
+        FormsModule,
+        SharedModule
     ],
 })
 export class GroupsModule { }

@@ -54,6 +54,14 @@
                         {{ p._expanded ? 'Show less' : 'Show more' }}
                     </button>
 
+                    <!-- COMMENTS BUTTON -->
+                    <div class="post-actions">
+                        <button class="btn linklike" type="button" (click)="p._commentsOpen = true">
+                            <i class="bi bi-chat"></i>
+                            Comments
+                        </button>
+                    </div>
+
                     <!-- INLINE DELETE POPUP -->
                     <div class="delete-popup" *ngIf="deleteTargetId === p.id">
                         <p>Delete this post?</p>
@@ -62,14 +70,19 @@
                             <button class="btn danger" type="button" (click)="confirmDelete()">Delete</button>
                         </div>
                     </div>
+
+                    <!-- COMMENTS MODAL FOR THIS POST -->
+                    <app-comments-modal [isOpen]="p._commentsOpen" [loadUrl]="'/api/groups/posts/' + p.id + '/comments'"
+                        [postUrl]="'/api/groups/posts/' + p.id + '/comments'" (closed)="p._commentsOpen = false"
+                        title="Comments"></app-comments-modal>
         </article>
 
         <div class="loading-more" *ngIf="loadingMore">
             Loading…
         </div>
 
-        <!-- SENTINEL FOR INFINITE SCROLL -->
         <div #sentinel class="sentinel" *ngIf="hasMore && !loadingMore"></div>
     </section>
+
 
 </div>
