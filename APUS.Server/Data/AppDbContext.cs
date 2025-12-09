@@ -26,6 +26,8 @@ namespace APUS.Server.Data
 		public DbSet<ActivityComment> ActivityComments { get; set; }
 		public DbSet<GroupPostComment> GroupPostComments { get; set; }
 
+		public DbSet<GroupEvent> GroupEvents { get; set; }
+		public DbSet<GroupEventParticipant> GroupEventParticipants { get; set; } = null!;
 
 		public AppDbContext(DbContextOptions<AppDbContext> opt) :base(opt)
 		{
@@ -264,6 +266,48 @@ namespace APUS.Server.Data
 						j.ToTable("GroupPostLikes", "Social");
 						j.HasKey("LikedByUsersId", "LikedPostsId");
 					});
+
+			// --------- GroupEvents ----------
+			modelBuilder.Entity<GroupEvent>(b =>
+			{
+				b.ToTable("GroupEvents", "Social");
+				b.HasKey(x => x.Id);
+
+				b.Property(x => x.Title)
+					.IsRequired()
+					.HasMaxLength(200);
+
+				b.Property(x => x.Description)
+					.HasMaxLength(4000);
+
+				b.Property(x => x.CreatedAtUtc)
+					.IsRequired();
+
+				b.HasOne(x => x.Group)
+					.WithMany(g => g.Events)            // requires property on Group, see below
+					.HasForeignKey(x => x.GroupId)
+					.OnDelete(DeleteBehavior.Cascade);
+
+				b.HasOne(x => x.CreatedByUser)
+					.WithMany()
+					.HasForeignKey(x => x.CreatedByUserId)
+					.OnDelete(DeleteBehavior.Restrict);
+
+				b.HasIndex(x => new { x.GroupId, x.StartsAtUtc, x.CreatedAtUtc, x.Id });
+			});
+
+			modelBuilder.Entity<GroupEventParticipant>(b =>
+			{
+				b.HasKey(p => new { p.GroupEventId, p.UserId });
+
+				b.HasOne(p => p.GroupEvent)
+					.WithMany(e => e.Participants)
+					.HasForeignKey(p => p.GroupEventId);
+
+				b.HasOne(p => p.User)
+					.WithMany()
+					.HasForeignKey(p => p.UserId);
+			});
 
 			// Comments
 			modelBuilder.Entity<CommentBase>(b =>

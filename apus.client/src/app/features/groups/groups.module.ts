@@ -11,6 +11,7 @@ import { GroupsPostComponent } from './groups-post/groups-post.component';
 import { GroupsSettingsComponent } from './groups-settings/groups-settings.component';
 
 import { SharedModule } from '../../shared/shared.module';
+import { GroupsEventComponent } from './groups-event/groups-event.component';
 
 @NgModule({
     declarations: [
@@ -18,7 +19,8 @@ import { SharedModule } from '../../shared/shared.module';
         GroupsComponent,
         GroupsRequestComponent,
         GroupsPostComponent,
-        GroupsSettingsComponent
+        GroupsSettingsComponent,
+        GroupsEventComponent
     ],
     imports: [
         CommonModule,

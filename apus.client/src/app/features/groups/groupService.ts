@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CreateGroupDto, CreateGroupPostDto, DecideJoinRequestDto, GroupDto, GroupJoinRequestDto, GroupMembersDto, GroupPostDto, GroupSettingsDto, UpdateGroupDto, UpdateGroupSettingsDto } from "./groupsDTOs";
+import { CreateGroupDto, CreateGroupEventDto, CreateGroupPostDto, DecideJoinRequestDto, GroupDto, GroupEventDto, GroupEventParticipantDto, GroupJoinRequestDto, GroupMembersDto, GroupPostDto, GroupSettingsDto, UpdateGroupDto, UpdateGroupSettingsDto } from "./groupsDTOs";
 import { firstValueFrom } from "rxjs";
 import { PagedResponse } from "../../shared/DTOs/PagedResponse";
 
@@ -81,6 +81,50 @@ export class GroupService {
         // matches DELETE api/groups/posts/{postId}
         return this.http.delete<void>(`${this.base}/posts/${postId}`);
     }
+    //#endregion
+
+
+    //#region events
+    getEvents(groupId: number, skip: number, take: number) {
+        const params = new HttpParams()
+            .set('skip', skip)
+            .set('take', take);
+
+        return this.http.get<PagedResponse<GroupEventDto>>(
+            `${this.base}/${groupId}/events`,
+            { params }
+        );
+    }
+
+    createEvent(groupId: number, dto: CreateGroupEventDto) {
+        return this.http.post<GroupEventDto>(`/api/groups/${groupId}/events`, dto);
+    }
+
+    deleteEvent(eventId: number) {
+        return this.http.delete<void>(
+            `${this.base}/events/${eventId}`
+        );
+    }
+
+    getEventParticipants(eventId: number) {
+        return this.http.get<GroupEventParticipantDto[]>(
+            `/api/groups/events/${eventId}/participants`
+        );
+    }
+
+    joinEvent(groupId: number, eventId: number) {
+        return this.http.post<void>(
+            `/api/groups/${groupId}/events/${eventId}/participants`,
+            {}
+        );
+    }
+
+    leaveEvent(groupId: number, eventId: number) {
+        return this.http.delete<void>(
+            `/api/groups/${groupId}/events/${eventId}/participants`
+        );
+    }
+
     //#endregion
 
 }

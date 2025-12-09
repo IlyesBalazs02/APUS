@@ -4,6 +4,7 @@ using APUS.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APUS.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ActivityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251208235146_GroupEvent")]
+    partial class GroupEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,24 +111,6 @@ namespace APUS.Server.Migrations
                     b.HasIndex("GroupId", "StartsAtUtc", "CreatedAtUtc", "Id");
 
                     b.ToTable("GroupEvents", "Social");
-                });
-
-            modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupEventParticipant", b =>
-                {
-                    b.Property<long>("GroupEventId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("JoinedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("GroupEventId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("GroupEventParticipants");
                 });
 
             modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupJoinRequest", b =>
@@ -767,25 +752,6 @@ namespace APUS.Server.Migrations
                     b.Navigation("TrackActivity");
                 });
 
-            modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupEventParticipant", b =>
-                {
-                    b.HasOne("APUS.Server.Domain.Entities.Groups.GroupEvent", "GroupEvent")
-                        .WithMany("Participants")
-                        .HasForeignKey("GroupEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APUS.Server.Domain.Models.SiteUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GroupEvent");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupJoinRequest", b =>
                 {
                     b.HasOne("APUS.Server.Domain.Entities.Groups.Group", "Group")
@@ -1056,11 +1022,6 @@ namespace APUS.Server.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Posts");
-                });
-
-            modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupEvent", b =>
-                {
-                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("APUS.Server.Domain.Entities.Groups.GroupPost", b =>

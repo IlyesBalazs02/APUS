@@ -7,6 +7,7 @@ import { GroupsHomeComponent } from "./groups-home/groups-home.component";
 import { GroupsRequestComponent } from "./groups-request/groups-request.component";
 import { GroupsPostComponent } from "./groups-post/groups-post.component";
 import { GroupsSettingsComponent } from "./groups-settings/groups-settings.component";
+import { GroupsEventComponent } from "./groups-event/groups-event.component";
 
 const routes: Routes = [
     {
@@ -21,7 +22,8 @@ const routes: Routes = [
                 children: [
                     { path: 'requests', component: GroupsRequestComponent },
                     { path: 'posts', component: GroupsPostComponent },
-                    { path: 'settings', component: GroupsSettingsComponent }
+                    { path: 'settings', component: GroupsSettingsComponent },
+                    { path: 'events', component: GroupsEventComponent }
                 ]
             }
         ]

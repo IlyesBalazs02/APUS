@@ -23,6 +23,8 @@ namespace APUS.Server.Domain.Entities.Groups
 		public ICollection<GroupJoinRequest> JoinRequests { get; set; } = new List<GroupJoinRequest>();
 
 		public ICollection<GroupPost> Posts { get; set; } = new List<GroupPost>();
+
+		public ICollection<GroupEvent> Events { get; set; } = new List<GroupEvent>();
 	}
 
 	public enum GroupPostPermission

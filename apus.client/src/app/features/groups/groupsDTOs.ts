@@ -54,10 +54,6 @@ export enum GroupPostPermission {
     Members = 1
 }
 
-export enum GroupEventPermission {
-    AdminsOnly = 0,
-    Members = 1
-}
 
 export interface GroupSettingsDto {
     groupId: number;
@@ -94,5 +90,52 @@ export interface GroupPostDto {
 export interface CreateGroupPostDto {
     title: string;
     text: string;
+}
+//#endregion
+
+//#region Events
+// existing imports / exports above…
+
+export enum GroupEventPermission {
+    AdminsOnly = 0,
+    Members = 1
+}
+
+export interface GroupEventDto {
+    id: number;
+    groupId: number;
+    title: string;
+    description?: string | null;
+    trackActivityId?: string | null;
+    createdByUserId: string;
+    createdByFullName: string;
+    createdByAvatarUrl?: string | null;
+    createdAtUtc: string;
+    startsAtUtc?: string | null;
+
+    participantCount: number;
+    isJoinedByCurrentUser: boolean;
+}
+
+
+export interface CreateGroupEventDto {
+    title: string;
+    description?: string | null;
+    trackActivityId?: string | null;
+    startsAtUtc?: string | null;
+}
+
+export interface GroupEventParticipantDto {
+    userId: string;
+    fullName: string;
+    avatarUrl?: string | null;
+    joinedAtUtc: string;
+}
+
+export interface GroupEventParticipantDto {
+    userId: string;
+    fullName: string;
+    avatarUrl?: string | null;
+    joinedAtUtc: string;
 }
 //#endregion
