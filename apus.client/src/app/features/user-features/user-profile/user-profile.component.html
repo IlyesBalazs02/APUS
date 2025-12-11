@@ -1,5 +1,108 @@
-<p *ngIf="profile">{{ profile.name }}</p>
+<div class="profile-header">
+    <p *ngIf="profile">{{ profile.name }}</p>
+</div>
 
+<!-- ===== Statistics section ===== -->
+<section class="profile-stats">
+    <div class="stats-header">
+        <h2>Training statistics</h2>
+
+        <div class="period-selector">
+            <button *ngFor="let p of periods" type="button" (click)="onPeriodChange(p)"
+                [class.active]="p === selectedPeriod">
+                {{ periodLabel(p) }}
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-body" *ngIf="trainingSummary; else noStats">
+        <div class="stats-summary">
+            <p class="total-hours">
+                Total training: <strong>{{ formatHoursToHms(trainingSummary.totalHours) }}</strong>
+            </p>
+            <p class="total-sessions">
+                Sessions: <strong>{{ trainingSummary.activityCount }}</strong>
+            </p>
+        </div>
+
+        <div class="stats-layout">
+            <!-- Sports list -->
+            <div class="sports-list">
+                <h3>Sports</h3>
+                <ng-container *ngIf="trainingSummary.sports?.length; else noSports">
+                    <ul>
+                        <li *ngFor="let sport of trainingSummary.sports; let i = index">
+                            <span class="legend-color" [ngClass]="'color-' + i"></span>
+                            <span class="sport-name">{{ sport.activityType }}</span>
+                            <span class="sport-hours">
+                                {{ formatHoursToHms(sport.totalHours) }}
+                            </span>
+                            <span class="sport-percent" *ngIf="totalSportsHours">
+                                ({{ (sport.totalHours / totalSportsHours) * 100 | number:'1.0-0' }}%)
+                            </span>
+                        </li>
+                    </ul>
+                </ng-container>
+                <ng-template #noSports>
+                    <p>No sport activities in this period.</p>
+                </ng-template>
+            </div>
+
+            <!-- Pie chart -->
+            <div class="stats-pie">
+                <svg *ngIf="pieSegments.length" viewBox="0 0 100 100" class="pie-chart">
+                    <!-- Multiple sports: draw normal slices -->
+                    <ng-container *ngIf="pieSegments.length > 1; else singleSlice">
+                        <g *ngFor="let seg of pieSegments; let i = index">
+                            <path [attr.d]="seg.path" [ngClass]="'color-' + i"></path>
+                        </g>
+                    </ng-container>
+
+                    <!-- Single sport: draw full circle -->
+                    <ng-template #singleSlice>
+                        <circle cx="50" cy="50" r="45" class="color-0"></circle>
+                    </ng-template>
+                </svg>
+
+                <p class="no-data" *ngIf="!pieSegments.length">
+                    Not enough data for chart.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <ng-template #noStats>
+        <p class="no-data">No training data for the selected period.</p>
+    </ng-template>
+</section>
+
+<!-- ===== Calendar section ===== -->
+<section class="profile-calendar" *ngIf="calendarWeeks?.length">
+    <div class="calendar-header">
+        <button type="button" class="month-nav" (click)="changeMonth(-1)">&lt;</button>
+        <h2>Training calendar – {{ monthNames[calendarMonthNumber - 1] }} {{ calendarYear }}</h2>
+        <button type="button" class="month-nav" (click)="changeMonth(1)">&gt;</button>
+    </div>
+
+    <table class="calendar-table">
+        <thead>
+            <tr>
+                <th *ngFor="let d of weekDayNames">{{ d }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let week of calendarWeeks">
+                <td *ngFor="let cell of week" [class.empty]="!cell.day" [class.has-activity]="cell.hasActivity"
+                    [class.today]="cell.isToday">
+                    <span *ngIf="cell.day">{{ cell.day }}</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ===== Activities list (existing) ===== -->
 <div class="activities-list">
     <app-activity-card *ngFor="let activity of activities" [activity]="activity">
     </app-activity-card>

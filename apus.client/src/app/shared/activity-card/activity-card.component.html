@@ -6,7 +6,17 @@
             <h5 class="card-title clickable-heading" [routerLink]="['/activities', activity.id]">
                 {{ activity.title }}
             </h5>
-            <small class="text-muted">{{ activity.activityType }}</small>
+
+            <!-- Date under the title -->
+            <small class="text-muted d-block">
+                {{ activity.date | date:'yyyy.MM.dd HH:mm' }}
+            </small>
+
+            <!-- Type under the date -->
+            <small class="text-muted d-block">
+                {{ activity.activityType }}
+            </small>
+
 
             <p *ngIf="activity.description" class="activity-description">
                 {{ activity.description }}

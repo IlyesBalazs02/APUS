@@ -16,5 +16,8 @@ namespace APUS.Server.Data.Repositories.Interfaces
 		Task ReplaceAsync(MainActivity oldEntity, MainActivity newEntity);
 		Task SaveAsync(MainActivity activity);
 		Task CopyProps(MainActivity existing, MainActivity replacement);
+		Task<List<MainActivity>> GetByUserIdAndDateRangeAsync(string userId,DateTime fromUtcInclusive,DateTime toUtcExclusive);
+		Task<List<MainActivity>> GetByUserIdAndMonthAsync(string userId,int year,int month);
+
 	}
 }

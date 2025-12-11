@@ -1,0 +1,95 @@
+.profile-stats {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #111;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.period-selector button {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #555;
+  background: #222;
+  cursor: pointer;
+}
+
+.period-selector button.active {
+  background: #3f51b5;
+  border-color: #3f51b5;
+}
+
+.stats-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.sports-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sports-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* simple colour palette for sports */
+.color-0 { background: #ff6384; fill: #ff6384; }
+.color-1 { background: #36a2eb; fill: #36a2eb; }
+.color-2 { background: #ffcd56; fill: #ffcd56; }
+.color-3 { background: #4bc0c0; fill: #4bc0c0; }
+.color-4 { background: #9966ff; fill: #9966ff; }
+/* fallback for other indices */
+[class^="color-"] { stroke: none; }
+
+.pie-chart {
+  width: 180px;
+  height: 180px;
+}
+
+/* Calendar */
+.profile-calendar {
+  margin-bottom: 2rem;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.calendar-table th,
+.calendar-table td {
+  text-align: center;
+  padding: 0.4rem;
+  border: 1px solid #333;
+}
+
+.calendar-table td.empty {
+  background: #111;
+}
+
+.calendar-table td.has-activity {
+  background: #2e7d32;
+}
+
+.calendar-table td.today {
+  outline: 2px solid #fff;
+}

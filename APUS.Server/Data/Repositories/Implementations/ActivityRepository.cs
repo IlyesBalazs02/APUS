@@ -144,7 +144,36 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.ToListAsync();
 		}
 
+		public async Task<List<MainActivity>> GetByUserIdAndDateRangeAsync(
+			string userId,
+			DateTime fromUtcInclusive,
+			DateTime toUtcExclusive)
+		{
+			return await _context.Activities
+				.Include(a => a.User)
+				.AsNoTracking()
+				.Where(a => a.UserId == userId &&
+							a.Date >= fromUtcInclusive &&
+							a.Date < toUtcExclusive)
+				.ToListAsync();
+		}
 
+		public async Task<List<MainActivity>> GetByUserIdAndMonthAsync(
+			string userId,
+			int year,
+			int month)
+		{
+			var from = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+			var to = from.AddMonths(1);
+
+			return await _context.Activities
+				.Include(a => a.User)
+				.AsNoTracking()
+				.Where(a => a.UserId == userId &&
+							a.Date >= from &&
+							a.Date < to)
+				.ToListAsync();
+		}
 
 	}
 

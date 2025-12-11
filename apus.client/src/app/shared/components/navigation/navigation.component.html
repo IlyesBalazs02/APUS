@@ -1,58 +1,57 @@
-<header>
-    <!-- List all activities -->
-    <button class="btn btn-primary submit-button" routerLink="/activities" routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }" *ngIf="(loggedIn$ | async)">
-        All Activities
-    </button>
+<header class="top-nav">
+    <div class="nav-inner">
+        <!-- Brand / Logo -->
+        <a class="nav-brand" routerLink="/activities">
+            APUS
+        </a>
 
-    <!-- Upload a GPX file -->
-    <button class="btn btn-primary submit-button" routerLink="/activities/upload" routerLinkActive="active"
-        *ngIf="(loggedIn$ | async)">
-        Upload Activity
-    </button>
+        <!-- CENTER: links + search (only when logged in) -->
+        <div class="nav-center" *ngIf="(loggedIn$ | async)">
+            <nav class="nav-links">
+                <a routerLink="/activities" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                    All activities
+                </a>
 
-    <!-- Create Route -->
-    <button class="btn btn-primary submit-button" routerLink="/createRoute" routerLinkActive="active"
-        *ngIf="(loggedIn$ | async)">
-        Create Route
-    </button>
+                <a routerLink="/createRoute" routerLinkActive="active">
+                    Create route
+                </a>
 
-    <button class="btn btn-primary submit-button" routerLink="/userprofile" routerLinkActive="active"
-        *ngIf="(loggedIn$ | async)">
-        Profile
-    </button>
+                <a routerLink="/groups" routerLinkActive="active">
+                    Groups
+                </a>
+            </nav>
 
-    <button class="btn btn-primary submit-button" routerLink="/settings" routerLinkActive="active"
-        *ngIf="(loggedIn$ | async)">
-        Settings
-    </button>
+            <div class="nav-search">
+                <app-search-bar></app-search-bar>
+            </div>
+        </div>
 
-    <button class="btn btn-primary submit-button" routerLink="/groups" routerLinkActive="active"
-        *ngIf="(loggedIn$ | async)">
-        Groups
-    </button>
+        <!-- RIGHT: auth / profile -->
+        <div class="nav-right">
+            <!-- When NOT logged in: Login / Register -->
+            <ng-container *ngIf="!(loggedIn$ | async)">
+                <a routerLink="/login" class="nav-auth-link">
+                    Login
+                </a>
+                <a routerLink="/register" class="nav-auth-button">
+                    Sign up
+                </a>
+            </ng-container>
 
-    <div class="search-bar" *ngIf="(loggedIn$ | async)">
-        <app-search-bar></app-search-bar>
+            <!-- When logged in: profile / settings / logout -->
+            <ng-container *ngIf="(loggedIn$ | async)">
+                <a routerLink="/userprofile" routerLinkActive="active" class="nav-secondary-link">
+                    Profile
+                </a>
+
+                <a routerLink="/settings" routerLinkActive="active" class="nav-secondary-link">
+                    Settings
+                </a>
+
+                <button class="nav-logout" (click)="logout()">
+                    Log out
+                </button>
+            </ng-container>
+        </div>
     </div>
-
-    <!--
-    <button mat-button [routerLink]="['/friends/requests']" [matBadge]="count$ | async" matBadgeColor="primary"
-        [matBadgeHidden]="!(count$ | async)" *ngIf="(loggedIn$ | async)">
-        Friend Requests
-    </button>
-    -->
-
-    <!-- Authentication -->
-    <button class="btn btn-primary submit-button" routerLink="/register" *ngIf="!(loggedIn$ | async)">
-        Register
-    </button>
-
-    <button class="btn btn-primary submit-button" routerLink="/login" *ngIf="!(loggedIn$ | async)">
-        Login
-    </button>
-
-    <button class="btn btn-primary submit-button" *ngIf="(loggedIn$ | async)" (click)="logout()">
-        Log Outs
-    </button>
 </header>

@@ -15,7 +15,6 @@ const routes: Routes = [
         children: [
             { path: 'users', component: UserSearchComponent },
             { path: 'friends', component: FriendSearchComponent },
-            { path: 'groups', component: GroupSearchComponent },
             { path: 'requests', component: FriendRequestsComponent },
             { path: '', redirectTo: 'users', pathMatch: 'full' },
         ],
