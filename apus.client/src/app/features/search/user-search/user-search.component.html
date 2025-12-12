@@ -1,0 +1,38 @@
+<div *ngIf="users.length > 0" class="mt-4">
+    <div class="cards">
+        <div *ngFor="let u of users; trackBy: trackById" class="user-card">
+            <div class="flex items-center gap-3 min-w-0">
+                <img [src]="u.avatarUrl || '/Perm/DefaultProfile.png'" class="user-avatar" alt="avatar" />
+                <div class="min-w-0">
+                    <a [routerLink]="['/profile', u.id]" class="text-sky-500 hover:underline font-medium truncate">
+                        {{ u.fullName }}
+                    </a>
+                    <div *ngIf="u.userName" class="text-xs text-gray-400 truncate">
+                        {{ '@' + u.userName }}
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" (click)="addFriend(u.id)" [disabled]="!canAdd(u.id)"
+                class="px-3 py-1.5 text-sm rounded-xl" [ngClass]="canAdd(u.id)
+                ? 'bg-blue-600 text-white hover:opacity-90'
+                : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed'">
+                {{ statusLabel(u.id) || 'Add friend' }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="!users.length && !loading" class="text-center text-sm text-gray-500 py-6">
+    No results yet. Try typing above.
+</div>
+
+<div *ngIf="loading" class="py-4 flex justify-center">
+    <span>Loading...</span>
+</div>
+
+<div #sentinel style="height:1px;"></div>
+
+<div *ngIf="!hasMore && users.length > 0" class="text-center text-sm text-gray-500 py-4">
+    You've reached the end.
+</div>

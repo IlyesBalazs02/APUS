@@ -1,0 +1,17 @@
+<div class="charts-root">
+    <section *ngIf="hasCoordinates" class="chart-card">
+        <h6 class="chart-title">Elevation profile</h6>
+        <div class="chart-wrapper">
+            <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'">
+            </canvas>
+        </div>
+    </section>
+
+    <section *ngIf="hasHeartRate" class="chart-card">
+        <h6 class="chart-title">Heart rate profile</h6>
+        <div class="chart-wrapper">
+            <canvas baseChart [data]="hrChartData" [options]="hrChartOptions" [type]="'line'">
+            </canvas>
+        </div>
+    </section>
+</div>

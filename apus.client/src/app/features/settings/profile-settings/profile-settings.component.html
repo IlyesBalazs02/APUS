@@ -1,0 +1,84 @@
+<div class="settings-container">
+    <h2>Profile Settings</h2>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()">
+
+        <!-- Name fields -->
+        <div class="setting-item">
+            <div class="name-fields">
+                <div class="setting-info">
+                    <label>First Name</label>
+                    <input type="text" formControlName="firstName" placeholder="Enter your first name" />
+                </div>
+
+                <div class="setting-info">
+                    <label>Last Name</label>
+                    <input type="text" formControlName="lastName" placeholder="Enter your last name" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar row -->
+        <div class="setting-item clickable" (click)="openAvatarModal()">
+            <div class="setting-info">
+                <label>Avatar</label>
+                <p>Choose a profile picture visible to others.</p>
+            </div>
+
+            <div class="avatar-inline">
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-lg" loading="lazy" />
+                <button type="button" class="link-btn" (click)="$event.stopPropagation(); openAvatarModal()">
+                    Change avatar
+                </button>
+            </div>
+        </div>
+
+
+
+        <!-- Bio -->
+        <div class="setting-item">
+            <div class="setting-info">
+                <label>Bio</label>
+                <p>Tell something about yourself (max 300 characters).</p>
+            </div>
+            <textarea formControlName="bio" rows="4" placeholder="Write your bio..." maxlength="300"></textarea>
+            <div class="char-counter">
+                {{ profileForm.get('bio')?.value?.length || 0 }}/300
+            </div>
+        </div>
+
+        <button type="submit" class="save-btn" [disabled]="profileForm.invalid || isSaving">
+            {{ isSaving ? 'Saving…' : 'Save Changes' }}
+        </button>
+    </form>
+
+    <!-- Avatar Modal -->
+    <div class="ps-backdrop" *ngIf="showAvatarModal" (click)="closeAvatarModal()">
+        <div class="ps-modal" (click)="$event.stopPropagation()" (keyup.escape)="closeAvatarModal()" tabindex="0">
+            <span class="ps-close" (click)="closeAvatarModal()">×</span>
+            <h3>Change avatar</h3>
+            <p>Upload a new image. The previous one will be removed.</p>
+
+            <div class="ps-modal-body">
+                <img [src]="selectedAvatarPreview || avatarUrl" alt="Current avatar" class="avatar-medium" />
+
+                <input type="file" (change)="onAvatarFilePicked($event)" accept="image/*" />
+            </div>
+
+            <div class="ps-modal-actions">
+                <button type="button" class="danger" [disabled]="isDefaultAvatar || isUploading"
+                    (click)="deleteAvatar()">
+                    Remove current
+                </button>
+
+                <span class="spacer"></span>
+
+                <button type="button" (click)="closeAvatarModal()">Cancel</button>
+
+                <button type="button" [disabled]="!selectedAvatarFile || isUploading" (click)="saveAvatar()">
+                    {{ isUploading ? 'Uploading…' : 'Save' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

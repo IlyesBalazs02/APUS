@@ -1,0 +1,66 @@
+<div class="privacy-container">
+    <h2>Privacy Settings</h2>
+
+    <ng-container *ngIf="!isLoading; else loadingTpl">
+
+        <div *ngIf="hasError" class="error-msg" role="alert">
+            Failed to load your privacy settings. Please try again.
+        </div>
+
+        <div *ngIf="successMessage" class="success-msg" role="status">
+            {{ successMessage }}
+        </div>
+
+        <form [formGroup]="privacyForm" (ngSubmit)="onSave()">
+            <!-- Allow Follow -->
+            <div class="setting-item" [class.is-disabled]="privacyForm.disabled">
+                <div class="setting-info">
+                    <label for="allowFollow">Allow people to follow you</label>
+                    <p>Let people follow you to see your activities in their feed.</p>
+                </div>
+
+                <label class="switch">
+                    <input id="allowFollow" type="checkbox" formControlName="allowFollow" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Activity Visibility -->
+            <div class="setting-item" [class.is-disabled]="privacyForm.disabled">
+                <div class="setting-info">
+                    <label for="activityVisibility">Who can see your activities</label>
+                    <p>Control who can view your posted activities.</p>
+                </div>
+
+                <select id="activityVisibility" formControlName="activityVisibility">
+                    <option *ngFor="let v of visibilityOptions" [value]="v">{{ v }}</option>
+                </select>
+            </div>
+
+            <!-- Profile Visibility -->
+            <div class="setting-item" [class.is-disabled]="privacyForm.disabled">
+                <div class="setting-info">
+                    <label for="profileVisibility">Who can see your profile</label>
+                    <p>Control who can view your profile details and stats.</p>
+                </div>
+
+                <select id="profileVisibility" formControlName="profileVisibility">
+                    <option *ngFor="let v of visibilityOptions" [value]="v">{{ v }}</option>
+                </select>
+            </div>
+
+            <!-- Save -->
+            <button type="submit" class="save-btn" [disabled]="privacyForm.pristine || isSaving || isLoading">
+                <span *ngIf="!isSaving">Save Changes</span>
+                <span *ngIf="isSaving">Saving…</span>
+            </button>
+
+        </form>
+    </ng-container>
+
+    <ng-template #loadingTpl>
+        <div class="loading">
+            Loading your privacy settings…
+        </div>
+    </ng-template>
+</div>

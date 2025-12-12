@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APUS.tests", "APUS.tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APUS.Server.Tests", "APUS.Server.Tests\APUS.Server.Tests.csproj", "{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APUS.Routing", "APUS.Routing\APUS.Routing.csproj", "{4E24A675-9E3E-47A9-BDE1-3757732CF831}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F78A85F7-3018-4634-8E4A-F44D70FDBCE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E24A675-9E3E-47A9-BDE1-3757732CF831}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E24A675-9E3E-47A9-BDE1-3757732CF831}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E24A675-9E3E-47A9-BDE1-3757732CF831}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E24A675-9E3E-47A9-BDE1-3757732CF831}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

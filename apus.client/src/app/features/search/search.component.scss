@@ -1,0 +1,215 @@
+:host {
+  display: block;
+  padding: 1.25rem 1.75rem 1.9rem;
+}
+
+.search-container {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* HEADER */
+
+.search-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-main h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e5e7eb;
+}
+
+.header-main .subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* SEARCH BAR */
+
+.searchbar {
+  margin-top: 0.2rem;
+}
+
+.searchbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.5rem 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent),
+              rgba(15, 23, 42, 0.96);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.9);
+}
+
+.prefix-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  opacity: 0.7;
+
+  svg {
+    fill: #9ca3af;
+  }
+}
+
+.searchbar-inner input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.1rem;
+}
+
+.searchbar-inner input::placeholder {
+  color: #6b7280;
+}
+
+/* Buttons */
+
+.btn {
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+}
+
+.btn.primary {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  border-color: rgba(129, 140, 248, 0.95);
+}
+
+.btn:hover:not(:disabled) {
+  background-color: rgba(30, 64, 175, 0.95);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.9);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.9);
+}
+
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* TABS */
+
+.search-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.1rem 0.15rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.9);
+}
+
+.search-nav a {
+  position: relative;
+  padding: 0.45rem 0.95rem 0.55rem;
+  font-size: 0.86rem;
+  color: #9ca3af;
+  text-decoration: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.12s ease-out,
+    background-color 0.12s ease-out,
+    transform 0.08s ease-out;
+}
+
+.search-nav a::after {
+  content: '';
+  position: absolute;
+  inset: auto 18% -2px 18%;
+  height: 2px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background-color 0.12s ease-out, transform 0.08s ease-out;
+  transform-origin: center;
+}
+
+.search-nav a:hover {
+  color: #e5e7eb;
+  background-color: rgba(31, 41, 55, 0.9);
+}
+
+.search-nav a.active {
+  color: #e5e7eb;
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.22), transparent);
+}
+
+.search-nav a.active::after {
+  background: linear-gradient(to right, #60a5fa, #a855f7);
+  transform: scaleX(1.04);
+}
+
+/* CONTENT WRAPPER */
+
+.search-content {
+  margin-top: 0.4rem;
+}
+
+.search-card {
+  border-radius: 16px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.2), transparent),
+              rgba(15, 23, 42, 0.98);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.9);
+  padding: 0.9rem 1.1rem 1rem;
+  min-height: 120px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  :host {
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .search-container {
+    max-width: 100%;
+  }
+
+  .search-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .searchbar-inner {
+    padding-right: 0.45rem;
+  }
+
+  .btn.primary {
+    padding-inline: 0.7rem;
+  }
+}

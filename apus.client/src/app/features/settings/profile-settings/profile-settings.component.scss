@@ -1,0 +1,359 @@
+:host {
+  display: block;
+}
+
+/* MAIN WRAPPER – inside settings-content-card */
+
+.settings-container {
+  color: #e5e7eb;
+}
+
+.settings-container h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* FORM LAYOUT */
+
+.settings-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Generic setting row */
+
+.setting-item {
+  border-radius: 12px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.98);
+  padding: 0.7rem 0.9rem;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setting-item + .setting-item {
+  margin-top: 0.25rem;
+}
+
+.setting-item.clickable {
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+
+  &:hover {
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.24), transparent),
+                rgba(15, 23, 42, 0.99);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.95);
+  }
+}
+
+/* NAME FIELDS */
+
+.name-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.setting-info label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.setting-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Inputs & textarea */
+
+.settings-container input[type='text'],
+.settings-container textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.96);
+  color: #e5e7eb;
+  font-size: 0.88rem;
+  outline: none;
+  transition:
+    border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    background-color 0.12s ease-out;
+}
+
+.settings-container input::placeholder,
+.settings-container textarea::placeholder {
+  color: #6b7280;
+}
+
+.settings-container input:focus,
+.settings-container textarea:focus {
+  border-color: rgba(129, 140, 248, 0.9);
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.7);
+}
+
+.settings-container textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* Avatar inline row */
+
+.avatar-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.avatar-lg,
+.avatar-medium {
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(148, 163, 184, 0.85);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.9);
+}
+
+.avatar-lg {
+  width: 44px;
+  height: 44px;
+}
+
+.avatar-medium {
+  width: 72px;
+  height: 72px;
+}
+
+/* Link-style button inside avatar row */
+
+.link-btn {
+  border: none;
+  background: none;
+  color: #93c5fd;
+  font-size: 0.85rem;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+  color: #bfdbfe;
+}
+
+/* Bio char counter */
+
+.char-counter {
+  margin-top: 0.1rem;
+  font-size: 0.78rem;
+  text-align: right;
+  color: #9ca3af;
+}
+
+/* SAVE BUTTON */
+
+.save-btn {
+  align-self: flex-end;
+  margin-top: 0.25rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  color: #f9fafb;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+}
+
+.save-btn:hover:not(:disabled) {
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.95);
+  transform: translateY(-1px);
+}
+
+.save-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.9);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* AVATAR MODAL */
+
+.ps-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(5px);
+}
+
+/* Use unique class names to avoid clashes with other modals */
+
+.ps-modal {
+  width: min(460px, 95vw);
+  max-height: 80vh;
+  padding: 1rem 1.05rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent),
+              rgba(15, 23, 42, 0.98);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.95);
+  color: #e5e7eb;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.ps-modal h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.ps-modal p {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Close “x” */
+
+.ps-close {
+  position: absolute;
+  right: 0.85rem;
+  top: 0.6rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #9ca3af;
+  transition:
+    color 0.12s ease-out,
+    transform 0.08s ease-out;
+}
+
+.ps-close:hover {
+  color: #e5e7eb;
+  transform: scale(1.05);
+}
+
+/* Modal body */
+
+.ps-modal-body {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.ps-modal-body input[type='file'] {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+/* Modal actions */
+
+.ps-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.1rem;
+}
+
+.ps-modal-actions .spacer {
+  flex: 1 1 auto;
+}
+
+/* Buttons inside modal */
+
+.ps-modal-actions button {
+  padding: 0.38rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+}
+
+.ps-modal-actions button:hover:not(:disabled) {
+  background-color: rgba(30, 64, 175, 0.95);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.9);
+  transform: translateY(-1px);
+}
+
+.ps-modal-actions button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.9);
+}
+
+.ps-modal-actions button[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Danger style for “Remove current” */
+
+.ps-modal-actions .danger {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.85);
+  color: #fecaca;
+}
+
+.ps-modal-actions .danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.3);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .name-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .avatar-inline {
+    justify-content: flex-start;
+    margin-left: 0;
+    margin-top: 0.35rem;
+  }
+
+  .save-btn {
+    align-self: stretch;
+    text-align: center;
+  }
+}

@@ -1,0 +1,22 @@
+<div class="settings-page">
+    <section class="settings-container">
+        <header class="settings-header">
+            <div class="header-main">
+                <h1>Settings</h1>
+                <p class="subtitle">
+                    Manage your account, profile details and privacy preferences.
+                </p>
+            </div>
+        </header>
+
+        <nav class="settings-nav">
+            <a routerLink="account" routerLinkActive="active">Account</a>
+            <a routerLink="profile" routerLinkActive="active">Profile</a>
+            <a routerLink="privacy" routerLinkActive="active">Privacy</a>
+        </nav>
+
+        <section class="settings-content-card">
+            <router-outlet></router-outlet>
+        </section>
+    </section>
+</div>

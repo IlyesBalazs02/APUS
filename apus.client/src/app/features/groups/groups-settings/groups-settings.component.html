@@ -1,0 +1,180 @@
+<div class="settings-container">
+    <h2>Group Settings</h2>
+
+    <div *ngIf="loading" class="text-muted">Loading settings…</div>
+    <div *ngIf="!loading && error" class="error">{{ error }}</div>
+
+    <div *ngIf="!loading && settings" class="settings-list">
+        <!-- Name -->
+        <div class="setting-item" (click)="openModal('name')">
+            <div class="setting-label">Group name</div>
+            <div class="setting-value">{{ settings.name }}</div>
+        </div>
+
+        <!-- Description -->
+        <div class="setting-item" (click)="openModal('description')">
+            <div class="setting-label">Group bio</div>
+            <div class="setting-value text-muted">
+                {{ settings.description || 'Add a short description' }}
+            </div>
+        </div>
+
+        <!-- Who can join -->
+        <div class="setting-item" (click)="openModal('join')">
+            <div class="setting-label">Who can join?</div>
+            <div class="setting-value text-muted">
+                {{ settings.isOpen ? 'Anyone can join directly' : 'Join request required' }}
+            </div>
+        </div>
+
+        <!-- Who can post -->
+        <div class="setting-item" (click)="openModal('post')">
+            <div class="setting-label">Who can post?</div>
+            <div class="setting-value text-muted">
+                {{ settings.whoCanPost === GroupPostPermission.AdminsOnly ? 'Only admins' : 'All members' }}
+            </div>
+        </div>
+
+        <!-- Who can create events -->
+        <div class="setting-item" (click)="openModal('event')">
+            <div class="setting-label">Who can create events?</div>
+            <div class="setting-value text-muted">
+                {{ settings.whoCanCreateEvent === GroupEventPermission.AdminsOnly ? 'Only admins' : 'All members' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Modal -->
+    <div class="group-settings-modal-backdrop" *ngIf="activeModal === 'name'" (click)="closeModal()">
+        <div class="group-settings-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Group name</h3>
+
+            <form #nameForm="ngForm">
+                <input type="text" placeholder="Group name" name="name" [(ngModel)]="nameDraft" #nameCtrl="ngModel"
+                    required />
+                <div *ngIf="nameCtrl.invalid && nameCtrl.touched" class="error">
+                    Name is required.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="!nameForm.valid || saving" (click)="saveName()">
+                        {{ saving ? 'Saving…' : 'Save' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Description Modal -->
+    <div class="group-settings-modal-backdrop" *ngIf="activeModal === 'description'" (click)="closeModal()">
+        <div class="group-settings-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Group bio</h3>
+
+            <form #descForm="ngForm">
+                <textarea rows="4" placeholder="Short description of the group" name="description"
+                    [(ngModel)]="descriptionDraft"></textarea>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="saving" (click)="saveDescription()">
+                        {{ saving ? 'Saving…' : 'Save' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Who can join Modal -->
+    <div class="group-settings-modal-backdrop" *ngIf="activeModal === 'join'" (click)="closeModal()">
+        <div class="group-settings-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Who can join?</h3>
+
+            <form #joinForm="ngForm">
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="join" [(ngModel)]="joinDraft" value="open" />
+                        Anyone can join directly
+                    </label>
+                    <label>
+                        <input type="radio" name="join" [(ngModel)]="joinDraft" value="closed" />
+                        Join request required
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="saving" (click)="saveJoinPermission()">
+                        {{ saving ? 'Saving…' : 'Save' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Who can post Modal -->
+    <div class="group-settings-modal-backdrop" *ngIf="activeModal === 'post'" (click)="closeModal()">
+        <div class="group-settings-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Who can post?</h3>
+
+            <form #postForm="ngForm">
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="post" [(ngModel)]="postDraft" value="admins" />
+                        Only admins can post
+                    </label>
+                    <label>
+                        <input type="radio" name="post" [(ngModel)]="postDraft" value="members" />
+                        All members can post
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="saving" (click)="savePostPermission()">
+                        {{ saving ? 'Saving…' : 'Save' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Who can create events Modal -->
+    <div class="group-settings-modal-backdrop" *ngIf="activeModal === 'event'" (click)="closeModal()">
+        <div class="group-settings-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Who can create events?</h3>
+
+            <form #eventForm="ngForm">
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="event" [(ngModel)]="eventDraft" value="admins" />
+                        Only admins can create events
+                    </label>
+                    <label>
+                        <input type="radio" name="event" [(ngModel)]="eventDraft" value="members" />
+                        All members can create events
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="saving" (click)="saveEventPermission()">
+                        {{ saving ? 'Saving…' : 'Save' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div *ngIf="saved && !activeModal" class="saved-banner">
+        Settings saved ✔
+    </div>
+</div>

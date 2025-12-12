@@ -4,10 +4,13 @@
 	{
 		void CreateActivityFolder(string activityId, string userId);
 		void CreateUserFolder(string userId);
+		void CreateLAModelFolder(string userId);
+		void CreateTrackFile(string userId);
 		IEnumerable<string> GetImageFileNames(string activityId, string userId);
 		string ReturnFirstFilePath(string activityId, string userId);
 		string ReturnTrackImagePath(string activityId, string userId);
 		Task SaveImagesAsync(string activityId, IFormFileCollection images, string userId);
-		Task SaveTrackAsync(string activityId, string userId, IFormFile trackFile);
+		Task<string> SaveTrackAsync(string activityId, string userId, IFormFile trackFile);
+		void DeleteImages(string activityId, string userId, IReadOnlyCollection<string> fileNames);
 	}
 }

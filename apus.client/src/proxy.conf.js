@@ -1,7 +1,5 @@
 const { env } = require('process');
 
-/*const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:7244` :
-  env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:5084';*/
   const target = 'https://localhost:7244';
 
 const PROXY_CONFIG = [
@@ -13,8 +11,24 @@ const PROXY_CONFIG = [
       "/activities",
       "/images/**",
       "/Images/**",
+      "profile/**",
+      "Profile/**",
+      "UserProfile/**",
+      "siteUser/**",
+      "SiteUser/**",
+      "Account/**",
+      "Account/**",
+      "privacy/**",
+      "Privacy/**",
+      "Search/**",
+      "Friends/**",
+      "Routing/**",
+      "GroupSettings/**",
+      "GroupPost/**",
       "/Activities/**",
-      "/Users/**"
+      "Auth/**",
+      "/Users/**",
+      "/Perm/**"
     ],
     target,
     secure: false

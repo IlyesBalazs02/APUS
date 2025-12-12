@@ -1,0 +1,112 @@
+<ng-container *ngIf="group as g">
+    <section class="group-page">
+
+        <!-- HEADER -->
+        <header class="group-header">
+            <div class="group-header-main">
+                <div class="group-title-row">
+                    <h2 class="group-name">{{ g.name }}</h2>
+
+                    <span class="group-visibility-pill" [class.open]="g.isOpen" [class.closed]="!g.isOpen">
+                        {{ g.isOpen ? 'Open group' : 'Private group' }}
+                    </span>
+                </div>
+
+                <p class="group-description">
+                    {{ g.description || 'No description provided.' }}
+                </p>
+
+                <div class="group-meta">
+                    <button class="linklike" (click)="openMembers()">
+                        Members: <strong>{{ g.memberCount }}</strong>
+                    </button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <!-- Not a member -->
+                <ng-container *ngIf="!isMember">
+                    <!-- No pending request yet -->
+                    <button class="btn primary" *ngIf="!hasPendingJoinRequest" (click)="join()" [disabled]="joining">
+                        {{ group?.isOpen ? 'Join group' : 'Send join request' }}
+                    </button>
+
+                    <!-- Pending request -->
+                    <button class="btn pending" *ngIf="hasPendingJoinRequest" disabled>
+                        Request sent
+                    </button>
+                </ng-container>
+
+                <!-- Already a member -->
+                <button class="btn subtle" *ngIf="isMember" (click)="leave()" [disabled]="leaving">
+                    Leave group
+                </button>
+            </div>
+        </header>
+
+        <!-- TABS -->
+        <nav class="tabs">
+            <a routerLink="posts" routerLinkActive="active">
+                <span>Posts</span>
+            </a>
+            <a routerLink="events" routerLinkActive="active">
+                <span>Events</span>
+            </a>
+            <a *ngIf="isAdmin" routerLink="requests" routerLinkActive="active">
+                <span>Requests</span>
+            </a>
+            <a *ngIf="isAdmin" routerLink="settings" routerLinkActive="active">
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <!-- CONTENT -->
+        <section class="group-content">
+            <router-outlet></router-outlet>
+        </section>
+
+        <!-- MEMBERS MODAL -->
+        <div class="group-modal-backdrop" *ngIf="membersOpen" (click)="closeMembers()">
+            <div class="group-modal" (click)="$event.stopPropagation()">
+                <header class="group-modal-header">
+                    <div>
+                        <h3>Members</h3>
+                        <p class="modal-subtitle">
+                            {{ members.length }} member{{ members.length === 1 ? '' : 's' }} in this group
+                        </p>
+                    </div>
+                    <button class="btn subtle" (click)="closeMembers()">Close</button>
+                </header>
+
+                <div class="group-modal-body" *ngIf="loadingMembers">
+                    <div class="spinner"></div>
+                    <span>Loading members…</span>
+                </div>
+
+                <ul class="members-list" *ngIf="!loadingMembers">
+                    <li *ngFor="let m of members" class="member-row">
+                        <span class="who">
+                            <img [src]="avatarUrl(m)" class="avatar" />
+                            <span class="name-row">
+                                <strong>{{ m.fullName }}</strong>
+                                <small>Joined: {{ m.joinedAtUtc | date:'mediumDate' }}</small>
+                            </span>
+                            <span class="role-pill">
+                                {{ m.role }}
+                            </span>
+                        </span>
+
+                        <button class="btn danger" *ngIf="isAdmin && m.userId !== currentUserId" (click)="kick(m)">
+                            Kick
+                        </button>
+                    </li>
+
+                    <li *ngIf="!members.length" class="no-members">
+                        No members found.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </section>
+</ng-container>

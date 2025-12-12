@@ -1,0 +1,168 @@
+<section *ngIf="group as g" class="events-page">
+
+    <!-- HEADER -->
+    <header class="events-header">
+        <div>
+            <h3>Events</h3>
+            <p class="subtitle">
+                Plan group runs, hikes and meetups for <strong>{{ g.name }}</strong>.
+            </p>
+        </div>
+    </header>
+
+    <!-- CREATE EVENT CARD -->
+    <article class="event-card event-card--create" *ngIf="canCreateEvent">
+        <header class="event-card__header">
+            <div>
+                <h4>Create event</h4>
+                <p class="event-card__hint">
+                    Give it a clear title, optional description and date.
+                </p>
+            </div>
+        </header>
+
+        <div class="event-card__body">
+            <div class="field">
+                <label>
+                    Title
+                    <input type="text" [(ngModel)]="title" [attr.maxlength]="maxTitleLength"
+                        placeholder="Morning long run, Evening hike…" />
+                </label>
+            </div>
+
+            <div class="field">
+                <label>
+                    Description
+                    <textarea rows="3" [(ngModel)]="description" [attr.maxlength]="maxDescriptionLength"
+                        placeholder="Where to meet, pace, what to bring…"></textarea>
+                </label>
+            </div>
+
+            <div class="field field--inline">
+                <label>
+                    Start time
+                    <input type="datetime-local" [(ngModel)]="startsAtLocal" />
+                </label>
+            </div>
+        </div>
+
+        <footer class="event-card__footer">
+            <button class="btn primary" (click)="createEvent()" [disabled]="creating || !title.trim()">
+                Create event
+            </button>
+            <span class="error" *ngIf="createError">{{ createError }}</span>
+        </footer>
+    </article>
+
+    <!-- LIST / LOADING STATES -->
+    <div *ngIf="loading" class="events-loading">
+        Loading events…
+    </div>
+
+    <div *ngIf="!loading && events.length === 0" class="events-empty">
+        No events planned yet.
+    </div>
+
+    <div class="events-list">
+        <article *ngFor="let e of events" class="event-card">
+
+            <!-- left timeline dot -->
+            <div class="event-card__timeline-dot"></div>
+
+            <header class="event-card__header">
+                <div class="event-card__title-block">
+                    <h4>{{ e.title }}</h4>
+
+                    <div class="event-card__chips">
+                        <span class="chip chip--primary" *ngIf="e.startsAtUtc">
+                            {{ e.startsAtUtc | date:'medium' }}
+                        </span>
+                        <span class="chip chip--muted" *ngIf="!e.startsAtUtc">
+                            Time not set
+                        </span>
+                        <span class="chip chip--outline" *ngIf="e.trackActivityId">
+                            Track attached
+                        </span>
+                    </div>
+                </div>
+
+                <div class="event-card__creator">
+                    <img [src]="avatarUrl(e)" class="avatar" />
+                    <div class="creator-meta">
+                        <span class="name">{{ e.createdByFullName }}</span>
+                        <span class="created-at">
+                            {{ e.createdAtUtc | date:'short' }}
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="event-card__body">
+                <p *ngIf="e.description; else noDesc" class="event-card__description">
+                    {{ e.description }}
+                </p>
+                <ng-template #noDesc>
+                    <p class="event-card__description event-card__description--muted">
+                        No description provided.
+                    </p>
+                </ng-template>
+            </div>
+
+            <footer>
+                <span class="creator">
+                    Created by {{ e.createdByFullName }}
+                    • {{ e.createdAtUtc | date:'short' }}
+                </span>
+
+                <div class="event-actions">
+                    <button class="btn primary" *ngIf="canJoin(e)" (click)="joinEvent(e)"
+                        [disabled]="joiningEventId === e.id">
+                        Join
+                    </button>
+
+                    <button class="btn" *ngIf="canLeave(e)" (click)="leaveEvent(e)"
+                        [disabled]="leavingEventId === e.id">
+                        Leave
+                    </button>
+
+                    <button class="linklike" (click)="openParticipantsModal(e)">
+                        Participants: {{ e.participantCount || 0 }}
+                    </button>
+                </div>
+            </footer>
+        </article>
+    </div>
+
+    <div #sentinel class="sentinel" *ngIf="hasMore && !loadingMore"></div>
+    <div class="events-loading" *ngIf="loadingMore">Loading more…</div>
+
+    <!-- PARTICIPANTS MODAL -->
+    <div class="group-modal-backdrop" *ngIf="participantsOpen" (click)="closeParticipantsModal()">
+        <div class="group-modal group-modal--narrow" (click)="$event.stopPropagation()">
+            <header>
+                <h3>Participants – {{ participantsEvent?.title }}</h3>
+                <button class="btn" (click)="closeParticipantsModal()">Close</button>
+            </header>
+
+            <div *ngIf="loadingParticipants" class="events-loading">
+                Loading…
+            </div>
+
+            <ul *ngIf="!loadingParticipants" class="participants-list">
+                <li *ngFor="let p of participants" class="member-row">
+                    <span class="who">
+                        <img [src]="p.avatarUrl" class="avatar" />
+                        <div class="who-text">
+                            <strong>{{ p.fullName }}</strong>
+                            <small>Joined: {{ p.joinedAtUtc | date:'mediumDate' }}</small>
+                        </div>
+                    </span>
+                </li>
+                <li *ngIf="!participants.length && !loadingParticipants" class="participants-empty">
+                    <em>No one has joined yet.</em>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</section>

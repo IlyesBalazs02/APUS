@@ -1,6 +1,8 @@
-﻿using APUS.Server.Controllers;
-using APUS.Server.DTOs;
-using APUS.Server.Models;
+﻿using APUS.Server.Controllers.UserControllers;
+using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs;
+using APUS.Server.Domain.DTOs.Auth;
+using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +25,7 @@ namespace APUS.Server.Tests.Controllers
 		private readonly Mock<UserManager<SiteUser>> _userMgrMock;
 		private readonly Mock<SignInManager<SiteUser>> _signInMgrMock;
 		private readonly Mock<IStorageService> _storageMock = new();
+		private readonly Mock<ISiteUserRepository> _siteUserRepoMock = new();
 		private readonly AuthController _auth;
 
 		public AuthControllerTests()
@@ -53,7 +56,7 @@ namespace APUS.Server.Tests.Controllers
 				_configMock.Object,
 				_userMgrMock.Object,
 				_signInMgrMock.Object,
-				_storageMock.Object);
+				_siteUserRepoMock.Object);
 
 			_auth.ControllerContext = new ControllerContext
 			{

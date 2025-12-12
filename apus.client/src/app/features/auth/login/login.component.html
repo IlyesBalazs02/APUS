@@ -1,5 +1,35 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <input formControlName="email" placeholder="Email" type="email" />
-    <input formControlName="password" placeholder="Password" type="password" />
-    <button type="submit" [disabled]="form.invalid">Login</button>
-</form>
+<div class="login-page">
+    <div class="login-card">
+        <header class="login-header">
+            <h1>Sign in</h1>
+        </header>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" formControlName="email" type="email" placeholder="you@example.com" />
+                <div class="error" *ngIf="form.controls['email'].invalid && form.controls['email'].touched">
+                    Please enter a valid email address.
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" formControlName="password" type="password" placeholder="Your password" />
+                <div class="error" *ngIf="form.controls['password'].invalid && form.controls['password'].touched">
+                    Password is required.
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <button type="submit" class="btn primary" [disabled]="form.invalid">
+                    Login
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>

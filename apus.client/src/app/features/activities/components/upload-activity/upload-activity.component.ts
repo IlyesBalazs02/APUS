@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import * as ExifReader from 'exifreader';
+import { ExifService } from '../services/ExifService';
 
 interface UploadResponse {
   id: number;
@@ -19,12 +21,29 @@ export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});
 
-  // Drag & Drop state
   isDragOver = false;
   files: File[] = [];
   previewUrls: string[] = [];
 
-  constructor(private http: HttpClient, private router: Router) { }
+  isUploadingTrack = false;
+  isUploadingImages = false;
+  uploadMessage = '';
+
+  activityTypes = [
+    { value: 'MainActivity', label: 'Activity' },
+    { value: 'Running', label: 'Running' },
+    { value: 'Hiking', label: 'Hiking' },
+    { value: 'Cycling', label: 'Cycling' },
+    { value: 'GpsRelatedActivity', label: 'Gps-related' },
+  ];
+
+  selectedActivityType = 'GpsRelatedActivity';
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private exifService: ExifService
+  ) { }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -33,7 +52,11 @@ export class UploadActivityComponent {
     }
   }
 
-  // Drag & Drop handlers
+  onActivityTypeChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.selectedActivityType = select.value;
+  }
+
   onDragOver(event: DragEvent) {
     event.preventDefault();
     this.isDragOver = true;
@@ -57,10 +80,21 @@ export class UploadActivityComponent {
     this.handleFiles(selected);
   }
 
-  private handleFiles(files: File[]) {
+  exifDataMap: Map<string, any> = new Map();
+
+  private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
-    images.forEach(file => {
+
+    const exifMap = await this.exifService.extractMany(images);
+
+    for (const file of images) {
       this.files.push(file);
+
+      const meta = exifMap.get(file.name);
+      if (meta?.dateTaken) {
+        this.exifDataMap.set(file.name, meta);
+      }
+
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -68,41 +102,75 @@ export class UploadActivityComponent {
         }
       };
       reader.readAsDataURL(file);
-    });
-
+    }
   }
 
   removeImage(i: number) {
     this.previewUrls.splice(i, 1);
-
     this.files.splice(i, 1);
   }
 
   submit(): void {
-    const formData = new FormData();
-    if (this.selectedFile) {
-      formData.append('trackFile', this.selectedFile, this.selectedFile.name);
+    if (!this.selectedFile) {
+      return;
     }
 
-    this.http.post<UploadResponse>('/api/activityfile/upload-activity', formData, { withCredentials: true })
-      .subscribe(response => {
+    const formData = new FormData();
+    formData.append('trackFile', this.selectedFile, this.selectedFile.name);
 
-        if (this.files.length === 0) return;
+    formData.append('activityType', this.selectedActivityType);
+
+    this.isUploadingTrack = true;
+    this.isUploadingImages = false;
+    this.uploadMessage = 'Uploading track...';
+
+    this.http.post<UploadResponse>(
+      '/api/activityfile/upload-activity',
+      formData,
+      { withCredentials: true }
+    ).subscribe({
+      next: (response) => {
+        this.isUploadingTrack = false;
 
         const activityId = response.id;
 
-        const formData = new FormData();
-        this.files.forEach(f => formData.append('images', f));
+        if (this.files.length === 0) {
+          this.uploadMessage = '';
+          this.router.navigate(['/activities', activityId]);
+          return;
+        }
 
-        this.http.post(`/api/images/${response.id}/images`, formData, { withCredentials: true })
-          .subscribe(() => {
-            console.log('Pictures uploaded!');
-            this.router.navigate(['/activities', response.id]);
-          }, err => {
-            console.log('Error uploading pictures', err);
-          });
-      }, error => {
+        this.isUploadingImages = true;
+        this.uploadMessage = 'Uploading images...';
+
+        const imgFormData = new FormData();
+        this.files.forEach(f => imgFormData.append('images', f));
+
+        const exifJson = JSON.stringify(Object.fromEntries(this.exifDataMap.entries()));
+        imgFormData.append('exifJson', exifJson);
+
+        this.http.post(
+          `/api/images/${activityId}/images`,
+          imgFormData,
+          { withCredentials: true }
+        ).subscribe({
+          next: () => {
+            this.isUploadingImages = false;
+            this.uploadMessage = '';
+            this.router.navigate(['/activities', activityId]);
+          },
+          error: err => {
+            this.isUploadingImages = false;
+            this.uploadMessage = 'Error uploading images.';
+            console.error('Error uploading pictures', err);
+          }
+        });
+      },
+      error: error => {
+        this.isUploadingTrack = false;
+        this.uploadMessage = 'Error uploading track.';
         console.error('Upload error', error);
-      });
+      }
+    });
   }
 }

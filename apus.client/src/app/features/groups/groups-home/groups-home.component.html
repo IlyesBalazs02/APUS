@@ -1,0 +1,113 @@
+<div class="groups-home">
+    <section class="toolbar">
+        <div class="toolbar-main">
+            <h2 class="title">Groups</h2>
+            <p class="subtitle">
+                Discover communities to train with, or create your own group.
+            </p>
+        </div>
+
+        <div class="toolbar-search">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="search-input" [(ngModel)]="q" (ngModelChange)="onSearchChange($event)"
+                    placeholder="Search groups..." />
+            </div>
+        </div>
+    </section>
+
+    <section class="create">
+        <details class="create-accordion" [open]="false">
+            <summary>
+                <div class="summary-inner">
+                    <span class="summary-title">Create group</span>
+                    <span class="summary-subtitle">Start a new training community</span>
+                </div>
+            </summary>
+
+            <div class="form-grid">
+                <input class="input" placeholder="Name" [(ngModel)]="newGroup.name" />
+
+                <label class="row checkbox-row">
+                    <input type="checkbox" [(ngModel)]="newGroup.isOpen" />Open to join without approval
+                </label>
+
+                <textarea class="textarea" placeholder="Description (optional)"
+                    [(ngModel)]="newGroup.description"></textarea>
+
+                <div class="row actions-row">
+                    <button class="btn primary" (click)="create()" [disabled]="creating || !newGroup.name?.trim()">
+                        {{ creating ? 'Creating…' : 'Create group' }}
+                    </button>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    <section class="list">
+        <ng-container *ngIf="groups.length; else noGroups">
+            <a *ngFor="let g of groups" class="group-card" [routerLink]="['/groups', g.id]">
+                <div class="card-main">
+                    <div class="avatar-badge">
+                        {{ g.name | slice:0:1 }}
+                    </div>
+
+                    <div class="text-block">
+                        <h4 class="name">{{ g.name }}</h4>
+
+                        <p class="desc">
+                            {{ g.description || 'No description provided.' }}
+                        </p>
+
+                        <div class="meta">
+                            <span class="meta-item">
+                                <i class="bi bi-people"></i>
+                                <span>{{ g.memberCount }} member{{ g.memberCount === 1 ? '' : 's' }}</span>
+                            </span>
+
+                            <span class="meta-item pill" *ngIf="g.isOpen === true">
+                                <span class="pill-dot open"></span>
+                                Open group
+                            </span>
+
+                            <span class="meta-item pill" *ngIf="g.isOpen === false">
+                                <span class="pill-dot closed"></span>
+                                Private group
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="chevron">
+                    <i class="bi bi-chevron-right"></i>
+                </span>
+            </a>
+
+            <div class="load-more">
+                <button class="btn" *ngIf="hasMore && !loading" (click)="loadMore()">
+                    Load more
+                </button>
+
+                <div class="status" *ngIf="loading">
+                    <span class="spinner"></span> Loading…
+                </div>
+
+                <div class="status" *ngIf="!hasMore && groups.length">
+                    No more groups
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #noGroups>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h3>No groups found</h3>
+                <p>
+                    Try a different search, or create a new group above.
+                </p>
+            </div>
+        </ng-template>
+    </section>
+</div>

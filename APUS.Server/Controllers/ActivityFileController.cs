@@ -1,6 +1,7 @@
-﻿using APUS.Server.Data;
-using APUS.Server.DTOs;
-using APUS.Server.Models;
+﻿using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Routing;
+using APUS.Server.Domain.Models;
+using APUS.Server.Services.Implementations.FileServices;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace APUS.Server.Controllers
 		private readonly ITrackpointLoader _loader;
 		private readonly ICreateOsmMapPng _createOsmMapPng;
 		private readonly Func<string, IActivityImportService> _importerFactory;
+		private readonly IHuberRegressor _linearAggression;
 
 
 		public ActivityFileController(
@@ -32,7 +34,8 @@ namespace APUS.Server.Controllers
 			IStorageService storageService,
 			ITrackpointLoader loader,
 			ICreateOsmMapPng createOsmMapPng,
-			Func<string, IActivityImportService> importerFactory
+			Func<string, IActivityImportService> importerFactory,
+			IHuberRegressor linearaggression
 			)
 		{
 			_logger = logger;
@@ -41,6 +44,7 @@ namespace APUS.Server.Controllers
 			_loader = loader;
 			_createOsmMapPng = createOsmMapPng;
 			_importerFactory = importerFactory;
+			_linearAggression = linearaggression;
 		}
 
 		[HttpPost("upload-activity")]
@@ -48,7 +52,7 @@ namespace APUS.Server.Controllers
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile)
+		public async Task<IActionResult> UploadActivityFile([FromForm] IFormFile trackFile, [FromForm] string? activityType)
 		{
 			if (trackFile == null || trackFile.Length == 0)
 				return BadRequest("No file provided.");
@@ -59,22 +63,57 @@ namespace APUS.Server.Controllers
 
 			//Select the correct import service based on the extension
 			var ext = Path.GetExtension(trackFile.FileName);
-			var importerFactory = _importerFactory(ext);
+			var importer = _importerFactory(ext);
 
 			try
 			{
-				var importedActivity = importerFactory.ImportActivity(ms);
+				var importedActivity = importer.ImportActivity(ms);
 
-				MainActivity newActivity = importedActivity.HasGpsTrack == true
-					? new GpsRelatedActivity
+				bool hasGps = importedActivity.HasGpsTrack == true;
+				var type = string.IsNullOrWhiteSpace(activityType)
+					? null
+					: activityType.Trim();
+
+				GpsRelatedActivity CreateGps<T>() where T : GpsRelatedActivity, new()
+					=> new T
 					{
 						TotalAscentMeters = importedActivity.TotalAscentMeters,
 						TotalDescentMeters = importedActivity.TotalDescentMeters,
 						TotalDistanceKm = importedActivity.TotalDistanceKm,
-						AvgPace = importedActivity.AvgPace
-					}
-					: new MainActivity();
+						AvgPace = importedActivity.AvgPace,
+						FinishTimeUtc = importedActivity.FinishTimeUtc
+					};
 
+				MainActivity CreatePlain<T>() where T : MainActivity, new()
+					=> new T();
+
+				MainActivity newActivity;
+
+				if (type is null)
+				{
+					newActivity = hasGps
+						? CreateGps<GpsRelatedActivity>()
+						: CreatePlain<MainActivity>();
+				}
+				else
+				{
+					newActivity = type switch
+					{
+						"Running" when hasGps => CreateGps<Running>(),
+						"Hiking" when hasGps => CreateGps<Hiking>(),
+						"Cycling" when hasGps => CreateGps<Ride>(),
+						"GpsRelatedActivity" when hasGps => CreateGps<GpsRelatedActivity>(),
+
+						// Non-GPS
+						"MainActivity" => CreatePlain<MainActivity>(),
+
+						_ => hasGps
+							? CreateGps<GpsRelatedActivity>()
+							: CreatePlain<MainActivity>()
+					};
+				}
+
+				// Common properties
 				newActivity.Title = "Imported Activity";
 				newActivity.Date = importedActivity.StartTime;
 				newActivity.Duration = importedActivity.Duration;
@@ -85,26 +124,47 @@ namespace APUS.Server.Controllers
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 				newActivity.UserId = userId;
 
-				//Create the activity into the EF database
+				// Create the activity into the EF database
 				await _activityRepository.CreateAsync(newActivity);
 
-				//Create a folder for the activity in the blob storage
+				// Create a folder for the activity in the blob storage
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 
-				//Save the uploaded file into the activity's folder
-				await _storageService.SaveTrackAsync(newActivity.Id,newActivity.UserId, trackFile);
+				// Save the uploaded file into the activity's folder
+				var savedTrackPath = await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
 
-				//If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
-				if (importedActivity.HasGpsTrack) await _createOsmMapPng.GeneratePng(newActivity);
+				// If the activity has a Track, generate a PNG that will be displayed on the DisplayActivities component
+				if (importedActivity.HasGpsTrack)
+					await _createOsmMapPng.GeneratePng(newActivity);
 
+				// If it's running, train the model
+				if (importedActivity.HasGpsTrack &&
+					newActivity is Running &&
+					(ext.Equals(".tcx", StringComparison.OrdinalIgnoreCase) ||
+					 ext.Equals(".gpx", StringComparison.OrdinalIgnoreCase)))
+				{
+					try
+					{
+						await _linearAggression.TrainAsync(userId, savedTrackPath);
+					}
+					catch (Exception laEx)
+					{
+						_logger.LogError(
+							laEx,
+							"LinearAggression training failed for user {UserId}, activity {ActivityId}. Track: {TrackPath}",
+							userId,
+							newActivity.Id,
+							savedTrackPath);
+					}
+				}
 
 				return CreatedAtRoute(
 					routeName: nameof(ActivitiesController.GetById),
 					routeValues: new { id = newActivity.Id },
 					value: newActivity
 				);
-
 			}
+
 			catch (XmlException xmlEx)
 			{
 				_logger.LogWarning(xmlEx, "Malformed XML in uploaded file");
@@ -141,6 +201,5 @@ namespace APUS.Server.Controllers
 
 			return Ok(points);
 		}
-
 	}
 }

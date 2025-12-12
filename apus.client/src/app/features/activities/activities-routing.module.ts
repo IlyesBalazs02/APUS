@@ -11,7 +11,7 @@ import { ActivityMapComponent } from './components/display-activity/activity-map
 
 const routes: Routes = [
     {
-        path: '', //   /activities
+        path: '',
         canActivateChild: [AuthGuard],
         children: [
             { path: '', component: DisplayActivitiesComponent },

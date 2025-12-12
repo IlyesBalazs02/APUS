@@ -7,7 +7,8 @@ import { RegisterDto } from '../Dto/AuthDtos';
 @Component({
   selector: 'app-register',
   standalone: false,
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
   form!: FormGroup;

@@ -1,4 +1,32 @@
-<div class="activities-list">
-    <app-activity-card *ngFor="let activity of activities" [activity]="activity">
-    </app-activity-card>
+<div class="activities-page">
+
+    <!-- TOOLBAR -->
+    <section class="activities-toolbar">
+        <div class="toolbar-main">
+        </div>
+
+        <div class="toolbar-actions">
+            <a routerLink="upload" routerLinkActive="active" class="btn ghost">
+                Upload activity
+            </a>
+        </div>
+    </section>
+
+    <!-- LIST -->
+    <section class="activities-list">
+        <div class="activities">
+            <app-activity-card *ngFor="let a of activities" [activity]="a">
+            </app-activity-card>
+        </div>
+
+        <div #sentinel class="sentinel" aria-hidden="true"></div>
+
+        <div *ngIf="loading" class="loading">
+            Loading…
+        </div>
+
+        <div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
+            No activities to show.
+        </div>
+    </section>
 </div>

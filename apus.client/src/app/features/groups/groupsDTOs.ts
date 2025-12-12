@@ -1,0 +1,136 @@
+export interface CreateGroupDto {
+    name: string;
+    description?: string | null;
+    isOpen: boolean;
+}
+
+export interface UpdateGroupDto {
+    name?: string;
+    description?: string | null;
+    isOpen?: boolean;
+}
+
+export interface GroupDto {
+    id: number;
+    name: string;
+    description?: string | null;
+    isOpen: boolean;
+    createdByUserId: string;
+    createdAtUtc: string;
+    memberCount: number;
+
+    isMember: boolean;
+    isAdmin: boolean;
+
+    hasPendingJoinRequest: boolean;
+
+    whoCanPost: GroupPostPermission;
+    whoCanCreateEvent: GroupEventPermission;
+}
+
+export interface DecideJoinRequestDto {
+    approve: boolean;
+}
+
+export interface GroupMembersDto {
+    userId: string;
+    fullName: string;
+    avatarUrl: string;
+    role: string;
+    joinedAtUtc: string;
+}
+
+export interface GroupJoinRequestDto {
+    id: number;
+    requesterUserId: string;
+    fullName: string;
+    avatarUrl: string | null;
+    requestedAtUtc: string;
+}
+
+//#region settings
+export enum GroupPostPermission {
+    AdminsOnly = 0,
+    Members = 1
+}
+
+
+export interface GroupSettingsDto {
+    groupId: number;
+    name: string;
+    description?: string | null;
+    isOpen: boolean;
+    whoCanPost: GroupPostPermission;
+    whoCanCreateEvent: GroupEventPermission;
+}
+
+export interface UpdateGroupSettingsDto {
+    name?: string;
+    description?: string | null;
+    isOpen?: boolean;
+    whoCanPost?: GroupPostPermission;
+    whoCanCreateEvent?: GroupEventPermission;
+}
+//#endregion settings
+
+//#region posts
+export interface GroupPostDto {
+    id: number;
+    groupId: number;
+
+    authorUserId: string;
+    authorFullName: string;
+    authorAvatarUrl: string | null;
+
+    title: string;
+    text: string;
+    createdAtUtc: string;
+}
+
+export interface CreateGroupPostDto {
+    title: string;
+    text: string;
+}
+
+export enum GroupEventPermission {
+    AdminsOnly = 0,
+    Members = 1
+}
+
+export interface GroupEventDto {
+    id: number;
+    groupId: number;
+    title: string;
+    description?: string | null;
+    trackActivityId?: string | null;
+    createdByUserId: string;
+    createdByFullName: string;
+    createdByAvatarUrl?: string | null;
+    createdAtUtc: string;
+    startsAtUtc?: string | null;
+
+    participantCount: number;
+    isJoinedByCurrentUser: boolean;
+}
+
+
+export interface CreateGroupEventDto {
+    title: string;
+    description?: string | null;
+    trackActivityId?: string | null;
+    startsAtUtc?: string | null;
+}
+
+export interface GroupEventParticipantDto {
+    userId: string;
+    fullName: string;
+    avatarUrl?: string | null;
+    joinedAtUtc: string;
+}
+
+export interface GroupEventParticipantDto {
+    userId: string;
+    fullName: string;
+    avatarUrl?: string | null;
+    joinedAtUtc: string;
+}

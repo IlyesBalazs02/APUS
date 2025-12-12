@@ -1,29 +1,83 @@
-<p>upload-activity works!</p>
+<form class="upload-activity-page" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="upload-card">
+        <header class="upload-header">
+            <h2>Upload activity</h2>
+            <p class="subtitle">
+                Import your GPX/TCX track and optionally attach photos taken during the activity.
+            </p>
+        </header>
 
-<form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="activityType">Activity type</label>
+                <select id="activityType" class="form-select" [value]="selectedActivityType"
+                    (change)="onActivityTypeChange($event)">
+                    <option *ngFor="let t of activityTypes" [value]="t.value">
+                        {{ t.label }}
+                    </option>
+                </select>
+                <small class="hint">This affects how the activity is categorized in statistics.</small>
+            </div>
 
-    <!-- file input -->
-    <div class="form-group">
-        <label for="gpxFile">Upload the activity file</label>
-        <input type="file" id="gpxFile" accept=".gpx,.tcx" (change)="onFileSelected($event)" />
-    </div>
+            <!-- Track file input -->
+            <div class="form-group">
+                <label for="gpxFile">Track file (GPX / TCX)</label>
+                <input type="file" id="gpxFile" accept=".gpx,.tcx" (change)="onFileSelected($event)" />
+                <small class="hint">
+                    Select the recorded track file from your device.
+                </small>
+                <div class="file-chip" *ngIf="selectedFile">
+                    <span class="file-name">{{ selectedFile.name }}</span>
+                </div>
+            </div>
+        </div>
 
-    <!-- Drag & Drop Zone -->
-    <div class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
-        [class.dragover]="isDragOver">
-        <p>Drag & drop images here, or click to browse</p>
-        <input #fileInput type="file" multiple accept="image/*" (change)="onImageFileSelected($event)" hidden />
-        <button type="button" (click)="fileInput.click()">Browse Images</button>
-    </div>
+        <!-- Drag & Drop Zone -->
+        <section class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)" [class.dragover]="isDragOver">
+            <div class="dropzone-inner">
+                <div class="dropzone-icon">📷</div>
+                <p class="dropzone-title">Activity photos</p>
+                <p class="dropzone-subtitle">
+                    Drag &amp; drop images here, or
+                    <button type="button" class="link-button" (click)="fileInput.click()">
+                        browse
+                    </button>
+                </p>
+                <p class="dropzone-hint">
+                    JPEG/PNG images. EXIF metadata (time, GPS) will be used if available.
+                </p>
+            </div>
 
-    <!-- Preview Thumbnails -->
-    <div class="preview-container" *ngIf="previewUrls.length">
-        <div class="thumb" *ngFor="let url of previewUrls; let i = index">
-            <button type="button" class="remove-btn" (click)="removeImage(i)">×</button>
-            <img [src]="url" alt="Preview" />
+            <input #fileInput type="file" multiple accept="image/*" (change)="onImageFileSelected($event)" hidden />
+        </section>
 
+        <!-- Preview Thumbnails -->
+        <section class="preview-section" *ngIf="previewUrls.length">
+            <h3 class="preview-title">Selected images ({{ previewUrls.length }})</h3>
+
+            <div class="preview-container">
+                <div class="thumb" *ngFor="let url of previewUrls; let i = index">
+                    <button type="button" class="remove-btn" (click)="removeImage(i)" aria-label="Remove image">
+                        ×
+                    </button>
+                    <img [src]="url" alt="Preview" />
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading indicator -->
+        <div class="upload-status" *ngIf="isUploadingTrack || isUploadingImages">
+            <span class="spinner"></span>
+            <span class="status-text">{{ uploadMessage }}</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button type="submit" class="primary-btn"
+                [disabled]="isUploadingTrack || isUploadingImages || !selectedFile">
+                {{ (isUploadingTrack || isUploadingImages) ? 'Uploading...' : 'Submit activity' }}
+            </button>
         </div>
     </div>
-
-    <button type="submit" [disabled]="!form.valid">Submit</button>
 </form>

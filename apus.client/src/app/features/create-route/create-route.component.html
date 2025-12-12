@@ -1,16 +1,225 @@
-<div class="coordinate-selector">
-    <label>
-        <input type="radio" name="coordinate" [(ngModel)]="selectedCoordinateType" value="start" checked />
-        Start
-    </label>
-    <label>
-        <input type="radio" name="coordinate" [(ngModel)]="selectedCoordinateType" value="end" />
-        End
-    </label>
+<div class="create-route-page">
+    <div class="map-container">
+        <div id="map"></div>
+
+        <!-- Search overlay -->
+        <div class="route-search">
+            <input type="text" [formControl]="searchControl" (focus)="showSearchResults = true"
+                placeholder="Search place or street..." />
+
+            <div class="search-results" *ngIf="showSearchResults && (searchResults.length > 0 || isSearching)">
+                <div class="search-result" *ngIf="isSearching">
+                    Searching…
+                </div>
+
+                <div class="search-result" *ngFor="let r of searchResults" (click)="selectSearchResult(r)">
+                    <div class="name">{{ r.name }}</div>
+                    <div class="meta">{{ r.class }} · {{ r.type }}</div>
+                </div>
+
+                <div class="search-result no-results"
+                    *ngIf="!isSearching && searchResults.length === 0 && searchControl.value">
+                    No results
+                </div>
+            </div>
+        </div>
+
+        <!-- Handle on the right edge -->
+        <div class="track-panel-handle" (click)="toggleTrackPanel()">
+            {{ isTrackPanelOpen ? 'Tracks ‹' : 'Tracks ›' }}
+        </div>
+
+        <!-- Sliding tracks panel -->
+        <div class="track-panel" [class.open]="isTrackPanelOpen">
+            <div class="track-panel-header">
+                <h4>My tracks</h4>
+            </div>
+
+            <div *ngIf="isLoadingTracks" class="track-loading">
+                Loading tracks…
+            </div>
+
+            <div *ngIf="!isLoadingTracks && trackNames.length === 0 && !trackLoadError">
+                No saved tracks yet.
+            </div>
+
+            <ul *ngIf="!isLoadingTracks && trackNames.length > 0" class="track-list">
+                <li *ngFor="let name of trackNames" class="track-list-item" [class.active]="name === selectedTrackName"
+                    (click)="loadTrack(name)">
+                    <div class="track-item-main">
+                        <span class="track-name">
+                            {{ name }}
+                        </span>
+                        <span *ngIf="isLoadingSelectedTrack && name === selectedTrackName">
+                            …
+                        </span>
+                    </div>
+
+                    <!-- 3-dot menu -->
+                    <button type="button" class="track-menu-toggle" (click)="openTrackDeletePopover($event, name)">
+                        ⋮
+                    </button>
+
+                    <div class="track-menu" *ngIf="trackMenuOpenFor === name" (click)="$event.stopPropagation()">
+                        <button type="button" class="track-menu-item track-menu-item-danger"
+                            (click)="openDeleteTrackModal($event, name)">
+                            Delete
+                        </button>
+                    </div>
+
+
+                </li>
+            </ul>
+
+            <div *ngIf="trackLoadError" class="track-error">
+                {{ trackLoadError }}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="route-summary">
+        <div class="route-toolbar">
+            <div class="stats-left">
+                <span class="stat-main">
+                    {{ totalDistanceMeters / 1000 | number : '1.1-1' }} km
+                </span>
+                <span class="stat-sub">
+                    ↑ {{ totalAscentMeters | number : '1.0-0' }} m
+                </span>
+                <span class="stat-sub">
+                    ↓ {{ totalDescentMeters | number : '1.0-0' }} m
+                </span>
+                <span class="stat-sub" *ngIf="predictedSeconds != null">
+                    ~ {{ formatPredictedTime() }}
+                </span>
+
+                <span class="stat-sub" *ngIf="daylightInfo">
+                    {{ daylightInfo.percentBeforeNightfall | number:'1.0-0' }}% before nightfall
+                </span>
+                <span class="stat-sub" *ngIf="daylightInfo">
+                    finish ~ {{ daylightInfo.finishTime | date:'shortTime' }}
+                </span>
+            </div>
+
+            <div class="actions-right">
+
+                <div class="start-time-group">
+                    <label>
+                        Start date:
+                        <input type="date" [(ngModel)]="startDateInput">
+                    </label>
+                    <label>
+                        Start time:
+                        <input type="time" [(ngModel)]="startTimeInput">
+                    </label>
+                </div>
+
+                <input type="file" accept=".gpx,application/gpx+xml" (change)="onGpxFileSelected($event)"
+                    style="display: none" #gpxFileInput />
+
+                <button type="button" class="toolbar-btn" (click)="gpxFileInput.click()">
+                    Import GPX
+                </button>
+
+                <button type="button" class="toolbar-btn" (click)="undoLastSection()"
+                    [disabled]="!undoService.canUndo()">
+                    Undo
+                </button>
+
+                <button type="button" class="toolbar-btn" (click)="addOutAndBack()"
+                    [disabled]="fullRouteCoords.length < 2">
+                    Out &amp; back
+                </button>
+
+                <button type="button" class="toolbar-btn" (click)="downloadGpx()"
+                    [disabled]="totalDistanceMeters === 0">
+                    GPX
+                </button>
+
+                <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="saveRoute()"
+                    [disabled]="fullRouteCoords.length < 2">
+                    Save
+                </button>
+
+                <button type="button" class="toolbar-btn" (click)="predictTime()"
+                    [disabled]="totalDistanceMeters === 0 || isPredicting">
+                    {{ isPredicting ? 'Predicting…' : 'Predict' }}
+                </button>
+            </div>
+
+        </div>
+
+        <div class="elevation-chart">
+            <ng-container *ngIf="hasElevationProfile; else noProfile">
+                <canvas baseChart [data]="elevationChartData" [options]="elevationChartOptions" [type]="'line'"
+                    [style.height.px]="160">
+                </canvas>
+            </ng-container>
+
+            <ng-template #noProfile>
+                <div class="no-profile-placeholder">
+                    No route yet – click on the map to start.
+                </div>
+            </ng-template>
+        </div>
+    </div>
 </div>
 
-<div class="map-container">
-    <div id="map"></div>
+<!-- Save GPX modal -->
+<div class="modal-backdrop" *ngIf="showSaveModal" [ngStyle]="{ 'pointer-events': 'auto', 'z-index': 100000 }">
+    <div class="modal-dialog" style="pointer-events: auto; position: relative; z-index: 100001;">
+        <h3>Save route as GPX</h3>
+
+        <div class="modal-body">
+            <label class="modal-label">
+                File name:
+                <input type="text" [(ngModel)]="saveFileName" placeholder="my-route"
+                    style="pointer-events: auto; position: relative; z-index: 100002;" />
+                <span class="modal-ext" style="pointer-events: none;">.gpx</span>
+            </label>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="toolbar-btn toolbar-btn-primary" (click)="confirmSaveRoute()"
+                [disabled]="!saveFileName || !saveFileName.trim() || isSavingRoute"
+                style="pointer-events: auto; position: relative; z-index: 100002;">
+                {{ isSavingRoute ? 'Saving…' : 'Save' }}
+            </button>
+
+            <button type="button" class="toolbar-btn" (click)="cancelSaveRoute()" [disabled]="isSavingRoute"
+                style="pointer-events: auto; position: relative; z-index: 100002;">
+                Cancel
+            </button>
+        </div>
+    </div>
 </div>
 
-<button (click)="submitCoordinates()">Submit Coordinates</button>
+
+<!-- Small delete popover for tracks -->
+<div class="track-popover-backdrop" *ngIf="isDeletePopoverOpen" (click)="closeTrackDeletePopover()">
+    <div class="track-popover" [ngStyle]="{ top: deletePopoverY + 'px', left: deletePopoverX + 'px' }"
+        (click)="$event.stopPropagation()">
+
+        <div class="track-popover-title">Delete track?</div>
+        <div class="track-popover-name">
+            {{ deletePopoverTrackName }}
+        </div>
+
+        <div class="track-popover-actions">
+            <button type="button" class="track-popover-btn track-popover-btn-danger" (click)="confirmTrackDelete()"
+                [disabled]="isDeletingTrack">
+                {{ isDeletingTrack ? 'Deleting…' : 'Delete' }}
+            </button>
+
+            <button type="button" class="track-popover-btn" (click)="closeTrackDeletePopover()"
+                [disabled]="isDeletingTrack">
+                Cancel
+            </button>
+        </div>
+
+        <div *ngIf="trackDeleteError" class="track-popover-error">
+            {{ trackDeleteError }}
+        </div>
+    </div>
+</div>

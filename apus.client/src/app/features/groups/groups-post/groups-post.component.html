@@ -1,0 +1,98 @@
+<div class="page posts-page">
+
+    <!-- CREATE POST -->
+    <section class="create" *ngIf="canPost">
+        <details class="create-accordion" [open]="false">
+            <summary>
+                <div class="summary-inner">
+                    <span class="summary-title">Create post</span>
+                    <span class="summary-subtitle">Share an update with the group</span>
+                </div>
+            </summary>
+
+            <div class="form-grid">
+                <div class="field-with-counter">
+                    <input class="input" placeholder="Title" [(ngModel)]="title" maxlength="100" />
+                    <span class="counter">{{ title.length }}/100</span>
+                </div>
+
+                <div class="field-with-counter full-width">
+                    <textarea class="textarea" placeholder="Text" [(ngModel)]="text" maxlength="2000"></textarea>
+                    <div class="counter-row">
+                        <span class="counter">{{ text.length }}/2000</span>
+                        <button class="btn primary" type="button" (click)="createPost()"
+                            [disabled]="creating || !title.trim() || !text.trim()">
+                            {{ creating ? 'Posting…' : 'Post' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <p class="error" *ngIf="createError">{{ createError }}</p>
+        </details>
+    </section>
+
+    <!-- POSTS LIST -->
+    <section class="list">
+        <article class="group-card post-card" *ngFor="let p of posts">
+            <header class="post-header">
+                <div class="author">
+                    <img [src]="avatarUrl(p)" class="avatar small-avatar" />
+                    <div class="meta">
+                        <strong>{{ p.authorFullName }}</strong>
+                        <small>{{ p.createdAtUtc | date:'medium' }}</small>
+                    </div>
+                </div>
+
+                <button *ngIf="canDelete(p)" class="btn danger small" type="button" (click)="openDeletePopup(p)">
+                    Delete
+                </button>
+            </header>
+
+            <h4 class="post-title">{{ p.title }}</h4>
+
+            <p class="post-text">
+                {{
+                p._expanded || p.text.length <= maxPreviewLength ? p.text : (p.text | slice: 0 : maxPreviewLength)
+                    + '...' }} </p>
+
+                    <button *ngIf="p.text.length > maxPreviewLength" class="btn linklike show-more-btn" type="button"
+                        (click)="toggleExpand(p)">
+                        {{ p._expanded ? 'Show less' : 'Show more' }}
+                    </button>
+
+                    <!-- ACTIONS -->
+                    <div class="post-actions">
+                        <button class="btn linklike" type="button" (click)="p._commentsOpen = true">
+                            <i class="bi bi-chat"></i>
+                            Comments
+                        </button>
+                    </div>
+
+                    <!-- INLINE DELETE POPUP -->
+                    <div class="delete-popup" *ngIf="deleteTargetId === p.id">
+                        <p>Delete this post?</p>
+                        <div class="delete-popup-actions">
+                            <button class="btn" type="button" (click)="closeDeletePopup()">
+                                Cancel
+                            </button>
+                            <button class="btn danger" type="button" (click)="confirmDelete()">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- COMMENTS MODAL FOR THIS POST -->
+                    <app-comments-modal [isOpen]="p._commentsOpen" [loadUrl]="'/api/groups/posts/' + p.id + '/comments'"
+                        [postUrl]="'/api/groups/posts/' + p.id + '/comments'" (closed)="p._commentsOpen = false"
+                        title="Comments"></app-comments-modal>
+        </article>
+
+        <div class="loading-more" *ngIf="loadingMore">
+            <span class="spinner"></span>
+            <span>Loading…</span>
+        </div>
+
+        <div #sentinel class="sentinel" *ngIf="hasMore && !loadingMore"></div>
+    </section>
+</div>

@@ -15,9 +15,26 @@ export interface ActivityDto {
     pace?: number;
 
     likescount?: number;
+    isLikedByCurrentUser: boolean;
+
+    userFullName: string;
+    avatarUrl?: string;
+
+    activityType: 'MainActivity' | 'GpsRelatedActivity' | 'Running' | 'Hiking' | 'Ride' | string;
+
 }
 
 export interface DisplayProp {
     label: string;
     value: string | number;
 }
+
+export interface ActivityCommentDto {
+    id: string;
+    authorUserId: string;
+    authorFullName: string;
+    authorAvatarUrl?: string | null;
+    text: string;
+    createdAtUtc: string;
+}
+

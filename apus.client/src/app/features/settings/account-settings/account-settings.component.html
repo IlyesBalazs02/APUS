@@ -1,0 +1,129 @@
+<div class="account-settings">
+    <header class="account-header">
+        <h2>Account settings</h2>
+        <p class="subtitle">
+            Manage your login details and personal information.
+        </p>
+    </header>
+
+    <div class="settings-list">
+        <div class="setting-item" (click)="openModal('email')">
+            <div class="setting-label">Email address</div>
+            <div class="setting-value">{{ email }}</div>
+        </div>
+
+        <div class="setting-item disabled">
+            <div class="setting-label">Phone number</div>
+            <div class="setting-value text-muted">Add a phone number</div>
+        </div>
+
+        <div class="setting-item" (click)="openModal('password')">
+            <div class="setting-label">Password</div>
+            <div class="setting-value text-muted">Change password</div>
+        </div>
+
+        <div class="setting-item" (click)="openModal('gender')">
+            <div class="setting-label">Gender</div>
+            <div class="setting-value" [class.text-muted]="!gender">
+                {{ gender || 'Select gender' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div class="modal-backdrop" *ngIf="showEmailModal" (click)="closeModal()">
+        <div class="account-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Email address</h3>
+            <p>We will send a verification email to the address you provide.</p>
+
+            <form #emailForm="ngForm">
+                <!-- Password field -->
+                <input type="password" placeholder="Password" name="emailPassword" #emailPassword="ngModel" ngModel
+                    required />
+                <div *ngIf="emailPassword.invalid && emailPassword.touched" class="error">
+                    Password is required.
+                </div>
+
+                <!-- Email field -->
+                <input type="email" placeholder="New email" name="newEmail" #newEmail="ngModel" ngModel required
+                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" />
+                <div *ngIf="newEmail.invalid && newEmail.touched" class="error">
+                    Please enter a valid email address.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="!emailForm.valid"
+                        (click)="saveEmail(newEmail.value, emailPassword.value)">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-backdrop" *ngIf="showPasswordModal" (click)="closeModal()">
+        <div class="account-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Password</h3>
+
+            <form #passwordForm="ngForm">
+                <input type="password" placeholder="Current password" name="currentPass" #currentPass="ngModel" ngModel
+                    required />
+                <div *ngIf="currentPass.invalid && currentPass.touched" class="error">
+                    Current password is required.
+                </div>
+
+                <input type="password" placeholder="New password" name="newPass" #newPass="ngModel" ngModel required />
+
+                <input type="password" placeholder="New password again" name="confirmPass" #confirmPass="ngModel"
+                    ngModel required />
+
+                <div *ngIf="newPass.value && confirmPass.value && newPass.value !== confirmPass.value" class="error">
+                    Passwords do not match.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+                    <button type="button" [disabled]="!passwordForm.valid || newPass.value !== confirmPass.value"
+                        (click)="savePassword(currentPass.value, newPass.value, confirmPass.value)">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gender Modal -->
+    <div class="modal-backdrop" *ngIf="showGenderModal" (click)="closeModal()">
+        <div class="account-modal" (click)="$event.stopPropagation()">
+            <span class="close-btn" (click)="closeModal()">×</span>
+            <h3>Gender</h3>
+            <p>This information may be used to improve your recommendations.</p>
+
+            <form #genderForm="ngForm">
+                <div class="gender-options">
+                    <label>
+                        <input type="radio" name="gender" value="Female" [(ngModel)]="selectedGender" required />
+                        Female
+                    </label>
+                    <label>
+                        <input type="radio" name="gender" value="Male" [(ngModel)]="selectedGender" required />
+                        Male
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="closeModal()">Cancel</button>
+
+                    <button type="button" *ngIf="selectedGender && selectedGender !== gender"
+                        (click)="saveGender(selectedGender)">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

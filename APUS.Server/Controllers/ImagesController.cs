@@ -1,8 +1,15 @@
-﻿using APUS.Server.Data;
-using APUS.Server.Models;
+﻿using APUS.Server.Core.Helpers;
+using APUS.Server.Data.Repositories.Implementations;
+using APUS.Server.Data.Repositories.Interfaces;
+using APUS.Server.Domain.DTOs.Image;
+using APUS.Server.Domain.DTOs.Routing;
+using APUS.Server.Domain.Models;
 using APUS.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client.Extensions.Msal;
+using System.Globalization;
+using System.Text.Json;
 
 namespace APUS.Server.Controllers
 {
@@ -14,66 +21,180 @@ namespace APUS.Server.Controllers
 		private readonly ILogger<ImagesController> _logger;
 		private readonly IActivityRepository _activityRepository;
 		private readonly IStorageService _storageService;
+		private readonly IActivityImageRepository _activityImageRepository;
+		private readonly IActivityTrackLookupService _activityTrackLookupService;
 
 		public ImagesController(
 			ILogger<ImagesController> logger,
 			IActivityRepository activityRepository,
-			IStorageService storageService)
+			IStorageService storageService,
+			IActivityImageRepository activityImageRepository,
+			IActivityTrackLookupService activityTrackLookupService)
 		{
 			_logger = logger;
 			_activityRepository = activityRepository;
 			_storageService = storageService;
+			_activityImageRepository = activityImageRepository;
+			_activityTrackLookupService = activityTrackLookupService;
 		}
 
-		[HttpPost("{id}/images")]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> UploadImages(string id, [FromForm] IFormFileCollection images)
+		[HttpPost("{activityId}/images")]
+		public async Task<IActionResult> UploadImages(string activityId,[FromForm] IFormFileCollection images,[FromForm] string? exifJson)
 		{
-			if (images == null || images.Count() == 0) return BadRequest("No files uploaded");
+			var userId = User.GetUserId();
 
-			// Activity is needed for it's id and userid to know where to save the images
-			var activity = await _activityRepository.ReadByIdAsync(id);
-			if (activity == null) return NotFound();
+			// parse EXIF from client
+			var exifDict = string.IsNullOrWhiteSpace(exifJson)
+				? new Dictionary<string, ExifMetadataDto>()
+				: JsonSerializer.Deserialize<Dictionary<string, ExifMetadataDto>>(exifJson)
+				  ?? new Dictionary<string, ExifMetadataDto>();
 
-			await _storageService.SaveImagesAsync(id, images, activity.UserId);
+			// save physical files
+			await _storageService.SaveImagesAsync(activityId, images, userId);
 
-			return NoContent();
+			var now = DateTime.UtcNow;
+			var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+			var entities = new List<ActivityImage>();
+
+			foreach (var file in images)
+			{
+				var fileName = Path.GetFileName(file.FileName);
+				var url = $"{baseUrl}/Users/{userId}/Activities/{activityId}/Images/{Uri.EscapeDataString(fileName)}";
+
+				exifDict.TryGetValue(file.FileName, out var metaDto);
+
+				var formats = new[] {
+					"yyyy:MM:dd HH:mm:ss",
+					"yyyy:MM:dd HH:mm:ssK",
+					"yyyy:MM:dd HH:mm:sszzz"
+				};
+
+				DateTime? dateTaken = null;
+
+				if (!string.IsNullOrWhiteSpace(metaDto?.dateTaken) &&
+					DateTime.TryParseExact(
+						metaDto.dateTaken,
+						formats,
+						CultureInfo.InvariantCulture,
+						DateTimeStyles.AssumeLocal,
+						out var parsed))
+				{
+					dateTaken = parsed.ToUniversalTime();
+				}
+
+
+				double? gpsLat = null;
+				double? gpsLon = null;
+
+				// If it knows when the photo was taken, find closest trackpoint in TCX/GPX
+				if (dateTaken.HasValue)
+				{
+					var closest = await _activityTrackLookupService.FindClosestPointAsync(
+						activityId,
+						userId,
+						dateTaken.Value,
+						HttpContext.RequestAborted);
+
+					if (closest.HasValue)
+					{
+						gpsLat = closest.Value.Lat;
+						gpsLon = closest.Value.Lon;
+					}
+				}
+
+				entities.Add(new ActivityImage
+				{
+					ActivityId = activityId,
+					FileName = fileName,
+					Url = url,
+					UploadedAt = now,
+					DateTaken = dateTaken,   // EXIF timestamp
+					GpsLat = gpsLat,
+					GpsLon = gpsLon, 
+					RawMetadataJson = metaDto != null
+						? JsonSerializer.Serialize(metaDto)
+						: null
+				});
+			}
+
+			if (entities.Count > 0)
+			{
+				await _activityImageRepository.AddRangeAsync(entities);
+			}
+
+			return Ok();
 		}
 
 		[HttpGet("{id}")]
 		[Authorize]
+		[ProducesResponseType(typeof(ActivityImageDto[]), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<IEnumerable<ActivityImageDto>>> GetPictures(string id)
+		{
+			var images = await _activityImageRepository.GetByActivityIdAsync(id);
+
+			if (images == null || images.Count == 0)
+				return Ok(Array.Empty<ActivityImageDto>());
+
+			var result = images
+				.Select(img => new ActivityImageDto
+				{
+					Url = img.Url,
+					Lat = img.GpsLat,
+					Lon = img.GpsLon,
+					DateTaken = img.DateTaken
+				})
+				.ToList();
+
+			return Ok(result);
+		}
+
+		[HttpGet("{id}/urls")]
+		[Authorize]
 		[ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<IEnumerable<string>>> GetPictures(string id)
+		public async Task<ActionResult<IEnumerable<string>>> GetImageUrls(string id)
 		{
-			// Activity is needed for it's id and userid to know the path of the images
-			var activity = await _activityRepository.ReadByIdAsync(id);
-			if (activity == null) return NotFound();
+			var images = await _activityImageRepository.GetByActivityIdAsync(id);
+			if (images == null || images.Count == 0)
+				return Ok(Array.Empty<string>());
 
-			var names = _storageService.GetImageFileNames(id, activity.UserId);
-			if (!names.Any()) return NotFound();
+			var urls = images.Select(img => img.Url).ToList();
 
-			var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
-			var urls = names.Select(fn => $"{baseUrl}/Users/{activity.UserId}/Activities/{id}/Images/{fn}");
 			return Ok(urls);
-
 		}
+
 
 		// Path to the activity's trak PNG ( if it exists)
 		[HttpGet("{id}/track")]
 		[ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<IEnumerable<string>>> GetPicture(string id)
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		public async Task<ActionResult<IEnumerable<string>>> GetTrackImage(string id)
 		{
 			var activity = await _activityRepository.ReadByIdAsync(id);
 			if (activity == null) return NotFound();
 
-			var baseUrl = $"{Request.Scheme}://{Request.Host}";
-			var url = $"https://localhost:7244/Users/{activity.UserId}/Activities/{id}/ActivityTrackImage.png";
+			var file = _storageService.ReturnTrackImagePath(activity.Id, activity.UserId);
+
+			//If the trackImage doesnt exist(which can be normal), dont send anything
+			if (!System.IO.File.Exists(file))
+				return NoContent();
+
+			var url = $"{Request.Scheme}://{Request.Host}/Users/{activity.UserId}/Activities/{id}/ActivityTrackImage.png";
 			return Ok(url);
+		}
+
+		[HttpPost("{activityId}/images/delete")]
+		public async Task<IActionResult> DeleteImages(string activityId, [FromBody] string[] fileNames)
+		{
+			var userId = User.GetUserId();
+
+			_storageService.DeleteImages(activityId, userId, fileNames);
+
+			await _activityImageRepository.DeleteByFileNamesAsync(activityId, fileNames);
+
+			return NoContent();
 		}
 	}
 

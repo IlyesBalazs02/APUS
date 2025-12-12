@@ -1,4 +1,4 @@
-﻿using APUS.Server.DTOs;
+﻿using APUS.Server.Domain.DTOs.Feature.Activity;
 
 namespace APUS.Server.Services.Interfaces
 {
