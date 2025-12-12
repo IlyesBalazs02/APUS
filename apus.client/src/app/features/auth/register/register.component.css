@@ -1,0 +1,192 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), transparent),
+              radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.25), transparent),
+              #020617;
+}
+
+/* CARD */
+
+.register-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 1.4rem 1.6rem 1.7rem;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent),
+              rgba(15, 23, 42, 0.96);
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  color: #e5e7eb;
+}
+
+/* HEADER */
+
+.register-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.register-header .subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* FORM */
+
+.register-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-row.two-cols > .form-group {
+  flex: 1 1 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group label {
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.96);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  outline: none;
+  transition:
+    border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    background-color 0.12s ease-out;
+}
+
+.form-group input::placeholder {
+  color: #6b7280;
+}
+
+.form-group input:focus {
+  border-color: rgba(129, 140, 248, 0.9);
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.7);
+}
+
+/* ERROR */
+
+.error {
+  font-size: 0.8rem;
+  color: #fecaca;
+}
+
+/* ACTIONS */
+
+.actions {
+  margin-top: 0.6rem;
+}
+
+.btn {
+  width: 100%;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+}
+
+.btn.primary {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  border-color: rgba(129, 140, 248, 0.95);
+}
+
+.btn:hover:not(:disabled) {
+  background-color: rgba(30, 64, 175, 0.95);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.9);
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.9);
+}
+
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* FOOTER */
+
+.register-footer {
+  margin-top: 1rem;
+}
+
+.register-footer p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.register-footer a {
+  color: #93c5fd;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.register-footer a:hover {
+  color: #bfdbfe;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 480px) {
+  :host {
+    padding: 0;
+  }
+
+  .register-page {
+    padding: 1rem;
+  }
+
+  .register-card {
+    padding: 1.1rem 1.25rem 1.4rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+}

@@ -1,35 +1,173 @@
+:host {
+  display: block;
+  padding: 1.25rem 1.75rem 2rem;
+}
+
+.profile-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: #e5e7eb;
+}
+
+/* HEADER */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent),
+              rgba(15, 23, 42, 0.97);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.avatar-badge {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  color: #f9fafb;
+  background: radial-gradient(circle at 30% 20%, rgba(248, 250, 252, 0.18), transparent),
+              linear-gradient(135deg, #2563eb, #7c3aed);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+}
+
+.profile-header-main h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.profile-header-main .subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+/* STATISTICS SECTION */
+
 .profile-stats {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #111;
+  padding: 1.1rem 1.2rem 1.0rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent),
+              rgba(15, 23, 42, 0.97);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
 }
 
 .stats-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.stats-header-main h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.stats-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Period selector */
+
+.period-selector {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .period-selector button {
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid #555;
-  background: #222;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.96);
+  color: #e5e7eb;
+  font-size: 0.8rem;
   cursor: pointer;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out,
+    box-shadow 0.12s ease-out;
+}
+
+.period-selector button:hover {
+  background: rgba(30, 64, 175, 0.95);
+  border-color: rgba(129, 140, 248, 0.95);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
+  transform: translateY(-1px);
 }
 
 .period-selector button.active {
-  background: #3f51b5;
-  border-color: #3f51b5;
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  border-color: rgba(129, 140, 248, 0.95);
 }
+
+/* Summary */
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.summary-item {
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.98);
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin-bottom: 0.2rem;
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Layout: sports + pie */
 
 .stats-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   gap: 1.5rem;
+}
+
+/* Sports list */
+
+.sports-list h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .sports-list ul {
@@ -39,19 +177,62 @@
 }
 
 .sports-list li {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  gap: 0.4rem 0.6rem;
+  padding: 0.25rem 0.3rem;
+  font-size: 0.86rem;
+}
+
+.sports-list li + li {
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
 }
 
 .legend-color {
   width: 12px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
-/* simple colour palette for sports */
+.sport-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sport-hours {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.sport-percent {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.no-data-inline {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* Pie chart */
+
+.stats-pie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-chart {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
+
+/* Colour palette for sports slices + legend */
+
 .color-0 { background: #ff6384; fill: #ff6384; }
 .color-1 { background: #36a2eb; fill: #36a2eb; }
 .color-2 { background: #ffcd56; fill: #ffcd56; }
@@ -60,36 +241,219 @@
 /* fallback for other indices */
 [class^="color-"] { stroke: none; }
 
-.pie-chart {
-  width: 180px;
-  height: 180px;
+.no-data {
+  margin-top: 0.45rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
 }
 
-/* Calendar */
+/* CALENDAR SECTION */
+
 .profile-calendar {
-  margin-bottom: 2rem;
+  padding: 1rem 1.2rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent),
+              rgba(15, 23, 42, 0.97);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
 }
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.calendar-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.month-nav {
+  border-radius: 999px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out;
+}
+
+.month-nav:hover {
+  background: rgba(30, 64, 175, 0.95);
+  border-color: rgba(129, 140, 248, 0.95);
+  transform: translateY(-1px);
+}
+
+.calendar-card {
+  border-radius: 14px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: rgba(15, 23, 42, 0.98);
+  padding: 0.6rem 0.7rem 0.7rem;
+}
+
+/* Calendar table */
 
 .calendar-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.8rem;
 }
 
 .calendar-table th,
 .calendar-table td {
   text-align: center;
-  padding: 0.4rem;
-  border: 1px solid #333;
+  padding: 0.35rem 0.2rem;
+}
+
+.calendar-table thead th {
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.calendar-table td {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.12s ease-out,
+    border-color 0.12s ease-out,
+    transform 0.08s ease-out;
+}
+
+.calendar-table td span {
+  display: inline-block;
+  min-width: 1.4rem;
 }
 
 .calendar-table td.empty {
-  background: #111;
+  background: transparent;
+  border-color: transparent;
 }
 
 .calendar-table td.has-activity {
-  background: #2e7d32;
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.6);
 }
 
 .calendar-table td.today {
-  outline: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.8);
+}
+
+/* hover for actual days */
+.calendar-table td:not(.empty):hover {
+  transform: translateY(-1px);
+  background: rgba(37, 99, 235, 0.25);
+  border-color: rgba(59, 130, 246, 0.9);
+}
+
+/* Calendar legend */
+
+.calendar-legend {
+  margin-top: 0.6rem;
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.calendar-legend .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 0.3rem;
+}
+
+.has-activity-dot {
+  background: #22c55e;
+}
+
+.today-dot {
+  border: 2px solid #f9fafb;
+}
+
+/* ACTIVITIES SECTION */
+
+.activities-section {
+  margin-top: 0.2rem;
+}
+
+.activities-header {
+  margin-bottom: 0.4rem;
+}
+
+.activities-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.activities-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.86rem;
+  color: #9ca3af;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Infinite scroll sentinel */
+
+.sentinel {
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Loading + empty */
+
+.loading,
+.empty {
+  margin-top: 0.6rem;
+  font-size: 0.86rem;
+  color: #9ca3af;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  :host {
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .profile-page {
+    max-width: 100%;
+  }
+
+  .stats-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .calendar-header h2 {
+    font-size: 1rem;
+  }
 }

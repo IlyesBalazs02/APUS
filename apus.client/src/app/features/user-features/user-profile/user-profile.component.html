@@ -1,115 +1,162 @@
-<div class="profile-header">
-    <p *ngIf="profile">{{ profile.name }}</p>
-</div>
+<div class="profile-page">
 
-<section class="profile-stats">
-    <div class="stats-header">
-        <h2>Training statistics</h2>
-
-        <div class="period-selector">
-            <button *ngFor="let p of periods" type="button" (click)="onPeriodChange(p)"
-                [class.active]="p === selectedPeriod">
-                {{ periodLabel(p) }}
-            </button>
+    <!-- HEADER -->
+    <header class="profile-header" *ngIf="profile as p">
+        <div class="avatar-badge">
+            {{ p.name | slice:0:1 }}
         </div>
-    </div>
-
-    <div class="stats-body" *ngIf="trainingSummary; else noStats">
-        <div class="stats-summary">
-            <p class="total-hours">
-                Total training: <strong>{{ formatHoursToHms(trainingSummary.totalHours) }}</strong>
-            </p>
-            <p class="total-sessions">
-                Sessions: <strong>{{ trainingSummary.activityCount }}</strong>
+        <div class="profile-header-main">
+            <h1>{{ p.name }}</h1>
+            <p class="subtitle">
+                Training statistics, calendar and recent activities.
             </p>
         </div>
+    </header>
 
-        <div class="stats-layout">
-            <!-- Sports list -->
-            <div class="sports-list">
-                <h3>Sports</h3>
-                <ng-container *ngIf="trainingSummary.sports?.length; else noSports">
-                    <ul>
-                        <li *ngFor="let sport of trainingSummary.sports; let i = index">
-                            <span class="legend-color" [ngClass]="'color-' + i"></span>
-                            <span class="sport-name">{{ sport.activityType }}</span>
-                            <span class="sport-hours">
-                                {{ formatHoursToHms(sport.totalHours) }}
-                            </span>
-                            <span class="sport-percent" *ngIf="totalSportsHours">
-                                ({{ (sport.totalHours / totalSportsHours) * 100 | number:'1.0-0' }}%)
-                            </span>
-                        </li>
-                    </ul>
-                </ng-container>
-                <ng-template #noSports>
-                    <p>No sport activities in this period.</p>
-                </ng-template>
-            </div>
-
-            <!-- Pie chart -->
-            <div class="stats-pie">
-                <svg *ngIf="pieSegments.length" viewBox="0 0 100 100" class="pie-chart">
-                    <!-- Multiple sports: draw normal slices -->
-                    <ng-container *ngIf="pieSegments.length > 1; else singleSlice">
-                        <g *ngFor="let seg of pieSegments; let i = index">
-                            <path [attr.d]="seg.path" [ngClass]="'color-' + i"></path>
-                        </g>
-                    </ng-container>
-
-                    <!-- Single sport: draw full circle -->
-                    <ng-template #singleSlice>
-                        <circle cx="50" cy="50" r="45" class="color-0"></circle>
-                    </ng-template>
-                </svg>
-
-                <p class="no-data" *ngIf="!pieSegments.length">
-                    Not enough data for chart.
+    <!-- TRAINING STATISTICS -->
+    <section class="profile-stats">
+        <div class="stats-header">
+            <div class="stats-header-main">
+                <h2>Training statistics</h2>
+                <p class="stats-subtitle">
+                    Select a period to see how much time you have spent training.
                 </p>
             </div>
 
+            <div class="period-selector">
+                <button *ngFor="let p of periods" type="button" (click)="onPeriodChange(p)"
+                    [class.active]="p === selectedPeriod">
+                    {{ periodLabel(p) }}
+                </button>
+            </div>
         </div>
-    </div>
 
-    <ng-template #noStats>
-        <p class="no-data">No training data for the selected period.</p>
-    </ng-template>
-</section>
+        <div class="stats-body" *ngIf="trainingSummary; else noStats">
+            <div class="stats-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Total training</span>
+                    <span class="summary-value">
+                        {{ formatHoursToHms(trainingSummary.totalHours) }}
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Sessions</span>
+                    <span class="summary-value">
+                        {{ trainingSummary.activityCount }}
+                    </span>
+                </div>
+            </div>
 
-<!--  Calendar section  -->
-<section class="profile-calendar" *ngIf="calendarWeeks?.length">
-    <div class="calendar-header">
-        <button type="button" class="month-nav" (click)="changeMonth(-1)">&lt;</button>
-        <h2>Training calendar – {{ monthNames[calendarMonthNumber - 1] }} {{ calendarYear }}</h2>
-        <button type="button" class="month-nav" (click)="changeMonth(1)">&gt;</button>
-    </div>
+            <div class="stats-layout">
+                <!-- Sports list -->
+                <div class="sports-list">
+                    <h3>Sports</h3>
 
-    <table class="calendar-table">
-        <thead>
-            <tr>
-                <th *ngFor="let d of weekDayNames">{{ d }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let week of calendarWeeks">
-                <td *ngFor="let cell of week" [class.empty]="!cell.day" [class.has-activity]="cell.hasActivity"
-                    [class.today]="cell.isToday">
-                    <span *ngIf="cell.day">{{ cell.day }}</span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</section>
+                    <ng-container *ngIf="trainingSummary.sports?.length; else noSports">
+                        <ul>
+                            <li *ngFor="let sport of trainingSummary.sports; let i = index">
+                                <span class="legend-color" [ngClass]="'color-' + i"></span>
+                                <span class="sport-name">{{ sport.activityType }}</span>
+                                <span class="sport-hours">
+                                    {{ formatHoursToHms(sport.totalHours) }}
+                                </span>
+                                <span class="sport-percent" *ngIf="totalSportsHours">
+                                    ({{ (sport.totalHours / totalSportsHours) * 100 | number:'1.0-0' }}%)
+                                </span>
+                            </li>
+                        </ul>
+                    </ng-container>
 
-<!--  Activities list  -->
-<div class="activities-list">
-    <app-activity-card *ngFor="let activity of activities" [activity]="activity">
-    </app-activity-card>
-</div>
+                    <ng-template #noSports>
+                        <p class="no-data-inline">No sport activities in this period.</p>
+                    </ng-template>
+                </div>
 
-<div #sentinel class="sentinel" aria-hidden="true"></div>
+                <!-- Pie chart -->
+                <div class="stats-pie">
+                    <svg *ngIf="pieSegments.length" viewBox="0 0 100 100" class="pie-chart">
+                        <!-- Multiple sports: draw normal slices -->
+                        <ng-container *ngIf="pieSegments.length > 1; else singleSlice">
+                            <g *ngFor="let seg of pieSegments; let i = index">
+                                <path [attr.d]="seg.path" [ngClass]="'color-' + i"></path>
+                            </g>
+                        </ng-container>
 
-<div *ngIf="loading" class="loading">Loading…</div>
-<div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
-    No activities to show.
+                        <!-- Single sport: draw full circle -->
+                        <ng-template #singleSlice>
+                            <circle cx="50" cy="50" r="45" class="color-0"></circle>
+                        </ng-template>
+                    </svg>
+
+                    <p class="no-data" *ngIf="!pieSegments.length">
+                        Not enough data for chart.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <ng-template #noStats>
+            <p class="no-data">No training data for the selected period.</p>
+        </ng-template>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="profile-calendar" *ngIf="calendarWeeks?.length">
+        <div class="calendar-header">
+            <button type="button" class="month-nav" (click)="changeMonth(-1)">
+                &lt;
+            </button>
+            <h2>
+                Training calendar – {{ monthNames[calendarMonthNumber - 1] }} {{ calendarYear }}
+            </h2>
+            <button type="button" class="month-nav" (click)="changeMonth(1)">
+                &gt;
+            </button>
+        </div>
+
+        <div class="calendar-card">
+            <table class="calendar-table">
+                <thead>
+                    <tr>
+                        <th *ngFor="let d of weekDayNames">{{ d }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let week of calendarWeeks">
+                        <td *ngFor="let cell of week" [class.empty]="!cell.day" [class.has-activity]="cell.hasActivity"
+                            [class.today]="cell.isToday">
+                            <span *ngIf="cell.day">{{ cell.day }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="calendar-legend">
+                <span><span class="dot has-activity-dot"></span> Training day</span>
+                <span><span class="dot today-dot"></span> Today</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACTIVITIES LIST -->
+    <section class="activities-section">
+        <div class="activities-header">
+            <h2>Activities</h2>
+            <p class="activities-subtitle">
+                Recent activities for this user.
+            </p>
+        </div>
+
+        <div class="activities-list">
+            <app-activity-card *ngFor="let activity of activities" [activity]="activity">
+            </app-activity-card>
+        </div>
+
+        <div #sentinel class="sentinel" aria-hidden="true"></div>
+
+        <div *ngIf="loading" class="loading">Loading…</div>
+        <div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
+            No activities to show.
+        </div>
+    </section>
 </div>

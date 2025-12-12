@@ -3,21 +3,28 @@
     <!-- CREATE POST -->
     <section class="create" *ngIf="canPost">
         <details class="create-accordion" [open]="false">
-            <summary>Create post</summary>
+            <summary>
+                <div class="summary-inner">
+                    <span class="summary-title">Create post</span>
+                    <span class="summary-subtitle">Share an update with the group</span>
+                </div>
+            </summary>
 
             <div class="form-grid">
-                <input class="input" placeholder="Title" [(ngModel)]="title" maxlength="100" />
-                <div class="row">
-                    <span>{{ title.length }}/100</span>
+                <div class="field-with-counter">
+                    <input class="input" placeholder="Title" [(ngModel)]="title" maxlength="100" />
+                    <span class="counter">{{ title.length }}/100</span>
                 </div>
 
-                <textarea class="textarea" placeholder="Text" [(ngModel)]="text" maxlength="2000"></textarea>
-                <div class="row">
-                    <span>{{ text.length }}/2000</span>
-                    <button class="btn primary" (click)="createPost()"
-                        [disabled]="creating || !title.trim() || !text.trim()">
-                        {{ creating ? 'Posting…' : 'Post' }}
-                    </button>
+                <div class="field-with-counter full-width">
+                    <textarea class="textarea" placeholder="Text" [(ngModel)]="text" maxlength="2000"></textarea>
+                    <div class="counter-row">
+                        <span class="counter">{{ text.length }}/2000</span>
+                        <button class="btn primary" type="button" (click)="createPost()"
+                            [disabled]="creating || !title.trim() || !text.trim()">
+                            {{ creating ? 'Posting…' : 'Post' }}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -46,15 +53,15 @@
 
             <p class="post-text">
                 {{
-                p._expanded || p.text.length <= maxPreviewLength ? p.text : (p.text | slice:0:maxPreviewLength) + '...'
-                    }} </p>
+                p._expanded || p.text.length <= maxPreviewLength ? p.text : (p.text | slice: 0 : maxPreviewLength)
+                    + '...' }} </p>
 
                     <button *ngIf="p.text.length > maxPreviewLength" class="btn linklike show-more-btn" type="button"
                         (click)="toggleExpand(p)">
                         {{ p._expanded ? 'Show less' : 'Show more' }}
                     </button>
 
-                    <!-- COMMENTS BUTTON -->
+                    <!-- ACTIONS -->
                     <div class="post-actions">
                         <button class="btn linklike" type="button" (click)="p._commentsOpen = true">
                             <i class="bi bi-chat"></i>
@@ -66,8 +73,12 @@
                     <div class="delete-popup" *ngIf="deleteTargetId === p.id">
                         <p>Delete this post?</p>
                         <div class="delete-popup-actions">
-                            <button class="btn" type="button" (click)="closeDeletePopup()">Cancel</button>
-                            <button class="btn danger" type="button" (click)="confirmDelete()">Delete</button>
+                            <button class="btn" type="button" (click)="closeDeletePopup()">
+                                Cancel
+                            </button>
+                            <button class="btn danger" type="button" (click)="confirmDelete()">
+                                Delete
+                            </button>
                         </div>
                     </div>
 
@@ -78,11 +89,10 @@
         </article>
 
         <div class="loading-more" *ngIf="loadingMore">
-            Loading…
+            <span class="spinner"></span>
+            <span>Loading…</span>
         </div>
 
         <div #sentinel class="sentinel" *ngIf="hasMore && !loadingMore"></div>
     </section>
-
-
 </div>
