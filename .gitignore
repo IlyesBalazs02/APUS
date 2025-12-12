@@ -367,3 +367,8 @@ FodyWeavers.xsd
 /APUS.Server/tiles0_2
 /APUS.Server/UserTempMaps/a1e8c451-af8e-45d4-bd48-8478c8c2357b
 /APUS.Server/UserTempMaps
+
+
+# Keep ignores, but include this Android folder
+!/Android_APUS/
+!/Android_APUS/**

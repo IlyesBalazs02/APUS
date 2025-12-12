@@ -129,10 +129,62 @@ namespace APUS.Server.Services.Implementations.FileServices
 
 		private async Task<string> RunPythonAsync(string workingDir, string scriptPath, string args)
 		{
+			if (string.IsNullOrWhiteSpace(workingDir))
+				throw new ArgumentException("workingDir is required", nameof(workingDir));
+
+			if (string.IsNullOrWhiteSpace(scriptPath))
+				throw new ArgumentException("scriptPath is required", nameof(scriptPath));
+
+			if (!File.Exists(scriptPath))
+				throw new FileNotFoundException("Python script not found", scriptPath);
+
+			// Prefer a stable, non-versioned executable:
+			// - "python" works for python.org installs and usually for Store Python (shim).
+			// - "py" works if Python Launcher is installed.
+			// If you want, wire this to IConfiguration (e.g. _config["Python:Executable"]).
+			var candidates = new[]
+			{
+		"python",
+		"py"
+	};
+
+			string? pythonExe = null;
+
+			foreach (var c in candidates)
+			{
+				if (LooksLikePath(c))
+				{
+					if (File.Exists(c))
+					{
+						pythonExe = c;
+						break;
+					}
+				}
+				else
+				{
+					// Name-based resolution (PATH/App Execution Aliases)
+					if (await CanStartProcessAsync(c, "--version", workingDir))
+					{
+						pythonExe = c;
+						break;
+					}
+				}
+			}
+
+			if (pythonExe is null)
+				throw new InvalidOperationException(
+					"No usable Python executable found. Install Python (python.org recommended) " +
+					"or ensure 'python' or 'py' is available on PATH/App Execution Aliases.");
+
+			// If using "py", you may want "-3" to force Python 3.
+			var fullArgs = pythonExe.Equals("py", StringComparison.OrdinalIgnoreCase)
+				? $"-3 \"{scriptPath}\" {args}"
+				: $"\"{scriptPath}\" {args}";
+
 			var psi = new ProcessStartInfo
 			{
-				FileName = "\"C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.PythonManager_25.0.240.0_x64__3847v3x7pw1km\\py.exe\"",
-				Arguments = $"\"{scriptPath}\" {args}",
+				FileName = pythonExe,
+				Arguments = fullArgs,
 				WorkingDirectory = workingDir,
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
@@ -145,7 +197,16 @@ namespace APUS.Server.Services.Implementations.FileServices
 			_logger.LogInformation("Running Python: {FileName} {Arguments} (WD={WorkingDir})",
 				psi.FileName, psi.Arguments, workingDir);
 
-			proc.Start();
+			try
+			{
+				proc.Start();
+			}
+			catch (Exception ex)
+			{
+				throw new InvalidOperationException(
+					$"Failed to start Python process. FileName='{psi.FileName}', WD='{workingDir}'. " +
+					"Ensure Python is installed and accessible.", ex);
+			}
 
 			var stdoutTask = proc.StandardOutput.ReadToEndAsync();
 			var stderrTask = proc.StandardError.ReadToEndAsync();
@@ -156,27 +217,66 @@ namespace APUS.Server.Services.Implementations.FileServices
 			var stderr = await stderrTask;
 
 			if (!string.IsNullOrWhiteSpace(stderr))
-			{
 				_logger.LogWarning("Python stderr: {Stderr}", stderr);
-			}
 
 			if (proc.ExitCode != 0)
 			{
 				_logger.LogError(
 					"Python script exited with code {Code}. Args: {Args}. Stdout: {Stdout} Stderr: {Stderr}",
-					proc.ExitCode, args, stdout, stderr);
-				throw new InvalidOperationException($"Python script failed with exit code {proc.ExitCode}");
+					proc.ExitCode, fullArgs, stdout, stderr);
+
+				throw new InvalidOperationException(
+					$"Python script failed (exit={proc.ExitCode}). Stderr: {TrimForException(stderr)}");
 			}
 
-			var lines = stdout
-				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
+			var lines = stdout.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 			var jsonLine = lines.Length > 0 ? lines[^1].Trim() : string.Empty;
+
+			if (string.IsNullOrWhiteSpace(jsonLine))
+				throw new InvalidOperationException($"Python returned no output. Stdout: {TrimForException(stdout)}");
 
 			_logger.LogInformation("Python stdout (last line as JSON): {JsonLine}", jsonLine);
 
 			return jsonLine;
+
+			static bool LooksLikePath(string s) => s.Contains('\\') || s.Contains('/') || s.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+
+			static string TrimForException(string s)
+				=> s.Length <= 2000 ? s : s.Substring(0, 2000) + "...";
+
+			static async Task<bool> CanStartProcessAsync(string fileName, string arguments, string workingDir)
+			{
+				try
+				{
+					var psi = new ProcessStartInfo
+					{
+						FileName = fileName,
+						Arguments = arguments,
+						WorkingDirectory = workingDir,
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						UseShellExecute = false,
+						CreateNoWindow = true
+					};
+
+					using var p = new Process { StartInfo = psi };
+					p.Start();
+
+					var t1 = p.StandardOutput.ReadToEndAsync();
+					var t2 = p.StandardError.ReadToEndAsync();
+
+					await p.WaitForExitAsync();
+					await Task.WhenAll(t1, t2);
+
+					return p.ExitCode == 0;
+				}
+				catch
+				{
+					return false;
+				}
+			}
 		}
+
 
 		private sealed class PredictResult
 		{
