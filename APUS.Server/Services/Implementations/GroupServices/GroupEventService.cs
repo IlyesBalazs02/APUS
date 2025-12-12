@@ -20,12 +20,7 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			_groups = groups;
 		}
 
-		public async Task<PagedResponse<GroupEventDto>> GetEventsPagedAsync(
-			string userId,
-			long groupId,
-			int skip,
-			int take,
-			CancellationToken ct)
+		public async Task<PagedResponse<GroupEventDto>> GetEventsPagedAsync(string userId, long groupId, int skip, int take, CancellationToken ct)
 		{
 			if (take < 1 || take > 50) take = 10;
 
@@ -44,19 +39,10 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			};
 		}
 
-
-		public async Task<GroupEventDto> CreateEventAsync(
-			string userId,
-			long groupId,
-			CreateGroupEventRequest request,
-			CancellationToken ct)
+		public async Task<GroupEventDto> CreateEventAsync(string userId, long groupId, CreateGroupEventRequest request, CancellationToken ct)
 		{
-			// Ensure group exists; you can also enforce WhoCanCreateEvent here.
 			var group = await _groups.GetAsync(groupId, ct)
 				?? throw new InvalidOperationException("Group not found.");
-
-
-			// TODO: enforce that userId is an admin if group.WhoCanCreateEvent == AdminsOnly.
 
 			var now = DateTime.UtcNow;
 
@@ -80,24 +66,15 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			return MapToDto(entity, userId);
 		}
 
-		public async Task DeleteEventAsync(
-			string userId,
-			long eventId,
-			CancellationToken ct)
+		public async Task DeleteEventAsync(string userId, long eventId, CancellationToken ct)
 		{
 			var entity = await _events.GetByIdAsync(eventId, ct)
 				?? throw new InvalidOperationException("Event not found.");
 
-			// TODO: enforce permissions (creator or admin of entity.Group).
-
 			await _events.DeleteAsync(entity, ct);
 		}
 
-		public async Task JoinEventAsync(
-			string userId,
-			long groupId,
-			long eventId,
-			CancellationToken ct)
+		public async Task JoinEventAsync(string userId, long groupId, long eventId, CancellationToken ct)
 		{
 			var ev = await _events.GetByIdAsync(eventId, ct)
 					 ?? throw new InvalidOperationException("Event not found.");
@@ -105,16 +82,10 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			if (ev.GroupId != groupId)
 				throw new InvalidOperationException("Event does not belong to this group.");
 
-			// TODO: ensure user is group member via _groups if needed
-
 			await _events.AddParticipantAsync(eventId, userId, ct);
 		}
 
-		public async Task LeaveEventAsync(
-			string userId,
-			long groupId,
-			long eventId,
-			CancellationToken ct)
+		public async Task LeaveEventAsync(string userId, long groupId, long eventId, CancellationToken ct)
 		{
 			var ev = await _events.GetByIdAsync(eventId, ct)
 					 ?? throw new InvalidOperationException("Event not found.");
@@ -125,15 +96,10 @@ namespace APUS.Server.Services.Implementations.GroupServices
 			await _events.RemoveParticipantAsync(eventId, userId, ct);
 		}
 
-		public async Task<IReadOnlyList<GroupEventParticipantDto>> GetParticipantsAsync(
-			string userId,
-			long eventId,
-			CancellationToken ct)
+		public async Task<IReadOnlyList<GroupEventParticipantDto>> GetParticipantsAsync(string userId, long eventId, CancellationToken ct)
 		{
 			var ev = await _events.GetByIdAsync(eventId, ct)
 					 ?? throw new InvalidOperationException("Event not found.");
-
-			// optional: membership check via _groups here
 
 			var participants = await _events.GetParticipantsAsync(eventId, ct);
 
@@ -145,10 +111,6 @@ namespace APUS.Server.Services.Implementations.GroupServices
 				JoinedAtUtc = p.JoinedAtUtc
 			}).ToList();
 		}
-
-
-
-
 
 		private static GroupEventDto MapToDto(GroupEvent e, string userId)
 		{

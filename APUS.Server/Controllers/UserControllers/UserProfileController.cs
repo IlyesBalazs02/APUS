@@ -42,7 +42,6 @@ namespace APUS.Server.Controllers.UserControllers
 			if (user == null)
 				return NotFound($"User doesnt exist with id:{userId}");
 
-			//ONLY TEMPORARY
 			var name = $"{user.FirstName} {user.LastName}";
 
 			return Ok(new ProfileDto { Name = name });
@@ -72,7 +71,6 @@ namespace APUS.Server.Controllers.UserControllers
 
 		private (DateTime fromUtc, DateTime toUtc) GetRangeForPeriod(TrainingPeriod period)
 		{
-			// Use UTC dates with date-only precision
 			var todayUtc = DateTime.UtcNow.Date;
 
 			DateTime fromUtc = period switch
@@ -83,7 +81,6 @@ namespace APUS.Server.Controllers.UserControllers
 				_ => todayUtc.AddDays(-7)
 			};
 
-			// Exclusive upper bound = start of "tomorrow"
 			var toUtc = todayUtc.AddDays(1);
 
 			return (fromUtc, toUtc);
@@ -91,8 +88,7 @@ namespace APUS.Server.Controllers.UserControllers
 
 		[HttpGet("me/training-time")]
 		[ProducesResponseType(typeof(TrainingTimeSummaryDto), StatusCodes.Status200OK)]
-		public async Task<ActionResult<TrainingTimeSummaryDto>> GetMyTrainingTime(
-			[FromQuery] TrainingPeriod period = TrainingPeriod.LastWeek)
+		public async Task<ActionResult<TrainingTimeSummaryDto>> GetMyTrainingTime([FromQuery] TrainingPeriod period = TrainingPeriod.LastWeek)
 		{
 			var userId = GetCurrentUserId();
 			return await GetTrainingTimeInternal(userId, period);
@@ -100,17 +96,12 @@ namespace APUS.Server.Controllers.UserControllers
 
 		[HttpGet("{userId}/training-time")]
 		[ProducesResponseType(typeof(TrainingTimeSummaryDto), StatusCodes.Status200OK)]
-		public async Task<ActionResult<TrainingTimeSummaryDto>> GetUserTrainingTime(
-			string userId,
-			[FromQuery] TrainingPeriod period = TrainingPeriod.LastWeek)
+		public async Task<ActionResult<TrainingTimeSummaryDto>> GetUserTrainingTime(string userId, [FromQuery] TrainingPeriod period = TrainingPeriod.LastWeek)
 		{
-			// Optional: add privacy checks here (e.g., cannot see if profile is private)
 			return await GetTrainingTimeInternal(userId, period);
 		}
 
-		private async Task<ActionResult<TrainingTimeSummaryDto>> GetTrainingTimeInternal(
-	string userId,
-	TrainingPeriod period)
+		private async Task<ActionResult<TrainingTimeSummaryDto>> GetTrainingTimeInternal(string userId, TrainingPeriod period)
 		{
 			var (fromUtc, toUtc) = GetRangeForPeriod(period);
 
@@ -120,7 +111,6 @@ namespace APUS.Server.Controllers.UserControllers
 			var totalHours = activities.Sum(a => a.Duration.TotalHours);
 			var count = activities.Count;
 
-			// NEW: per-sport breakdown
 			var sports = activities
 				.GroupBy(a => a.ActivityType?.ToString() ?? "Unknown")
 				.Select(g => new TrainingSportSummaryDto
@@ -149,9 +139,7 @@ namespace APUS.Server.Controllers.UserControllers
 
 		[HttpGet("me/calendar")]
 		[ProducesResponseType(typeof(ActivityCalendarMonthDto), StatusCodes.Status200OK)]
-		public async Task<ActionResult<ActivityCalendarMonthDto>> GetMyCalendar(
-			[FromQuery] int? year,
-			[FromQuery] int? month)
+		public async Task<ActionResult<ActivityCalendarMonthDto>> GetMyCalendar([FromQuery] int? year, [FromQuery] int? month)
 		{
 			var userId = GetCurrentUserId();
 			return await GetCalendarInternal(userId, year, month);
@@ -159,18 +147,12 @@ namespace APUS.Server.Controllers.UserControllers
 
 		[HttpGet("{userId}/calendar")]
 		[ProducesResponseType(typeof(ActivityCalendarMonthDto), StatusCodes.Status200OK)]
-		public async Task<ActionResult<ActivityCalendarMonthDto>> GetUserCalendar(
-			string userId,
-			[FromQuery] int? year,
-			[FromQuery] int? month)
+		public async Task<ActionResult<ActivityCalendarMonthDto>> GetUserCalendar(string userId, [FromQuery] int? year, [FromQuery] int? month)
 		{
 			return await GetCalendarInternal(userId, year, month);
 		}
 
-		private async Task<ActionResult<ActivityCalendarMonthDto>> GetCalendarInternal(
-	string userId,
-	int? year,
-	int? month)
+		private async Task<ActionResult<ActivityCalendarMonthDto>> GetCalendarInternal(string userId, int? year, int? month)
 		{
 			var nowUtc = DateTime.UtcNow;
 
@@ -183,7 +165,7 @@ namespace APUS.Server.Controllers.UserControllers
 				.GroupBy(a => a.Date.Date)
 				.Select(g => new ActivityCalendarDayDto
 				{
-					Day = g.Key.Day,                               // <– only the day number
+					Day = g.Key.Day,
 					TotalHours = g.Sum(a => a.Duration.TotalHours),
 					ActivityCount = g.Count()
 				})
@@ -200,7 +182,5 @@ namespace APUS.Server.Controllers.UserControllers
 
 			return Ok(dto);
 		}
-
-
 	}
 }

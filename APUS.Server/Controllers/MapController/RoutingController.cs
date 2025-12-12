@@ -86,7 +86,6 @@ namespace APUS.Server.Controllers.MapController
 			return Ok(result);
 		}
 
-
 		[HttpPost("predict-time")]
 		public async Task<ActionResult<double>> PredictTime([FromBody] List<RouteCoordinateDto> points)
 		{
@@ -114,7 +113,7 @@ namespace APUS.Server.Controllers.MapController
 				if (seconds == null)
 					return StatusCode(500, "Prediction failed.");
 
-				return Ok(seconds.Value); // seconds
+				return Ok(seconds.Value);
 			}
 			finally
 			{
@@ -122,7 +121,6 @@ namespace APUS.Server.Controllers.MapController
 			}
 		}
 
-		//TODO: _STORAGESERVICE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		[HttpPost("save-planned-gpx")]
 		[Authorize]
 		public ActionResult SavePlannedGpx([FromBody] SavePlannedGpxRequestDto request)
@@ -179,12 +177,10 @@ namespace APUS.Server.Controllers.MapController
 			if (string.IsNullOrEmpty(userId))
 				return Unauthorized();
 
-			// Same folder as in SavePlannedGpx
 			var tracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
 			if (!Directory.Exists(tracksDir))
 				return NotFound("No Tracks folder for user.");
 
-			// Reuse your ClearFileName sanitiser
 			var baseName = ClearFileName(fileName);
 			var filePath = Path.Combine(tracksDir, baseName + ".gpx");
 
@@ -201,7 +197,6 @@ namespace APUS.Server.Controllers.MapController
 			}
 			catch (Exception ex)
 			{
-				// You can log ex here
 				return StatusCode(500, "Failed to parse GPX.");
 			}
 		}
@@ -238,17 +233,13 @@ namespace APUS.Server.Controllers.MapController
 			}
 		}
 
-
-
 		private static List<CoordinateDto> ParseGpxTrackPoints(string path)
 		{
 			var result = new List<CoordinateDto>();
 
 			var doc = XDocument.Load(path);
-			// Give a default namespace for GPX 1.1; if your GPX has a different ns adjust here
 			XNamespace ns = "http://www.topografix.com/GPX/1/1";
 
-			// trkpt inside trk/trkseg
 			var trkpts = doc.Descendants(ns + "trkpt");
 			foreach (var p in trkpts)
 			{
@@ -269,9 +260,6 @@ namespace APUS.Server.Controllers.MapController
 
 			return result;
 		}
-
-
-
 
 		private static void WriteGpx(
 			string path,
@@ -306,7 +294,6 @@ namespace APUS.Server.Controllers.MapController
 
 			var baseName = name.Trim();
 
-			// Strip .gpx extension if user typed it
 			if (baseName.EndsWith(".gpx", StringComparison.OrdinalIgnoreCase))
 			{
 				baseName = baseName.Substring(0, baseName.Length - 4);
@@ -320,7 +307,6 @@ namespace APUS.Server.Controllers.MapController
 
 			return baseName;
 		}
-
 
 	}
 

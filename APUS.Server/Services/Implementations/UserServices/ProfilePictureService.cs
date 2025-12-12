@@ -24,7 +24,6 @@ namespace APUS.Server.Services.Implementations.UserServices
 
 		public async Task<string> GetProfilePictureUrlAsync(string userId)
 		{
-			// Optional: ensure user exists
 			var user = await _userMgr.FindByIdAsync(userId);
 			if (user == null) throw new InvalidOperationException("User not found.");
 
@@ -45,14 +44,11 @@ namespace APUS.Server.Services.Implementations.UserServices
 			var user = await _userMgr.FindByIdAsync(userId)
 				?? throw new InvalidOperationException("User not found.");
 
-			// Folder: /wwwroot/Users/{userId}/Avatar
 			var avatarDir = Path.Combine(_webRootPath, "Users", userId, "Avatar");
 
-			// Wipe previous files (ensure only the newest stays)
 			foreach (var old in Directory.GetFiles(avatarDir))
 				System.IO.File.Delete(old);
 
-			// Save as deterministic name: avatar{ext}
 			var fileName = $"avatar{ext}";
 			var destinationPhysical = Path.Combine(avatarDir, fileName);
 
@@ -100,10 +96,6 @@ namespace APUS.Server.Services.Implementations.UserServices
 			await file.CopyToAsync(stream).ConfigureAwait(false);
 		}
 
-		/// <summary>
-		/// Returns (physicalPath, webPath) of the most recently modified file inside the avatar folder,
-		/// or (null, null) if none exist.
-		/// </summary>
 		private (string? physical, string? web) GetMostRecentAvatar(string userId)
 		{
 			var avatarDir = Path.Combine(_webRootPath, "Users", userId, "Avatar");

@@ -13,7 +13,7 @@ namespace APUS.Server.Domain.Models
 		public string Url { get; set; } = null!; 
 		public DateTime UploadedAt { get; set; }
 
-		// EXIF fields (typed + indexable)
+		// EXIF fields
 		public DateTime? DateTaken { get; set; }
 		public double? GpsLat { get; set; }
 		public double? GpsLon { get; set; }

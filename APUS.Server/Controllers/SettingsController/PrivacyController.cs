@@ -20,19 +20,15 @@ namespace APUS.Server.Controllers.SettingsController
 			_userManager = userManager;
 			_db = db;
 		}
-
-		// DTOs
 		public class PrivacyDto
 		{
 			public bool AllowFollow { get; set; }
-			public string ActivityVisibility { get; set; } // "Everyone" | "Only followers" | "Only me" from UI
+			public string ActivityVisibility { get; set; } // "Everyone" | "Only followers" | "Only me"
 			public string ProfileVisibility { get; set; }
 		}
 
 		private static VisibilityLevel ParseVisibility(string input)
 		{
-			// Accept values coming from your Angular selects: "Everyone", "Only followers", "Only me"
-			// Also accept enum names for flexibility.
 			if (string.IsNullOrWhiteSpace(input)) return VisibilityLevel.Everyone;
 
 			var normalized = input.Trim().ToLowerInvariant();
@@ -55,10 +51,7 @@ namespace APUS.Server.Controllers.SettingsController
 			ProfileVisibility = p.ProfileVisibility.ToString()
 		};
 
-		/// <summary>
-		/// Get current user's privacy settings (creates defaults if missing).
-		/// GET /api/privacy
-		/// </summary>
+		// Get current user's privacy settings
 		[HttpGet]
 		public async Task<ActionResult<PrivacyDto>> GetMine()
 		{
@@ -85,10 +78,7 @@ namespace APUS.Server.Controllers.SettingsController
 			return Ok(ToDto(settings));
 		}
 
-		/// <summary>
-		/// Update current user's privacy settings.
-		/// PUT /api/privacy
-		/// </summary>
+		// Update current user's privacy settings.
 		[HttpPut]
 		public async Task<ActionResult<PrivacyDto>> UpdateMine([FromBody] PrivacyDto dto)
 		{

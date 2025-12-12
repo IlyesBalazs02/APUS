@@ -11,7 +11,5 @@
 		public SiteUser Friend { get; set; }
 
 		public UserRelationStatus Status { get; set; } = UserRelationStatus.Pending;
-		//public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
-		//public DateTime? AcceptedAt { get; set; }
 	}
 }

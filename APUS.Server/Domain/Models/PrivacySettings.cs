@@ -10,13 +10,11 @@ namespace APUS.Server.Domain.Models
 		OnlyMe = 2
 	}
 
-	//TODO: Block users
 	public class PrivacySettings
 	{
 		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();
 
-		// FK to SiteUser (IdentityUser key is string)
 		[Required]
 		public string UserId { get; set; }
 

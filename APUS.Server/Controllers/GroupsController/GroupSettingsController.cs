@@ -27,7 +27,6 @@ namespace APUS.Server.Controllers.GroupsController
 			return Ok(settings);
 		}
 
-		// Updates group settings such as name, bio, and permissions.
 		[HttpPatch("{groupId:long}/settings")]
 		public async Task<IActionResult> UpdateSettings([FromRoute] long groupId, [FromBody] UpdateGroupSettingsDto dto, CancellationToken ct)
 		{

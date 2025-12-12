@@ -39,14 +39,11 @@ namespace APUS.Server.Controllers
 		}
 
 		[HttpPost("{activityId}/images")]
-		public async Task<IActionResult> UploadImages(
-	string activityId,
-	[FromForm] IFormFileCollection images,
-	[FromForm] string? exifJson)
+		public async Task<IActionResult> UploadImages(string activityId,[FromForm] IFormFileCollection images,[FromForm] string? exifJson)
 		{
 			var userId = User.GetUserId();
 
-			// parse EXIF from client (filename -> ExifMetadataDto)
+			// parse EXIF from client
 			var exifDict = string.IsNullOrWhiteSpace(exifJson)
 				? new Dictionary<string, ExifMetadataDto>()
 				: JsonSerializer.Deserialize<Dictionary<string, ExifMetadataDto>>(exifJson)
@@ -55,7 +52,6 @@ namespace APUS.Server.Controllers
 			// save physical files
 			await _storageService.SaveImagesAsync(activityId, images, userId);
 
-			// build ActivityImage entities
 			var now = DateTime.UtcNow;
 			var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
@@ -91,7 +87,7 @@ namespace APUS.Server.Controllers
 				double? gpsLat = null;
 				double? gpsLon = null;
 
-				// If we know when the photo was taken, find closest trackpoint in TCX/GPX
+				// If it knows when the photo was taken, find closest trackpoint in TCX/GPX
 				if (dateTaken.HasValue)
 				{
 					var closest = await _activityTrackLookupService.FindClosestPointAsync(
@@ -129,8 +125,6 @@ namespace APUS.Server.Controllers
 
 			return Ok();
 		}
-
-
 
 		[HttpGet("{id}")]
 		[Authorize]
@@ -185,7 +179,7 @@ namespace APUS.Server.Controllers
 
 			//If the trackImage doesnt exist(which can be normal), dont send anything
 			if (!System.IO.File.Exists(file))
-				return NoContent();   // 204
+				return NoContent();
 
 			var url = $"{Request.Scheme}://{Request.Host}/Users/{activity.UserId}/Activities/{id}/ActivityTrackImage.png";
 			return Ok(url);

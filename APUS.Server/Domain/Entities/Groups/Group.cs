@@ -10,7 +10,7 @@ namespace APUS.Server.Domain.Entities.Groups
 		public long Id { get; set; }
 		public required string Name { get; set; } = null!;
 		public string? Description { get; set; }
-		public bool IsOpen { get; set; } = true; // need permission to join??
+		public bool IsOpen { get; set; } = true; // need permission to join?
 
 		public GroupPostPermission WhoCanPost { get; set; } = GroupPostPermission.Members;
 		public GroupEventPermission WhoCanCreateEvent { get; set; } = GroupEventPermission.AdminsOnly;

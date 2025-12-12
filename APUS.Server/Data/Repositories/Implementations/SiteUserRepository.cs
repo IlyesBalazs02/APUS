@@ -51,7 +51,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 		}
 
-		// Basic search (no paging)
 		public async Task<List<SiteUser>> SearchByNameAsync(string? term)
 		{
 			term = (term ?? string.Empty).Trim().ToLower();
@@ -60,7 +59,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 			if (!string.IsNullOrEmpty(term))
 			{
-				// Match where "FirstName LastName" contains the term
 				q = q.Where(u =>
 					EF.Functions.Like(
 						(((u.FirstName ?? "") + " " + (u.LastName ?? "")).ToLower()),
@@ -75,7 +73,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.ToListAsync();
 		}
 
-		// Same, but with paging support (skip/take)
 		public async Task<List<SiteUser>> SearchByNamePagedAsync(string? term, int skip, int takePlusOne)
 		{
 			term = (term ?? string.Empty).Trim().ToLower();
@@ -97,9 +94,5 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.Skip(skip).Take(takePlusOne)
 				.ToListAsync();
 		}
-
-
-
-
 	}
 }

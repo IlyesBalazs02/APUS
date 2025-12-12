@@ -14,7 +14,6 @@
 		public int? LikesCount { get; set; }
 		public bool? IsLikedByCurrentUser { get; set; }
 
-		//owner information
 		public string UserFullName { get; set; }
 		public string avatarUrl { get; set; }
 		public string activityType { get; set; }

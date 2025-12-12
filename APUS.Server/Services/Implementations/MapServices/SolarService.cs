@@ -27,26 +27,21 @@ namespace APUS.Server.Services.Implementations.MapServices
 
 		public (DateTime Sunrise, DateTime Sunset) GetSolarTimes(DateTime dateTimeLocal, double lat, double lon)
 		{
-			// IMPORTANT: add the correct using for the SolarTimes package namespace at the top
-			// using <SolarTimesNamespace>;
 			var solarTimes = new SolarTimes(dateTimeLocal, lat, lon);
 			return (solarTimes.Sunrise, solarTimes.Sunset);
 		}
 
 		public async Task<DaylightResponseDto?> PredictDaylightAsync(DaylightRequestDto request, string userId)
 		{
-			// Temp GPX path inside the user's LA folder
 			var laDir = Path.Combine(_env.WebRootPath, "Users", userId, "LAModels");
 			Directory.CreateDirectory(laDir);
 			var tempGpxPath = Path.Combine(laDir, $"planned_{Guid.NewGuid():N}.gpx");
 
 			try
 			{
-				// 1) Generate GPX from route + elevation
 				var elevations = _routing.SampleElevation(request.Points);
 				WriteGpx(tempGpxPath, request.Points, elevations);
 
-				// 2) Predict total time
 				var predictedSeconds =
 					await _huberRegression.PredictTotalTimeSecondsAsync(userId, tempGpxPath);
 
@@ -55,17 +50,14 @@ namespace APUS.Server.Services.Implementations.MapServices
 
 				var totalSeconds = predictedSeconds.Value;
 
-				// 3) Resolve start time (optional)
 				var startLocalTime =
 					(request.StartLocalTime?.ToLocalTime()) ?? DateTime.Now;
 
 				var finishLocalTime = startLocalTime.AddSeconds(totalSeconds);
 
-				// 4) Solar times based on first point of the route
 				var first = request.Points[0];
 				var (sunrise, sunset) = GetSolarTimes(startLocalTime, first.Lat, first.Lon);
 
-				// 5) Percent of route before nightfall (sunset)
 				double percentBeforeNightfall;
 				if (sunset <= startLocalTime)
 				{
@@ -83,7 +75,6 @@ namespace APUS.Server.Services.Implementations.MapServices
 					percentBeforeNightfall = frac * 100.0;
 				}
 
-				// 6) Markers for sunrise / sunset along the route
 				DaylightMarkerDto? sunriseMarker = null;
 				DaylightMarkerDto? sunsetMarker = null;
 

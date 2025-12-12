@@ -15,7 +15,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 		public ImportActivityModel ImportActivity(MemoryStream tcxStream)
 		{
 
-			//parse trackpoints
 			var points = ParseTcxTrackpoints(tcxStream);
 
 			tcxStream.Seek(0, SeekOrigin.Begin);
@@ -38,12 +37,9 @@ namespace APUS.Server.Services.Implementations.FileServices
 
 			// TCX core namespace:
 			XNamespace tcx = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2";
-			// Garmin Activity Extension (for Speed, RunCadence, Watts):
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";
 
-			//parse trackpoints
 			return doc
-			  // find all <Trackpoint>
 			  .Descendants(tcx + "Trackpoint")
 			  .Select(tp =>
 			  {
@@ -68,7 +64,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 				  int? hr = tp.Element(tcx + "HeartRateBpm")?
 								   .Element(tcx + "Value") is XElement h ? int.Parse(h.Value, CultureInfo.InvariantCulture) : null;
 
-				  // Extensions → <ns3:TPX>
 				  var tpx = tp.Element(tcx + "Extensions")?
 							  .Element(ext + "TPX");
 				  double? speed = tpx?.Element(ext + "Speed") is XElement s ? double.Parse(s.Value, CultureInfo.InvariantCulture) : null;
@@ -88,7 +83,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 					  Watts = watts
 				  };
 			  })
-			  // sort by time
 			  .OrderBy(p => p.Time)
 			  .ToList();
 		}
@@ -97,9 +91,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 		{
 			var doc = XDocument.Load(stream);
 
-			// TCX core namespace:
 			XNamespace tcx = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2";
-			// Garmin Activity Extension (for Speed, RunCadence, Watts):
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";
 
 			//pars lap summaries
@@ -136,7 +128,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 					  ? int.Parse(mhr.Value, CultureInfo.InvariantCulture)
 					  : null;
 
-				  //ns3:LX> block:
 				  var lx = lap.Element(tcx + "Extensions")
 							  ?.Element(ext + "LX");
 
@@ -266,8 +257,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 			public int? AverageHeartRate { get; set; }
 			public int? MaximumHeartRate { get; set; }
 
-			//for the LX extension at the end of the laps
-			public double? AvgSpeed { get; set; }  // in m/s
+			public double? AvgSpeed { get; set; }
 			public int? AvgRunCadence { get; set; }
 			public int? MaxRunCadence { get; set; }
 

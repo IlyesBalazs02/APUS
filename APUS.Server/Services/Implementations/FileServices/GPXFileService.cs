@@ -136,7 +136,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			if (pts == null || pts.Count == 0)
 				return model;
 
-			// Time-ordered points
 			var timeOrdered = pts
 				.Where(p => p.Time.HasValue)
 				.OrderBy(p => p.Time!.Value)
@@ -177,7 +176,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 				}
 			}
 
-			// --- rounding to 2 decimals ---
 			var totalDistanceKm = totalDistanceMeters / 1000.0;
 			totalDistanceKm = Math.Round(totalDistanceKm, 2);
 			ascent = Math.Round(ascent, 2);
@@ -188,7 +186,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			model.TotalAscentMeters = ascent;
 			model.TotalDescentMeters = descent;
 
-			// HR stats
 			var hrList = pts
 				.Where(p => p.HeartRate.HasValue)
 				.Select(p => p.HeartRate!.Value)
@@ -200,15 +197,13 @@ namespace APUS.Server.Services.Implementations.FileServices
 				model.MaximumHeartRate = hrList.Max();
 			}
 
-			// Avg speed (m/s) → rounded to 2 decimals
 			if (totalTimeSeconds > 0 && totalDistanceMeters > 0)
 			{
-				var avgSpeed = totalDistanceMeters / totalTimeSeconds; // m/s
+				var avgSpeed = totalDistanceMeters / totalTimeSeconds;
 				model.AvgPace = Math.Round(avgSpeed, 2);
 			}
 
-			// Simple calorie estimate based on distance
-			// ~60 kcal per km (you can tune this constant).
+			// ~60 kcal per km
 			if (totalDistanceKm > 0)
 			{
 				model.TotalCalories = (int)Math.Round(totalDistanceKm * 60.0);

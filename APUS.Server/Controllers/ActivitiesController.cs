@@ -40,7 +40,6 @@ namespace APUS.Server.Controllers
 			_activityCommentRepository = activityCommentRepository;
 		}
 
-		//TODO Create DTO for mainactivity
 		[HttpPost]
 		[Authorize]
 		[ProducesResponseType(typeof(MainActivity), StatusCodes.Status201Created)]
@@ -148,7 +147,6 @@ namespace APUS.Server.Controllers
 
 		#endregion
 
-		//ToDo: Pages
 		[HttpGet("get-activities")]
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -163,7 +161,6 @@ namespace APUS.Server.Controllers
 			return Ok(dtos);
 		}
 
-		//ToDo: Pages
 		[HttpGet("get-user-activities")]
 		[Authorize]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -193,7 +190,6 @@ namespace APUS.Server.Controllers
 			var dtos = activities.Select(MapToDto).ToList();
 			return Ok(dtos);
 		}
-
 
 		[HttpPut("{id}")]
 		[Authorize]
@@ -239,8 +235,6 @@ namespace APUS.Server.Controllers
 				return StatusCode(500, "An unexpected error occurred.");
 			}
 		}
-
-
 
 		[HttpDelete("{id}")]
 		[Authorize]
@@ -356,8 +350,6 @@ namespace APUS.Server.Controllers
 
 			return Ok(dtos);
 		}
-
-
 		private TDto CopyBaseProps<TDto>(MainActivity activity)
 			where TDto : ActivityDto, new()
 		{

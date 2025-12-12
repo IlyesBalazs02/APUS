@@ -73,7 +73,6 @@ namespace APUS.Server.Controllers.SettingsController
 
 			return Ok(new { message = "Password updated successfully." });
 		}
-
 		public class GenderRequest
 		{
 			public string SelectedGender { get; set; } = string.Empty;

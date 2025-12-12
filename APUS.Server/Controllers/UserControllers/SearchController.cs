@@ -24,7 +24,6 @@ namespace APUS.Server.Controllers.UserControllers
 		[FromQuery] int skip = 0,
 		[FromQuery] int take = 30)
 		{
-			// Limit page size
 			if (take is < 1 or > 100) take = 30;
 
 			var result = await _searchUsersService.SearchUsersPagedAsync(query, skip, take);

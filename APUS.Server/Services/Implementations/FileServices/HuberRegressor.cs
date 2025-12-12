@@ -168,7 +168,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 				throw new InvalidOperationException($"Python script failed with exit code {proc.ExitCode}");
 			}
 
-			// IMPORTANT: many prints → take the last non-empty line as JSON
 			var lines = stdout
 				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -178,9 +177,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 
 			return jsonLine;
 		}
-
-
-		// JSON DTOs
 
 		private sealed class PredictResult
 		{

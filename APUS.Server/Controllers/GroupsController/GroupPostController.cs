@@ -56,13 +56,8 @@ namespace APUS.Server.Controllers.GroupsController
 		}
 
 		[HttpGet("posts/{postId:long}/comments")]
-		public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(
-	long postId,
-	CancellationToken ct)
+		public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(long postId, CancellationToken ct)
 		{
-			// For now we just load comments by post; GroupService already enforces access
-			// for listing posts, and the UI only exposes this for members.
-
 			var entities = await _commentRepository.GetByPostIdAsync(postId);
 
 			var dtos = entities.Select(c => new CommentDto
@@ -81,17 +76,13 @@ namespace APUS.Server.Controllers.GroupsController
 		[HttpPost("posts/{postId:long}/comments")]
 		[ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<CommentDto>> AddComment(
-	long postId,
-	[FromBody] CreateCommentRequest request,
-	CancellationToken ct)
+		public async Task<ActionResult<CommentDto>> AddComment(long postId, [FromBody] CreateCommentRequest request, CancellationToken ct)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			var userId = User.GetUserId(); // or User.FindFirstValue(ClaimTypes.NameIdentifier)!
+			var userId = User.GetUserId();
 
-			// Just create the comment; FK constraint will protect invalid postId.
 			var entity = new GroupPostComment
 			{
 				GroupPostId = postId,
@@ -114,7 +105,5 @@ namespace APUS.Server.Controllers.GroupsController
 
 			return Ok(dto);
 		}
-
-
 	}
 }

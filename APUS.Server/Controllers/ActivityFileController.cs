@@ -104,7 +104,7 @@ namespace APUS.Server.Controllers
 						"Cycling" when hasGps => CreateGps<Ride>(),
 						"GpsRelatedActivity" when hasGps => CreateGps<GpsRelatedActivity>(),
 
-						// Non-GPS / generic
+						// Non-GPS
 						"MainActivity" => CreatePlain<MainActivity>(),
 
 						_ => hasGps
@@ -137,7 +137,7 @@ namespace APUS.Server.Controllers
 				if (importedActivity.HasGpsTrack)
 					await _createOsmMapPng.GeneratePng(newActivity);
 
-				//if it's running, train the model
+				// If it's running, train the model
 				if (importedActivity.HasGpsTrack &&
 					newActivity is Running &&
 					(ext.Equals(".tcx", StringComparison.OrdinalIgnoreCase) ||
@@ -149,14 +149,12 @@ namespace APUS.Server.Controllers
 					}
 					catch (Exception laEx)
 					{
-						// Log, but DO NOT stop the upload
 						_logger.LogError(
 							laEx,
 							"LinearAggression training failed for user {UserId}, activity {ActivityId}. Track: {TrackPath}",
 							userId,
 							newActivity.Id,
 							savedTrackPath);
-						// Just continue – the activity upload should still succeed
 					}
 				}
 
@@ -166,7 +164,6 @@ namespace APUS.Server.Controllers
 					value: newActivity
 				);
 			}
-
 
 			catch (XmlException xmlEx)
 			{
@@ -204,6 +201,5 @@ namespace APUS.Server.Controllers
 
 			return Ok(points);
 		}
-
 	}
 }

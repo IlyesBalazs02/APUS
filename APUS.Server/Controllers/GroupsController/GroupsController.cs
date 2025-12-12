@@ -32,8 +32,7 @@ namespace APUS.Server.Controllers.GroupsController
 			return g is null ? NotFound() : Ok(g);
 		}
 
-
-			[HttpGet]
+		[HttpGet]
 		public async Task<ActionResult<List<GroupDto>>> Search([FromQuery] string? q, [FromQuery] int skip = 0, [FromQuery] int take = 20, CancellationToken ct = default)
 		{
 			take = Math.Clamp(take, 1, 50);
@@ -91,6 +90,5 @@ namespace APUS.Server.Controllers.GroupsController
 
 			return Ok(reqs);
 		}
-
 	}
 }

@@ -56,11 +56,11 @@ namespace APUS.Server.Data.Repositories.Implementations
 			}
 			else
 			{
-				// 1) remove old
+				// remove old
 				_context.Activities.Remove(oldEntity);
 				await _context.SaveChangesAsync();
 
-				// 2) add new
+				// add new
 				activity.Id = id;
 				_context.Activities.Add(activity);
 				await _context.SaveChangesAsync();
@@ -99,7 +99,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 			await _context.SaveChangesAsync();
 		}
 
-		// Paged loading
 		public async Task<List<MainActivity>> GetPagedAsync(int skip, int takePlusOne)
 		{
 			return await _context.Activities
@@ -114,7 +113,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 		public async Task<List<MainActivity>> GetFeedPagedAsync(string me, int skip, int takePlusOne)
 		{
-			// Subquery of my friends' IDs (model stores one row per accepted relation, either direction)
 			var friendIds = _context.UserRelations
 				.Where(r => r.Status == UserRelationStatus.Accepted &&
 						   (r.UserId == me || r.FriendId == me))
@@ -144,10 +142,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.ToListAsync();
 		}
 
-		public async Task<List<MainActivity>> GetByUserIdAndDateRangeAsync(
-			string userId,
-			DateTime fromUtcInclusive,
-			DateTime toUtcExclusive)
+		public async Task<List<MainActivity>> GetByUserIdAndDateRangeAsync(string userId, DateTime fromUtcInclusive, DateTime toUtcExclusive)
 		{
 			return await _context.Activities
 				.Include(a => a.User)
@@ -158,10 +153,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.ToListAsync();
 		}
 
-		public async Task<List<MainActivity>> GetByUserIdAndMonthAsync(
-			string userId,
-			int year,
-			int month)
+		public async Task<List<MainActivity>> GetByUserIdAndMonthAsync(string userId, int year, int month)
 		{
 			var from = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
 			var to = from.AddMonths(1);

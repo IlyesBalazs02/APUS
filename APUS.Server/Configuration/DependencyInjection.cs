@@ -34,7 +34,7 @@ namespace APUS.Server.Configuration
 				{
 					options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 					options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
-					options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ← this stops $type / $values
+					options.SerializerSettings.TypeNameHandling = TypeNameHandling.None;
 					options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
 				});
 
@@ -47,13 +47,6 @@ namespace APUS.Server.Configuration
 							"https://0.0.0.0:54954",              // local dev
 							"http://192.168.1.174:54954",          // local network acces
 							"http://localhost:54954")               // optional, just in case
-						  .AllowAnyHeader()
-						  .AllowAnyMethod()
-						  .AllowCredentials();
-					policy.WithOrigins(
-							"https://0.0.0.0:54954",              // local dev
-							"https://192.168.1.174:54954",          // local network acces
-							"https://localhost:54954")               // optional, just in case
 						  .AllowAnyHeader()
 						  .AllowAnyMethod()
 						  .AllowCredentials();

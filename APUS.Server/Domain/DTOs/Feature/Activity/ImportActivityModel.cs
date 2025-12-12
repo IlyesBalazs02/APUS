@@ -1,7 +1,6 @@
 ﻿namespace APUS.Server.Domain.DTOs.Feature.Activity
 
 {
-	//The tcx and gpx files data is collected here and with this class will the new activity be created
 	public class ImportActivityModel
 	{
 		public DateTime StartTime { get; set; }

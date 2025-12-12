@@ -24,7 +24,6 @@ namespace APUS.Server.Services.Implementations.MapServices
 
 		public SnapResponseDto SnapToRoad(double lat, double lon)
 		{
-			// Segment-based snap using the global segment index
 			var snap = _snapper.Snap(lat, lon);
 			var (sLat, sLon) = snap.Point;
 
@@ -82,7 +81,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 		}
 
 
-		/// Build the full polyline (lat/lon) between snapped endpoints
+		// Build the full polyline (lat/lon) between snapped endpoints
 		private static List<(double Lat, double Lon)> BuildRouteGeometry(
 			TiledRoadGraph graph,
 			SnapResult A,
@@ -162,14 +161,12 @@ namespace APUS.Server.Services.Implementations.MapServices
 				AppendSegment(poly, segmentGeom);
 			}
 
-			// Ensure it ends at the snapped target point
 			if (poly.Count == 0 || poly[^1] != B.Point)
 				poly.Add(B.Point);
 
 			return poly;
 		}
 
-		// Append a segment to the polyline, skipping the first vertex to avoid duplicating the connection point.
 		private static void AppendSegment(
 			List<(double Lat, double Lon)> poly,
 			IReadOnlyList<(double Lat, double Lon)> segment)

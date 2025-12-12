@@ -34,7 +34,6 @@ namespace APUS.Server.Controllers.UserControllers
 
 		public record TokenResponseDto(string Token);
 
-
 		[HttpPost("register")]
 		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status200OK)]
@@ -47,8 +46,6 @@ namespace APUS.Server.Controllers.UserControllers
 				ModelState.AddModelError(nameof(dto.ConfirmPassword), "Passwords must match.");
 				return ValidationProblem(ModelState);
 			}
-
-
 
 			var result = await _siteUserRepository.CreaterAsync(dto.FirstName, dto.LastName, dto.Email, dto.Email, dto.Password);
 
@@ -74,17 +71,15 @@ namespace APUS.Server.Controllers.UserControllers
 			return Ok(new TokenResponseDto(token));
 		}
 
-
 		private async Task<string> GenerateJwtTokenAsync(string email)
 		{
 			var user = await _userMgr.FindByEmailAsync(email);
 
-			var claims = new List<Claim>
-	{
-		new Claim(ClaimTypes.NameIdentifier, user.Id),              
-        new Claim(JwtRegisteredClaimNames.Email, user.Email),       
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-	};
+			var claims = new List<Claim>{
+				new Claim(ClaimTypes.NameIdentifier, user.Id),
+				new Claim(JwtRegisteredClaimNames.Email, user.Email),
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+			};
 
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

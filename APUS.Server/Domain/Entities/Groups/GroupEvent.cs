@@ -13,7 +13,6 @@ namespace APUS.Server.Domain.Entities.Groups
 		public required string Title { get; set; } = null!;
 		public string? Description { get; set; }
 
-		// Optional track (activity) attached to the event
 		public string? TrackActivityId { get; set; }
 		public MainActivity? TrackActivity { get; set; }
 

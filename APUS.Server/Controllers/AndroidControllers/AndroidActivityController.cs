@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using System.Xml;
-
-// NEW usings you already use in ActivityFileController
-using APUS.Server.Services.Implementations.FileServices; // if needed for interfaces
-														 // using APUS.Server.Domain.DTOs.Routing; // only if you use DTOs here, otherwise omit
+using APUS.Server.Services.Implementations.FileServices; 
 
 namespace APUS.Server.Controllers.AndroidControllers
 {
@@ -20,7 +17,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 	{
 		private readonly IActivityRepository _activityRepo;
 
-		// NEW: same services as ActivityFileController
 		private readonly IStorageService _storageService;
 		private readonly ICreateOsmMapPng _createOsmMapPng;
 		private readonly Func<string, IActivityImportService> _importerFactory;
@@ -37,7 +33,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 		{
 			_activityRepo = activityRepo;
 
-			// NEW assignments
 			_storageService = storageService;
 			_createOsmMapPng = createOsmMapPng;
 			_importerFactory = importerFactory;
@@ -45,7 +40,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 			_logger = logger;
 		}
 
-		// ----------------- EXISTING NON-GPS ENDPOINT -----------------
 		[HttpPost("nongps")]
 		public async Task<IActionResult> CreateNonGps([FromBody] NonGpsActivityUploadRequest request)
 		{
@@ -58,9 +52,8 @@ namespace APUS.Server.Controllers.AndroidControllers
 			if (request.DurationSeconds <= 0)
 				return BadRequest("DurationSeconds must be > 0.");
 
-			var userId = User.GetUserId(); // helper below
+			var userId = User.GetUserId();
 
-			// map string to concrete subclass
 			MainActivity activity = request.ActivityType switch
 			{
 				"Yoga" => new Yoga(),
@@ -70,35 +63,27 @@ namespace APUS.Server.Controllers.AndroidControllers
 				"Swimming" => new Swimming(),
 				"Tennis" => new Tennis(),
 
-				// fallback: generic MainActivity if unknown
+				// fallback
 				_ => new MainActivity()
 			};
 
 			activity.UserId = userId;
 
-			// convert Unix seconds to DateTime (UTC)
 			var startUtc = DateTimeOffset
 				.FromUnixTimeSeconds(request.StartTimeUnixSeconds)
 				.UtcDateTime;
 			activity.Date = startUtc;
 
-			// duration
 			activity.Duration = TimeSpan.FromSeconds(request.DurationSeconds);
 
-			// optional: can set Title to something simple
 			activity.Title = activity.DisplayName ?? activity.ActivityType;
 
 			await _activityRepo.CreateAsync(activity);
 
-			// return ID so Android could use it later if needed
 			return Ok(new { activityId = activity.Id });
 		}
 
-		// ----------------- GPS ENDPOINT FOR ANDROID (file-based, like ActivityFileController) -----------------
-		/// <summary>
-		/// Uploads a recorded GPX/TCX from the Android app,
-		/// imports it and creates an activity in the DB (same logic as ActivityFileController).
-		/// </summary>
+		// imports a recorded GPX/TCX from the Android app
 		[HttpPost("gps")]
 		public async Task<IActionResult> CreateGps(
 			[FromForm] IFormFile trackFile,
@@ -111,7 +96,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 			await trackFile.CopyToAsync(ms);
 			ms.Position = 0;
 
-			// Select the correct import service based on the extension
 			var ext = Path.GetExtension(trackFile.FileName);
 			var importer = _importerFactory(ext);
 
@@ -154,7 +138,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 						"Cycling" when hasGps => CreateGps<Ride>(),
 						"GpsRelatedActivity" when hasGps => CreateGps<GpsRelatedActivity>(),
 
-						// Non-GPS / generic
 						"MainActivity" => CreatePlain<MainActivity>(),
 
 						_ => hasGps
@@ -163,7 +146,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 					};
 				}
 
-				// Common properties (same as web importer)
 				newActivity.Title = "Imported Activity";
 				newActivity.Date = importedActivity.StartTime;
 				newActivity.Duration = importedActivity.Duration;
@@ -181,7 +163,7 @@ namespace APUS.Server.Controllers.AndroidControllers
 				_storageService.CreateActivityFolder(newActivity.Id, newActivity.UserId);
 				var savedTrackPath = await _storageService.SaveTrackAsync(newActivity.Id, newActivity.UserId, trackFile);
 
-				// Generate PNG for feed cards if we have a GPS track
+				// Generate PNG for feed cards if it has a GPS track
 				if (importedActivity.HasGpsTrack)
 					await _createOsmMapPng.GeneratePng(newActivity);
 
@@ -197,7 +179,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 					}
 					catch (Exception laEx)
 					{
-						// Log, but do not fail the upload
 						_logger.LogError(
 							laEx,
 							"LinearAggression training failed for user {UserId}, activity {ActivityId}. Track: {TrackPath}",
@@ -207,7 +188,6 @@ namespace APUS.Server.Controllers.AndroidControllers
 					}
 				}
 
-				// For Android it's enough to return the id
 				return Ok(new { activityId = newActivity.Id });
 			}
 			catch (XmlException xmlEx)

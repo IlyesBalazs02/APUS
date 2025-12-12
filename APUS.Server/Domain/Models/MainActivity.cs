@@ -36,7 +36,6 @@ namespace APUS.Server.Domain.Models
 		public string ActivityType { get; set; }
 
 
-		//User setup
 		[BindNever]
 		[ValidateNever]
 		public string UserId { get; set; }

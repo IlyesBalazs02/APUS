@@ -48,18 +48,14 @@ namespace APUS.Server.Data
 			modelBuilder.Entity<Bouldering>().ToTable("Bouldering", "Activities");
 
 
-			// Add indexes for UserId and paging
-			// affected emthods: GetByUserIdPagedAsync (UserId, Date, Id) ; GetPagedAsync (Date, Id) ; GetFeedPagedAsync (Date, Id)
 			modelBuilder.Entity<MainActivity>(b =>
 			{
 				b.HasIndex(a => a.UserId)
 				 .HasDatabaseName("IX_MainActivities_UserId");
 
-				// user profile listing: WHERE UserId = ? ORDER BY Date, Id
 				b.HasIndex(a => new { a.UserId, a.Date, a.Id })
 				 .HasDatabaseName("IX_MainActivities_User_Date_Id");
 
-				// global / friends feed ordering by Date, Id
 				b.HasIndex(a => new { a.Date, a.Id })
 				 .HasDatabaseName("IX_MainActivities_Date_Id");
 			});
@@ -119,7 +115,6 @@ namespace APUS.Server.Data
 			#endregion
 
 
-			// for the SearchByNamePagedAsync method 
 			modelBuilder.Entity<SiteUser>(b =>
 			{
 				b.HasIndex(u => new { u.LastName, u.FirstName, u.Id })
@@ -148,7 +143,6 @@ namespace APUS.Server.Data
 			});
 
 
-			// 1:1 SiteUser <-> PrivacySettings with unique FK
 			modelBuilder.Entity<PrivacySettings>()
 				.HasIndex(p => p.UserId)
 				.IsUnique();
@@ -242,7 +236,6 @@ namespace APUS.Server.Data
 				 .HasForeignKey(x => x.AuthorUserId)
 				 .OnDelete(DeleteBehavior.Restrict);
 
-				// for paging in UI
 				b.HasIndex(x => new { x.GroupId, x.CreatedAtUtc, x.Id });
 			});
 
@@ -284,7 +277,7 @@ namespace APUS.Server.Data
 					.IsRequired();
 
 				b.HasOne(x => x.Group)
-					.WithMany(g => g.Events)            // requires property on Group, see below
+					.WithMany(g => g.Events)
 					.HasForeignKey(x => x.GroupId)
 					.OnDelete(DeleteBehavior.Cascade);
 

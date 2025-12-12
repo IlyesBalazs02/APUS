@@ -5,14 +5,12 @@ import xml.etree.ElementTree as ET
 import json
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
-from sklearn.linear_model import HuberRegressor  # ROBUST REGRESSOR
+from sklearn.linear_model import HuberRegressor
 
-# Default file paths (per-user folder via WorkingDirectory)
 DATA_CSV = "Running.csv"
 MODEL_FILE = "Running.pkl"
 
 
-# ---------- basic geometry ----------
 
 def _haversine_m(lat1, lon1, lat2, lon2):
     R = 6371000.0
@@ -22,8 +20,6 @@ def _haversine_m(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-
-# ---------- time sanitizing for prediction/training ----------
 
 def _sanitize_time_for_prediction(distance_km, times):
     """
@@ -42,18 +38,16 @@ def _sanitize_time_for_prediction(distance_km, times):
 
     total = (t1 - t0).total_seconds()
 
-    # If timestamps look clearly unrealistic relative to distance, ignore.
-    # Example rules (tweak as you like):
 
-    # distance > 1 km but total < 60 sec → impossible
+    # distance > 1 km but total < 60 sec -> impossible
     if distance_km > 1.0 and total < 60:
         return None
 
-    # distance > 3 km but total < 5 minutes → highly improbable
+    # distance > 3 km but total < 5 minutes -> highly improbable
     if distance_km > 3.0 and total < 300:
         return None
 
-    # non-positive duration → invalid
+    # non-positive duration -> invalid
     if total <= 0:
         return None
 
@@ -113,16 +107,13 @@ def parse_tcx(file_path: str) -> dict:
     times = []
 
     for tp in root.findall(".//tcx:Trackpoint", ns):
-        # Time
         time_elem = tp.find("tcx:Time", ns)
         if time_elem is not None and time_elem.text:
             times.append(time_elem.text)
 
-        # Altitude
         ele_elem = tp.find("tcx:AltitudeMeters", ns)
         ele = float(ele_elem.text) if (ele_elem is not None and ele_elem.text) else None
 
-        # Position
         lat_elem = tp.find(".//tcx:LatitudeDegrees", ns)
         lon_elem = tp.find(".//tcx:LongitudeDegrees", ns)
         if lat_elem is None or lon_elem is None or not lat_elem.text or not lon_elem.text:
@@ -228,8 +219,6 @@ def _parse_trackpoints_gpx(file_path: str):
     return pts
 
 
-# ---------- unified parsing (TCX + GPX) ----------
-
 def parse_activity(file_path: str) -> dict:
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".tcx":
@@ -263,7 +252,6 @@ def _lerp(a, b, t):
     return a + (b - a) * t
 
 
-# ---------- data/model utilities ----------
 
 def ensure_data_store(csv_path: str = DATA_CSV):
     if not os.path.exists(csv_path):
@@ -297,14 +285,13 @@ def train_model(csv_path: str = DATA_CSV, model_path: str = MODEL_FILE) -> Huber
     if df.shape[0] < 2:
         raise ValueError("Need at least two data points to train a regression model.")
 
-    # Clean data
     df = df[(df["distance_km"] > 0) & (df["total_time_s"] > 0)]
     if df.empty:
         raise ValueError("No valid rows (positive distance & time) to train model.")
 
     pace = df["total_time_s"] / df["distance_km"]
-    MIN_PACE = 150.0  # 2:30 / km
-    MAX_PACE = 900.0  # 15:00 / km
+    MIN_PACE = 150.0  # 2:30
+    MAX_PACE = 900.0  # 15:00
     df = df[(pace > MIN_PACE) & (pace < MAX_PACE)]
     if df.shape[0] < 2:
         raise ValueError("Not enough valid data points after filtering unrealistic paces.")
@@ -356,11 +343,9 @@ def predict_total_seconds(file_path: str,
         X = [[feats["distance_km"], feats["elevation_gain_m"], feats["slope"]]]
         raw_pred = float(model.predict(X)[0])
 
-        # If prediction is insane, fall back to median pace from history
         if raw_pred < min_time or raw_pred > max_time:
             df = pd.read_csv(csv_path)
             if df.shape[0] == 0:
-                # no fallback possible → use default pace 6:00/km
                 default_pace = 360.0
                 return dist_km * default_pace
 
@@ -371,10 +356,9 @@ def predict_total_seconds(file_path: str,
         return raw_pred
 
     except (FileNotFoundError, ValueError):
-        # No model yet → simple median pace from history or default
         df = pd.read_csv(csv_path)
         if df.shape[0] == 0:
-            default_pace = 360.0  # 6:00 min/km
+            default_pace = 360.0
             return dist_km * default_pace
 
         pace_series = df["total_time_s"] / df["distance_km"]
@@ -429,7 +413,7 @@ def coordinate_at_seconds(path: str,
     return lat, lon, progress
 
 
-# ---------- CLI (JSON output) ----------
+# ---------- (JSON output) ----------
 
 if __name__ == "__main__":
     import argparse

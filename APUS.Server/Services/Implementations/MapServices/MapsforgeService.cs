@@ -57,7 +57,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 			string userId,
 			string trackFileName)
 		{
-			// 1) Load coordinates from track file
+			// Load coordinates from track file
 			var coords = await LoadCoordinatesFromTrackFileAsync(userId, trackFileName);
 			if (coords.Count == 0)
 				return null;
@@ -76,7 +76,7 @@ namespace APUS.Server.Services.Implementations.MapServices
 			if (!ok)
 				throw new InvalidOperationException($"Cannot export map: {msg}");
 
-			// 2) Generate map for that bbox
+			// Generate map for that bbox
 			return await GenerateMapAsync(userId, maxLat, minLat, minLon, maxLon);
 		}
 
@@ -148,7 +148,6 @@ namespace APUS.Server.Services.Implementations.MapServices
 			string userId,
 			string trackFileName)
 		{
-			// adjust this path to your real storage
 			string userTracksDir = Path.Combine(_env.WebRootPath, "Users", userId, "Tracks");
 			string trackPath = Path.Combine(userTracksDir, trackFileName + ".gpx");
 
@@ -158,7 +157,6 @@ namespace APUS.Server.Services.Implementations.MapServices
 			await using var stream = File.OpenRead(trackPath);
 			var doc = await XDocument.LoadAsync(stream, LoadOptions.None, default);
 
-			// Very simple GPX parsing: <trkpt lat=".." lon="..">
 			XNamespace ns = doc.Root?.Name.Namespace ?? XNamespace.None;
 
 			var points = doc
@@ -372,7 +370,6 @@ namespace APUS.Server.Services.Implementations.MapServices
 			}
 			catch
 			{
-				// ignore
 			}
 		}
 	}

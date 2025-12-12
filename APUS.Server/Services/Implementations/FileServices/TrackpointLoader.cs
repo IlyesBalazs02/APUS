@@ -42,7 +42,7 @@ namespace APUS.Server.Services.Implementations.FileServices
 			{
 				".tcx" => ParseTcx(xdoc),
 				".gpx" => ParseGpx(xdoc),
-				_ => new List<TrackpointDto>() // unsupported type → empty track
+				_ => new List<TrackpointDto>()
 			};
 		}
 
@@ -54,7 +54,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			XNamespace ext = "http://www.garmin.com/xmlschemas/ActivityExtension/v2";
 
 			return xdoc
-				// find all <Trackpoint>
 				.Descendants(tcx + "Trackpoint")
 				.Select(tp =>
 				{
@@ -83,7 +82,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 						? int.Parse(h.Value, CultureInfo.InvariantCulture)
 						: null;
 
-					// Extensions → <ns3:TPX><Speed>
 					var tpx = tp.Element(tcx + "Extensions")
 								?.Element(ext + "TPX");
 					double? speed = tpx?.Element(ext + "Speed") is XElement s
@@ -100,7 +98,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 						Pace = speed,
 					};
 				})
-				// sort by time
 				.OrderBy(p => p.Time)
 				.ToList();
 		}
@@ -111,16 +108,14 @@ namespace APUS.Server.Services.Implementations.FileServices
 
 		private List<TrackpointDto> ParseGpx(XDocument xdoc)
 		{
-			// Standard GPX 1.1 namespace
+			// Standard GPX namespace
 			XNamespace gpx = "http://www.topografix.com/GPX/1/1";
-			// Garmin TrackPoint extensions
 			XNamespace gpxtpx = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1";
 
 			return xdoc
 				.Descendants(gpx + "trkpt")
 				.Select(tp =>
 				{
-					// lat/lon are on attributes
 					var latAttr = tp.Attribute("lat")?.Value;
 					var lonAttr = tp.Attribute("lon")?.Value;
 
@@ -133,25 +128,21 @@ namespace APUS.Server.Services.Implementations.FileServices
 					if (double.TryParse(lonAttr, NumberStyles.Float, CultureInfo.InvariantCulture, out var lonVal))
 						lon = lonVal;
 
-					// elevation (optional)
 					double? alt = null;
 					var eleEl = tp.Element(gpx + "ele");
 					if (eleEl != null && double.TryParse(eleEl.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var eleVal))
 						alt = eleVal;
 
-					// time (optional but usually present)
 					DateTime time = default;
 					var timeEl = tp.Element(gpx + "time");
 					if (timeEl != null)
 					{
-						// GPX timestamps like 2025-12-07T20:24:53Z
 						time = DateTime.Parse(
 							timeEl.Value,
 							CultureInfo.InvariantCulture,
 							DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
 					}
 
-					// Extensions: hr / speed may be here
 					int? hr = null;
 					double? speed = null;
 
@@ -163,7 +154,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 						if (hrEl != null && int.TryParse(hrEl.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var hrVal))
 							hr = hrVal;
 
-						// Some devices store speed as <gpxtpx:Speed> in m/s
 						var spEl = tpe.Element(gpxtpx + "Speed");
 						if (spEl != null && double.TryParse(spEl.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var spVal))
 							speed = spVal;
@@ -179,7 +169,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 						Pace = speed
 					};
 				})
-				// filter out points without a valid timestamp if you want, or keep them
 				.Where(tp => tp.Time != default)
 				.OrderBy(tp => tp.Time)
 				.ToList();

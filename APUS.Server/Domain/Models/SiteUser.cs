@@ -25,17 +25,14 @@ namespace APUS.Server.Domain.Models
 
 		public string AvatarUrl { get; set; }
 
-		//Navigation to activities
 		public virtual ICollection<MainActivity> Activities { get; set; }
 
 		public virtual ICollection<MainActivity> LikedPosts { get; set; }
 
-
-		// Friendships this user initiated (sent requests)
 		public virtual ICollection<UserRelation> FriendRequestInitiated { get; set; } = new List<UserRelation>();
-		// Friendships this user received (incoming requests)
+
 		public virtual ICollection<UserRelation> FriendRequestReceived { get; set; } = new List<UserRelation>();
-		// For privacy settings
+
 		public virtual PrivacySettings Privacy { get; set; }
 
 		public SiteUser()

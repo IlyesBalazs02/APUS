@@ -9,8 +9,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Processing;
-
-// Alias to disambiguate Path
 using SysPath = System.IO.Path;
 using APUS.Server.Services.Interfaces;
 using APUS.Server.Domain.Models;
@@ -26,7 +24,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			DefaultRequestHeaders = { { "User-Agent", "MyMapApp/1.0" } }
 		};
 
-		// Fixed map size
 		private const int WidthPx = 500;
 		private const int HeightPx = 200;
 		private const int TileSize = 256;
@@ -59,18 +56,14 @@ namespace APUS.Server.Services.Implementations.FileServices
 
 		private static async Task<byte[]> GenerateFixedSizeMap((double lat, double lon)[] pts, int zoom)
 		{
-			// Convert route to global pixel coordinates
 			var globalPixels = pts.Select(p => LatLonToPixel(p.lat, p.lon, zoom)).ToArray();
-			// Compute pixel bbox
 			double minX = globalPixels.Min(p => p.px);
 			double maxX = globalPixels.Max(p => p.px);
 			double minY = globalPixels.Min(p => p.py);
 			double maxY = globalPixels.Max(p => p.py);
-			// Center of route
 			double centerX = (minX + maxX) / 2;
 			double centerY = (minY + maxY) / 2;
 
-			// Top-left of viewport
 			double vpX = centerX - WidthPx / 2.0;
 			double vpY = centerY - HeightPx / 2.0;
 
@@ -83,7 +76,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			int tilesX = xTileMax - xTileMin + 1;
 			int tilesY = yTileMax - yTileMin + 1;
 
-			// Stitch full tile image
 			using var full = new Image<Rgba32>(tilesX * TileSize, tilesY * TileSize);
 			for (int x = xTileMin; x <= xTileMax; x++)
 				for (int y = yTileMin; y <= yTileMax; y++)
@@ -94,12 +86,10 @@ namespace APUS.Server.Services.Implementations.FileServices
 					full.Mutate(ctx => ctx.DrawImage(tile, new Point((x - xTileMin) * TileSize, (y - yTileMin) * TileSize), 1f));
 				}
 
-			// Crop viewport
 			int cropX = (int)Math.Round(vpX - xTileMin * TileSize);
 			int cropY = (int)Math.Round(vpY - yTileMin * TileSize);
 			full.Mutate(ctx => ctx.Crop(new Rectangle(cropX, cropY, WidthPx, HeightPx)));
 
-			// Draw route adjusted to viewport
 			var ptsRel = globalPixels.Select(p => new PointF(
 				(float)(p.px - vpX),
 				(float)(p.py - vpY)
@@ -127,7 +117,6 @@ namespace APUS.Server.Services.Implementations.FileServices
 			const int MinZoom = 1;
 			for (int z = MaxZoom; z >= MinZoom; z--)
 			{
-				// Fit pixel span to viewport
 				var p0 = LatLonToPixel(minLat, minLon, z);
 				var p1 = LatLonToPixel(maxLat, maxLon, z);
 				if (Math.Abs(p1.px - p0.px) <= WidthPx && Math.Abs(p1.py - p0.py) <= HeightPx)

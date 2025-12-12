@@ -44,23 +44,19 @@ namespace APUS.Server.Services.Implementations
 			return result;
 		}
 
-		// Returns a paginated list of users as DTOs
 		public async Task<PagedResponse<UserSearchDto>> SearchUsersPagedAsync(string? query, int skip, int take)
 		{
-			// Get current user ID from the JWT claims
 			var currentUserId = _userManager.GetUserId(_httpContextAccessor.HttpContext?.User);
 
-			// Fetch users from repository (+1 to detect "has more")
 			var users = await _siteUserRepository.SearchByNamePagedAsync(query, skip, take + 1);
 
-			// Exclude current user if logged in
+			// Exclude current user
 			if (!string.IsNullOrEmpty(currentUserId))
 				users = users.Where(u => u.Id != currentUserId).ToList();
 
 			var hasMore = users.Count > take;
 			if (hasMore) users.RemoveAt(users.Count - 1);
 
-			// Map SiteUser entities to UserSearchDto
 			var items = new List<UserSearchDto>(users.Count);
 			foreach (var u in users)
 			{

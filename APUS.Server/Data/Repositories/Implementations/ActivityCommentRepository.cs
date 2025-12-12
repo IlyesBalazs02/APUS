@@ -27,7 +27,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 			_context.ActivityComments.Add(comment);
 			await _context.SaveChangesAsync();
 
-			// ensure AuthorUser is loaded for DTO mapping
 			await _context.Entry(comment)
 				.Reference(c => c.AuthorUser)
 				.LoadAsync();

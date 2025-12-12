@@ -12,11 +12,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 		public GroupEventRepository(AppDbContext db)
 			=> _db = db;
 
-		public async Task<List<GroupEvent>> GetByGroupIdPagedAsync(
-			long groupId,
-			int skip,
-			int take,
-			CancellationToken ct)
+		public async Task<List<GroupEvent>> GetByGroupIdPagedAsync(long groupId, int skip, int take, CancellationToken ct)
 		{
 			return await _db.GroupEvents
 				.AsNoTracking()
@@ -45,7 +41,6 @@ namespace APUS.Server.Data.Repositories.Implementations
 			_db.GroupEvents.Add(entity);
 			await _db.SaveChangesAsync(ct);
 
-			// ensure navigation for mapping
 			await _db.Entry(entity).Reference(e => e.CreatedByUser).LoadAsync(ct);
 			await _db.Entry(entity).Collection(e => e.Participants).LoadAsync(ct);
 
@@ -60,9 +55,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 
 		// ---------- participants ----------
 
-		public async Task<IReadOnlyList<GroupEventParticipant>> GetParticipantsAsync(
-			long eventId,
-			CancellationToken ct)
+		public async Task<IReadOnlyList<GroupEventParticipant>> GetParticipantsAsync(long eventId, CancellationToken ct)
 		{
 			return await _db.GroupEventParticipants
 				.AsNoTracking()
@@ -72,10 +65,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 				.ToListAsync(ct);
 		}
 
-		public async Task<bool> AddParticipantAsync(
-			long eventId,
-			string userId,
-			CancellationToken ct)
+		public async Task<bool> AddParticipantAsync(long eventId, string userId, CancellationToken ct)
 		{
 			var exists = await _db.GroupEventParticipants
 				.AnyAsync(p => p.GroupEventId == eventId && p.UserId == userId, ct);
@@ -95,10 +85,7 @@ namespace APUS.Server.Data.Repositories.Implementations
 			return true;
 		}
 
-		public async Task<bool> RemoveParticipantAsync(
-			long eventId,
-			string userId,
-			CancellationToken ct)
+		public async Task<bool> RemoveParticipantAsync(long eventId, string userId, CancellationToken ct)
 		{
 			var entity = await _db.GroupEventParticipants
 				.FirstOrDefaultAsync(p => p.GroupEventId == eventId && p.UserId == userId, ct);

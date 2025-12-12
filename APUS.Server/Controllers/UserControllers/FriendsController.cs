@@ -16,7 +16,6 @@ namespace APUS.Server.Controllers.UserControllers
 
 		private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-		// TODO delete friends
 		[HttpPost("status")]
 		public async Task<ActionResult<Dictionary<string, FriendStatusDto>>> GetStatuses([FromBody] string[] userIds, CancellationToken ct)
 		{
@@ -61,11 +60,7 @@ namespace APUS.Server.Controllers.UserControllers
 
 		[HttpGet("list")]
 		[ProducesResponseType(typeof(PagedResponse<UserSearchDto>), StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetFriendsPaged(
-		[FromQuery] string? query,
-		[FromQuery] int skip = 0,
-		[FromQuery] int take = 30,
-		CancellationToken ct = default)
+		public async Task<IActionResult> GetFriendsPaged([FromQuery] string? query, [FromQuery] int skip = 0, [FromQuery] int take = 30, CancellationToken ct = default)
 		{
 			if (take is < 1 or > 100)
 				take = 30;

@@ -11,7 +11,7 @@
 	public sealed class DaylightRequestDto
 	{
 		public List<RouteCoordinateDto> Points { get; set; } = new();
-		public DateTime? StartLocalTime { get; set; }  // optional – if null, use "now"
+		public DateTime? StartLocalTime { get; set; } 
 	}
 
 	public sealed class DaylightResponseDto
