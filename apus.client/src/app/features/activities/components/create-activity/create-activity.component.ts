@@ -36,10 +36,8 @@ export class CreateActivityComponent implements OnInit {
     const key = activity.activityType;
     const extras = this.selectActivityHelper.subtypeMap[key] || [];
 
-    // merge main + subtype, then reset form & model
     this.fields = [
       ...mainFields,
-      //...extras,
     ];
     this.model = {};
     this.form.reset();

@@ -42,7 +42,7 @@ export class DisplayActivitiesComponent implements OnInit {
   private setupObserver(): void {
     this.observer = new IntersectionObserver(entries => {
       if (entries.some(e => e.isIntersecting)) this.loadMore();
-    }, { rootMargin: '400px 0px 400px 0px' }); // start a bit earlier for smoother UX
+    }, { rootMargin: '400px 0px 400px 0px' });
 
     this.observer.observe(this.sentinelRef.nativeElement);
   }
@@ -56,10 +56,10 @@ export class DisplayActivitiesComponent implements OnInit {
       this.activityService.getActivitiesPaged(this.skip, this.pageSize).subscribe({
         next: (res: PagedResponse<ActivityDto>) => {
           console.log(res);
-          if (token !== this.requestToken) return; // drop stale responses
+          if (token !== this.requestToken) return;
           this.activities.push(...res.items);
           this.hasMore = res.hasMore;
-          this.skip += res.items.length; // same process as your friends/users list
+          this.skip += res.items.length;
           this.loading = false;
         },
         error: _ => { this.loading = false; }

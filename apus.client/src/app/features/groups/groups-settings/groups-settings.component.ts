@@ -28,11 +28,9 @@ export class GroupsSettingsComponent implements OnInit {
 
   activeModal: SettingsModal = null;
 
-  // drafts for each field
   nameDraft = '';
   descriptionDraft: string = '';
 
-  // use simple string drafts for radios → no ngValue needed
   joinDraft: 'open' | 'closed' = 'open';
   postDraft: 'admins' | 'members' = 'members';
   eventDraft: 'admins' | 'members' = 'admins';
@@ -76,7 +74,6 @@ export class GroupsSettingsComponent implements OnInit {
     this.error = null;
     this.saved = false;
 
-    // initialise drafts from current settings
     if (kind === 'name') {
       this.nameDraft = this.settings.name;
     } else if (kind === 'description') {

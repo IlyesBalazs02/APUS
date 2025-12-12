@@ -21,7 +21,7 @@ export interface TrainingTimeSummaryDto {
 }
 
 export interface ActivityCalendarDayDto {
-    day: number;          // ISO string (e.g. "2025-12-11T00:00:00Z")
+    day: number;
     totalHours: number;
     activityCount: number;
 }
@@ -29,6 +29,6 @@ export interface ActivityCalendarDayDto {
 export interface ActivityCalendarMonthDto {
     userId: string;
     year: number;
-    month: number;         // 1–12
+    month: number;
     days: ActivityCalendarDayDto[];
 }

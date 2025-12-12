@@ -91,10 +91,6 @@ export interface CreateGroupPostDto {
     title: string;
     text: string;
 }
-//#endregion
-
-//#region Events
-// existing imports / exports above…
 
 export enum GroupEventPermission {
     AdminsOnly = 0,
@@ -138,4 +134,3 @@ export interface GroupEventParticipantDto {
     avatarUrl?: string | null;
     joinedAtUtc: string;
 }
-//#endregion

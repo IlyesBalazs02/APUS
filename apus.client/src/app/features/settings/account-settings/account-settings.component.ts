@@ -25,7 +25,7 @@ export class AccountSettingsComponent {
       next: (res) => {
         if (res.gender) {
           this.gender = res.gender;
-          this.selectedGender = res.gender; // auto-select in modal
+          this.selectedGender = res.gender;
         }
       },
       error: (err) => {

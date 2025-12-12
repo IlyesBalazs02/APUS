@@ -1,7 +1,7 @@
 <div class="search-container">
     <h1>Search result</h1>
 
-    <!-- Simple search bar (no dropdown) -->
+    <!-- search bar -->
     <form class="searchbar" (ngSubmit)="onSubmit()">
         <span class="prefix-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="18" height="18">
@@ -13,8 +13,6 @@
         <input type="text" [formControl]="q" placeholder="Search users, friends, groups…" (keyup.enter)="onSubmit()"
             autocomplete="off" />
 
-        <!-- Optional submit button (kept non-clickable per your last ask, so commented out) -->
-        <!-- <button type="submit" aria-label="Search">Search</button> -->
     </form>
 
     <nav class="search-nav">

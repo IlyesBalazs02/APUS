@@ -23,7 +23,6 @@ export class ActivityCardComponent implements OnChanges, OnInit {
 
   constructor(private http: HttpClient) { }
 
-  //Which properties to display
   private readonly propMap: PropMap = {
     Running: [
       { key: 'pace', label: 'Pace' },
@@ -40,7 +39,6 @@ export class ActivityCardComponent implements OnChanges, OnInit {
   };
 
   ngOnInit(): void {
-    // 1) Load the gallery of images
     this.http
       .get<string[]>(`/api/images/${this.activity.id}/urls`)
       .subscribe(
@@ -48,19 +46,16 @@ export class ActivityCardComponent implements OnChanges, OnInit {
         err => console.error('gallery load failed', err)
       );
 
-    // 2) Load the single track‐png URL
     this.http
       .get(`/api/images/${this.activity.id}/track`, { responseType: 'text' })
       .subscribe(
         url => {
-          // quick preload
           const img = new Image();
           img.onload = () => { this.trackImage = url; };
-          img.onerror = () => { /* nothing: leave trackImage null */ };
+          img.onerror = () => { };
           img.src = url;
         },
         _ => {
-          // API 404 or network error → definitely no map
           this.trackImage = null;
         }
       );
@@ -96,7 +91,7 @@ export class ActivityCardComponent implements OnChanges, OnInit {
       return '-';
     }
 
-    const secondsPerKm = 1000 / speed; // speed is m/s
+    const secondsPerKm = 1000 / speed;
     const minutes = Math.floor(secondsPerKm / 60);
     const seconds = Math.round(secondsPerKm % 60);
     const secStr = seconds.toString().padStart(2, '0');

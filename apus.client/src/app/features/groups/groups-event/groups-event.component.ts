@@ -27,8 +27,8 @@ export class GroupsEventComponent implements OnInit, AfterViewInit, OnDestroy {
   // create event
   title = '';
   description = '';
-  startsAtLocal = '';       // bound to <input type="datetime-local">
-  trackActivityId = '';     // optional
+  startsAtLocal = '';
+  trackActivityId = '';
   creating = false;
   createError: string | null = null;
   canCreateEvent = false;
@@ -165,7 +165,6 @@ export class GroupsEventComponent implements OnInit, AfterViewInit, OnDestroy {
         .toPromise();
 
       if (created) {
-        // prepend new event
         this.events = [created, ...this.events];
         this.title = '';
         this.description = '';
@@ -212,8 +211,6 @@ export class GroupsEventComponent implements OnInit, AfterViewInit, OnDestroy {
   // ------- join / leave ---------
 
   canJoin(e: GroupEventDto): boolean {
-    // Only members can join, but **no special case for creator**,
-    // so the creator can also join.
     return !!this.group?.isMember && !e.isJoinedByCurrentUser;
   }
 

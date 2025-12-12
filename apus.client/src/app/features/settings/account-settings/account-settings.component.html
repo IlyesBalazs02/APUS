@@ -31,14 +31,14 @@
             <p>We'll send a verification email to the address you provide.</p>
 
             <form #emailForm="ngForm">
-                <!-- Password field (required) -->
+                <!-- Password field -->
                 <input type="password" placeholder="Password" name="emailPassword" #emailPassword="ngModel" ngModel
                     required />
                 <div *ngIf="emailPassword.invalid && emailPassword.touched" class="error">
                     Password is required.
                 </div>
 
-                <!-- Email field (required + regex pattern) -->
+                <!-- Email field -->
                 <input type="email" placeholder="New email" name="newEmail" #newEmail="ngModel" ngModel required
                     pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" />
                 <div *ngIf="newEmail.invalid && newEmail.touched" class="error">
@@ -58,7 +58,6 @@
 
 
     <!-- Password Modal -->
-    <!-- Password Modal -->
     <div class="modal-backdrop" *ngIf="showPasswordModal" (click)="closeModal()">
         <div class="modal" (click)="$event.stopPropagation()">
             <span class="close-btn" (click)="closeModal()">×</span>
@@ -76,7 +75,6 @@
                 <input type="password" placeholder="New password again" name="confirmPass" #confirmPass="ngModel"
                     ngModel required />
 
-                <!-- Error if passwords don't match -->
                 <div *ngIf="newPass.value &&confirmPass.value &&newPass.value !== confirmPass.value" class="error">
                     Passwords do not match.
                 </div>
@@ -113,7 +111,6 @@
                 <div class="modal-actions">
                     <button type="button" (click)="closeModal()">Cancel</button>
 
-                    <!-- Save appears only when user actually selects a new gender -->
                     <button type="button" *ngIf="selectedGender && selectedGender !== gender"
                         (click)="saveGender(selectedGender)">
                         Save

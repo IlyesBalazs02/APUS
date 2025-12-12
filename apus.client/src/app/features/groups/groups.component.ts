@@ -17,7 +17,6 @@ export class GroupsComponent implements OnInit {
     joining = false;
     leaving = false;
 
-    // show members modal
     membersOpen = false;
     members: GroupMembersDto[] = [];
     loadingMembers = false;
@@ -99,7 +98,6 @@ export class GroupsComponent implements OnInit {
         if (!m.avatarUrl) {
             return `${environment.apiBase}/Perm/DefaultProfile.png`;
         }
-        // if avatarUrl is already absolute (starts with http), just return it
         if (m.avatarUrl.startsWith('http')) return m.avatarUrl;
 
         return `${environment.apiBase}${m.avatarUrl}`;

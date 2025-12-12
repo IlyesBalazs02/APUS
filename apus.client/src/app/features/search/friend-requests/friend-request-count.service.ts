@@ -11,24 +11,21 @@ export class FriendRequestCountService implements OnDestroy {
 
     constructor(private api: FriendRequestsApi) { }
 
-    // One-shot refresh (call after accept/reject too) 
     refresh() {
         this.api.getIncomingCount().subscribe({
             next: n => this._count.next(n),
-            error: _ => { } // ignore
+            error: _ => { }
         });
     }
 
-    // Start background polling every 30s
     startPolling(ms = 30000) {
         if (this.pollSub) return;
         this.pollSub = interval(ms)
             .pipe(switchMap(() => this.api.getIncomingCount()))
             .subscribe({
                 next: n => this._count.next(n),
-                error: _ => { } // ignore transient errors
+                error: _ => { }
             });
-        // immediate first load
         this.refresh();
     }
 

@@ -1,10 +1,10 @@
 .create-route-page {
   display: grid;
-  grid-template-rows: 1fr 230px;  /* map row, summary row */
-  height: 100%;                   /* fill .app-main */
+  grid-template-rows: 1fr 230px;
+  height: 100%;
 }
 
-/* --- Map (top row) --- */
+/* --- top row --- */
 
 .map-container {
   position: relative;
@@ -16,7 +16,6 @@
   inset: 0;
 }
 
-/* Coordinate selector overlay in top-left */
 .coordinate-selector {
   position: absolute;
   top: 12px;
@@ -95,9 +94,9 @@
 }
 
 .elevation-chart {
-  flex: 1 1 auto;    /* allow it to shrink if needed */
-  min-height: 0;     /* required for chart to allow internal scroll */
-  overflow: hidden;  /* stop it from expanding container */
+  flex: 1 1 auto; 
+  min-height: 0;
+  overflow: hidden;
 }
 
 .elevation-chart canvas,
@@ -150,7 +149,7 @@
 
 .map-container,
 #map {
-  z-index: 0; /* map must stay below overlays */
+  z-index: 0;
 }
 
 .modal-backdrop {
@@ -443,14 +442,10 @@
   color: #ff6b6b;
 }
 
-/* --- Small delete popover for tracks --- */
-
 .track-popover-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  /* transparent so the underlying UI is visible,
-     but it catches clicks to close the popover */
   background: transparent;
 }
 

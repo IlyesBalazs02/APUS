@@ -63,7 +63,7 @@ export class ActivityMapComponent implements OnInit, OnChanges {
   private readonly imageSourceId = 'activity-images';
   private readonly imageLayerId = 'activity-images-layer';
 
-  // Track which image IDs we have already added to the map style
+  // Track which image IDs it has already added to the map style
   private loadedImageIds = new Set<string>();
 
   // Checkbox state
@@ -76,7 +76,7 @@ export class ActivityMapComponent implements OnInit, OnChanges {
       this.initMap(firstValid.lon!, firstValid.lat!);
     } else {
       // Fallback center if no trackpoints
-      this.initMap(19.0402, 47.4979); // Budapest as neutral default
+      this.initMap(19.0402, 47.4979);
     }
   }
 
@@ -109,7 +109,7 @@ export class ActivityMapComponent implements OnInit, OnChanges {
       style: this.style,
       center: [lon, lat],
       zoom: 13,
-      pitch: 45, // some pitch so you see the 3D effect
+      pitch: 45, // 3D effect
       bearing: -17.6
     });
 
@@ -119,9 +119,7 @@ export class ActivityMapComponent implements OnInit, OnChanges {
     });
   }
 
-  // --------------------------------------------------
-  // ROUTE (polyline)
-  // --------------------------------------------------
+  // ROUTE
   private updateRoute(): void {
     if (!this.map || !this.map.isStyleLoaded()) {
       return;
@@ -132,7 +130,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
       .map(tp => [tp.lon!, tp.lat!] as [number, number]);
 
     if (!coords.length) {
-      // If no coordinates, remove existing route layer/source if present
       const existingLayer = this.map.getLayer(this.routeLayerId);
       if (existingLayer) this.map.removeLayer(this.routeLayerId);
 
@@ -185,7 +182,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
     if (!this.map) return;
 
     if (!this.showImages) {
-      // Remove layer + source when disabled
       const existingLayer = this.map.getLayer(this.imageLayerId);
       if (existingLayer) this.map.removeLayer(this.imageLayerId);
 
@@ -194,18 +190,16 @@ export class ActivityMapComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Recreate when turned on
+    // Recreate
     this.updateImageLayer();
   }
 
-  // IMAGES AS SYMBOL LAYER
   private updateImageLayer(): void {
     if (!this.map || !this.map.isStyleLoaded()) {
       return;
     }
 
     if (!this.showImages) {
-      // If checkbox is off, ensure layer are gone
       const existingLayer = this.map.getLayer(this.imageLayerId);
       if (existingLayer) this.map.removeLayer(this.imageLayerId);
 
@@ -216,7 +210,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
     }
 
     if (!this.imagePoints || !this.imagePoints.length) {
-      // Clean up layer if no images
       const existingLayer = this.map.getLayer(this.imageLayerId);
       if (existingLayer) this.map.removeLayer(this.imageLayerId);
 
@@ -270,7 +263,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
 
     this.ensureMapImagesLoaded(collection);
 
-    // Add layer if missing
     if (!this.map.getLayer(this.imageLayerId)) {
       this.map.addLayer({
         id: this.imageLayerId,
@@ -280,11 +272,10 @@ export class ActivityMapComponent implements OnInit, OnChanges {
           'icon-image': ['get', 'iconId'],
           'icon-allow-overlap': true,
 
-          // Keep icons facing the user, "vertical" like signs
+          // Keep icons facing the user
           'icon-pitch-alignment': 'viewport',
           'icon-rotation-alignment': 'viewport',
 
-          // Smooth zoom-dependent size
           'icon-size': [
             'interpolate',
             ['exponential', 1.2],
@@ -298,7 +289,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
     }
   }
 
-  // Limit to max 2 pictures per "close cluster"
   private getThinnedImagePoints(): { lat: number; lon: number; url: string }[] {
     const maxPerCluster = 2;
     const clusterDistanceMeters = 40; // Max how close can pictures be
@@ -317,14 +307,12 @@ export class ActivityMapComponent implements OnInit, OnChanges {
       );
 
       if (!targetCluster) {
-        // Start a new cluster
         clusters.push({
           centerLat: p.lat,
           centerLon: p.lon,
           points: [p]
         });
       } else if (targetCluster.points.length < maxPerCluster) {
-        // Add to existing cluster until max 2
         targetCluster.points.push(p);
 
         const n = targetCluster.points.length;
@@ -333,7 +321,6 @@ export class ActivityMapComponent implements OnInit, OnChanges {
         targetCluster.centerLon =
           targetCluster.points.reduce((sum, pt) => sum + pt.lon, 0) / n;
       } else {
-        // Already 2 in this cluster
       }
     }
 
@@ -405,12 +392,10 @@ export class ActivityMapComponent implements OnInit, OnChanges {
 
         ctx.drawImage(img, dx, dy, scaledWidth, scaledHeight);
 
-        // draw border
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 8;
         ctx.strokeRect(4, 4, size - 8, size - 8);
 
-        // Extract ImageData for Mapbox
         const imageData = ctx.getImageData(0, 0, size, size);
 
         this.map.addImage(iconId, {

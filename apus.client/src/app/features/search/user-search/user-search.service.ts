@@ -38,7 +38,6 @@ export class UserSearchApi {
     search(query: string, skip: number, take: number): Observable<PagedResponse<UserSearchDto>> {
         const normalizedQuery = query?.trim() ?? '';
 
-        // build query parameters
         const params = new HttpParams()
             .set('query', normalizedQuery)
             .set('skip', skip)
@@ -46,7 +45,6 @@ export class UserSearchApi {
 
         return this.http.get<any>(this.base, { params }).pipe(
             map(res => {
-                // normalize response whether it comes from System.Text.Json or Newtonsoft
                 const rawItems = res.items ?? res.Items ?? [];
                 const items = Array.isArray(rawItems) ? rawItems : (rawItems?.$values ?? []);
                 const hasMore = (res.hasMore ?? res.HasMore ?? false) as boolean;
@@ -65,7 +63,7 @@ export class UserSearchApi {
     }
 
     searchFriends(query: string, skip: number, take: number) {
-        const q = (query ?? '').trim(); // empty -> backend returns ALL friends
+        const q = (query ?? '').trim();
         let params = new HttpParams().set('skip', skip).set('take', take);
         if (q.length) params = params.set('query', q);
 

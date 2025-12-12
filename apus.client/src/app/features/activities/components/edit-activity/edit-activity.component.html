@@ -25,7 +25,6 @@
         </select>
     </div>
 
-    <!-- =================== IMAGE EDITOR =================== -->
     <div class="mb-3">
         <h5>Images</h5>
 
@@ -41,7 +40,7 @@
             No images attached.
         </p>
 
-        <!-- Dropzone for new images (same UX as upload-activity) -->
+        <!-- Dropzone for new images -->
         <div class="dropzone" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
             [class.dragover]="isDragOver">
             <p>Drag & drop new images here, or click to browse</p>
@@ -57,7 +56,6 @@
             </div>
         </div>
     </div>
-    <!-- ================================================== -->
 
     <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">
         Save

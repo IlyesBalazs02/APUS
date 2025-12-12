@@ -20,14 +20,12 @@ export class GroupsHomeComponent implements OnInit, OnDestroy {
   loading = false;
   hasMore = true;
 
-  // Create form (simple)
   newGroup: CreateGroupDto = { name: '', description: '', isOpen: true };
   creating = false;
 
   constructor(private groupService: GroupService) { }
 
   ngOnInit(): void {
-    // search+paginate stream
     this.search$.pipe(
       debounceTime(200),
       switchMap(q => {
@@ -42,7 +40,6 @@ export class GroupsHomeComponent implements OnInit, OnDestroy {
       this.loading = false;
     });
 
-    // initial load
     this.search$.next('');
   }
 
@@ -68,7 +65,6 @@ export class GroupsHomeComponent implements OnInit, OnDestroy {
     try {
       const g = await this.groupService.create(this.newGroup).toPromise();
       if (g) this.groups.unshift(g);
-      // reset form
       this.newGroup = { name: '', description: '', isOpen: true };
     } finally {
       this.creating = false;

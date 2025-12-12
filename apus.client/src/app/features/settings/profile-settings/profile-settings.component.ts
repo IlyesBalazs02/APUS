@@ -13,11 +13,10 @@ export class ProfileSettingsComponent implements OnInit {
   isLoading = false;
   isSaving = false;
 
-  // local preview just for the modal (not uploaded yet)
   selectedAvatarFile: File | null = null;
   selectedAvatarPreview: string | null = null;
   avatarUrl: string | null = null;
-  isDefaultAvatar = false; //disable the remove button if it's the default avatar
+  isDefaultAvatar = false;
   private readonly DEFAULT_HINTS = ['/Perm/DefaultProfile.png', '/api/Profile/default-avatar'];
 
   showAvatarModal = false;
@@ -54,10 +53,9 @@ export class ProfileSettingsComponent implements OnInit {
     });
   }
 
-  // ===== Avatar modal handlers =====
   openAvatarModal(): void {
     this.selectedAvatarFile = null;
-    this.selectedAvatarPreview = null;   // clear any stale preview
+    this.selectedAvatarPreview = null;
     this.showAvatarModal = true;
   }
 
@@ -95,7 +93,7 @@ export class ProfileSettingsComponent implements OnInit {
   deleteAvatar(): void {
     this.profileService.deleteAvatar().subscribe({
       next: () => {
-        this.loadProfile();            // server will now return default
+        this.loadProfile();
         this.closeAvatarModal();
       },
       error: (err) => console.error('Delete avatar failed', err?.error || err),
@@ -113,7 +111,6 @@ export class ProfileSettingsComponent implements OnInit {
         });
         this.avatarUrl = res.avatarUrl || null;
 
-        // mark if the backend sent the default
         this.markDefaultFlag(this.avatarUrl);
       },
       error: (err) => console.error('Failed to load profile', err?.error || err),
@@ -126,7 +123,6 @@ export class ProfileSettingsComponent implements OnInit {
     this.isDefaultAvatar = path.endsWith("/perm/defaultprofile.png");
   }
 
-  //to disable or enable the remove button
   private getPathname(url: string | null): string {
     if (!url) return "";
     try {
@@ -136,5 +132,4 @@ export class ProfileSettingsComponent implements OnInit {
       return (url || "").toLowerCase();
     }
   }
-
 }

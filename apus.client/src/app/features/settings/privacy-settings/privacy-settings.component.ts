@@ -24,7 +24,6 @@ export class PrivacySettingsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Create disabled to avoid user edits before data arrives
     this.privacyForm = this.fb.group({
       allowFollow: new FormControl({ value: false, disabled: true }),
       activityVisibility: new FormControl({ value: 'Everyone', disabled: true }),
@@ -41,7 +40,6 @@ export class PrivacySettingsComponent implements OnInit {
     this.privacyService.getMine()
       .pipe(finalize(() => {
         this.isLoading = false;
-        // Enable after loading (even if there was an error, so user can retry)
         this.privacyForm.enable({ emitEvent: false });
       }))
       .subscribe({
@@ -65,10 +63,9 @@ export class PrivacySettingsComponent implements OnInit {
     this.isSaving = true;
     this.successMessage = '';
 
-    // Disable during save to prevent changes
     this.privacyForm.disable({ emitEvent: false });
 
-    const dto: PrivacyDto = this.privacyForm.getRawValue(); // includes disabled values
+    const dto: PrivacyDto = this.privacyForm.getRawValue();
 
     this.privacyService.updateMine(dto)
       .pipe(finalize(() => {

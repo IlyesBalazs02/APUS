@@ -15,7 +15,6 @@ export class SearchComponent implements OnInit {
     constructor(private route: ActivatedRoute, private router: Router) { }
 
     ngOnInit(): void {
-        // keep the input in sync with the URL (?q=...)
         this.route.queryParamMap.subscribe(params => {
             const qp = (params.get('q') || '').trim();
             if (qp !== this.q.value) {
@@ -27,11 +26,9 @@ export class SearchComponent implements OnInit {
     onSubmit(): void {
         const query = this.q.value.trim();
 
-        // keep current active tab (users/friends/groups)
         const currentTab =
             this.route.firstChild?.snapshot.routeConfig?.path || 'users';
 
-        // navigate to the same tab with the new q
         this.router.navigate(['/search', currentTab], {
             queryParams: { q: query || null },
             queryParamsHandling: 'merge'

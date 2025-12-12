@@ -88,7 +88,6 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     const allFields = Array.from(new Set([...mainFields, ...activityFields]))
       .filter(f => (this.activity as any)[f] != null);
 
-    // duration is a must-to-display element
     allFields.unshift('duration');
 
     return allFields;
@@ -99,7 +98,6 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       return [];
     }
 
-    // Collect valid trackpoint times
     const trackTimes: Date[] = this.trackpoints
       .map(tp => {
         const t = (tp as any).time as string | null | undefined;
@@ -122,7 +120,6 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
     const lowerBound = minTimeMs - fiveHoursMs;
     const upperBound = maxTimeMs + fiveHoursMs;
 
-    // Keep only images whose time is within the track time and have coordinates
     return this.images
       .filter(img => img.lat != null && img.lon != null && img.dateTaken)
       .filter(img => {
@@ -145,7 +142,7 @@ export class DisplayActivityComponent implements OnInit, OnChanges {
       return '-';
     }
 
-    const secondsPerKm = 1000 / speed; // m/s -> s/km
+    const secondsPerKm = 1000 / speed;
     const minutes = Math.floor(secondsPerKm / 60);
     const seconds = Math.round(secondsPerKm % 60);
     const secStr = seconds.toString().padStart(2, '0');

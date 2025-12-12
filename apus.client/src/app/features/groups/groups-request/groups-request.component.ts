@@ -17,7 +17,7 @@ export class GroupsRequestComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  decidingIds = new Set<number>(); // to disable buttons per-row
+  decidingIds = new Set<number>();
 
   constructor(
     private route: ActivatedRoute,
@@ -25,7 +25,6 @@ export class GroupsRequestComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // parent route has :id
     this.groupId = Number(this.route.parent?.snapshot.paramMap.get('id'));
     this.loadRequests();
   }
@@ -65,7 +64,6 @@ export class GroupsRequestComponent implements OnInit {
     if (!m.avatarUrl) {
       return `${environment.apiBase}/Perm/DefaultProfile.png`;
     }
-    // if avatarUrl is already absolute (starts with http), just return it
     if (m.avatarUrl.startsWith('http')) return m.avatarUrl;
 
     return `${environment.apiBase}${m.avatarUrl}`;

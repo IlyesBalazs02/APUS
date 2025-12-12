@@ -1,4 +1,3 @@
-/* Keep panel roomy for the search box */
 .friend-search-panel .mat-mdc-select-panel {
   max-height: 320px;
 }
@@ -18,7 +17,7 @@
   transform: translate(
     var(--dropdown-x, 0px),
     var(--dropdown-y, 0px)
-  ); /* dynamic position set in TS */
+  );
   z-index: 3000;
 
   background-color: white;

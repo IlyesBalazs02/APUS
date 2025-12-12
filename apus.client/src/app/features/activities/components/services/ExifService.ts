@@ -2,15 +2,11 @@ import { Injectable } from '@angular/core';
 import * as ExifReader from 'exifreader';
 
 export interface ExifMetadata {
-    dateTaken?: string | null;   // raw EXIF format, sent to backend
+    dateTaken?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ExifService {
-
-    /**
-     * Extract EXIF metadata from a single image.
-     */
     async extractFromFile(file: File): Promise<ExifMetadata | null> {
         try {
             const tags = await ExifReader.load(file);
@@ -30,10 +26,6 @@ export class ExifService {
         }
     }
 
-    /**
-     * Extract EXIF for many files.
-     * Returns: Map<filename, ExifMetadata>
-     */
     async extractMany(files: File[]): Promise<Map<string, ExifMetadata>> {
         const map = new Map<string, ExifMetadata>();
 

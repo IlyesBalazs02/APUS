@@ -1,24 +1,18 @@
-﻿/* app.component.css */
-
-/* Make the root component fill the viewport */
-:host {
+﻿:host {
   display: block;
   height: 100%;
 }
 
-/* Wrapper around navigation + main content */
 .app-grid {
-  height: 100vh; /* whole app = viewport height */
+  height: 100vh;
 }
 
-/* Main content under the fixed header (header is 80px high) */
 main {
-  margin-top: 80px;             /* push content exactly below the fixed header */
-  height: calc(100vh - 80px);   /* visible height under header */
-  padding: 0;                   /* remove extra top/bottom padding */
+  margin-top: 80px;        
+  height: calc(100vh - 80px);
+  padding: 0; 
 }
 
-/* table styles can stay if you still need them */
 th,
 td {
   padding-left: 1rem;

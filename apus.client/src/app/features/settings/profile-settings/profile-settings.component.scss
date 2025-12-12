@@ -1,6 +1,5 @@
 @import '../settings-form.scss';
 
-/* ===== keep your original styles ===== */
 .settings-container {
   @include settings-layout;
 
@@ -30,7 +29,7 @@
     gap: 1rem;
 
     .avatar-preview {
-      width: 64px;           /* your original size */
+      width: 64px;
       height: 64px;
       border-radius: 50%;
       object-fit: cover;
@@ -49,22 +48,17 @@
   }
 }
 
-/* ===== additions: nicer row layout + larger avatar option ===== */
-
-/* Make whole row clickable if desired */
 .setting-item.clickable { cursor: pointer; }
 
-/* Right-side inline block: big circle + action */
 .avatar-inline {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-left: auto; /* push to the right */
+  margin-left: auto;
 }
 
-/* Bigger avatar for the row (use this class in the row image) */
 .avatar-lg {
-  width: 72px;       /* bump size; change to 80–96px if you want bigger */
+  width: 72px; 
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
@@ -73,7 +67,6 @@
   background: #0e0e0e;
 }
 
-/* Link-styled button on the row */
 .link-btn {
   background: transparent;
   color: #a8c4ff;
@@ -84,7 +77,6 @@
 }
 .link-btn:hover { text-decoration: underline; }
 
-/* Optional counter below BIO */
 .char-counter {
   text-align: right;
   font-size: 12px;
@@ -92,7 +84,6 @@
   margin-top: 6px;
 }
 
-/* Name fields side-by-side (kept conservative; remove if already done globally) */
 .name-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -104,8 +95,6 @@
   .name-fields { grid-template-columns: 1fr; }
 }
 
-/* ===== modal (account-style) with bulletproof stacking ===== */
-
 .modal-backdrop {
   position: fixed !important;
   inset: 0 !important;
@@ -113,7 +102,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  z-index: 2147483646 !important; /* beneath modal card */
+  z-index: 2147483646 !important;
 }
 
 /* modal card */
@@ -122,7 +111,7 @@
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  z-index: 2147483647 !important; /* top of everything */
+  z-index: 2147483647 !important;
   width: 100% !important;
   max-width: 560px !important;
   background: #121212 !important;
@@ -142,14 +131,12 @@
   line-height: 1;
 }
 
-/* Modal content layout: server-rendered avatar + file input */
 .avatar-modal-body {
   display: flex;
   align-items: center;
   gap: 16px;
   margin: 12px 0 20px;
 
-  /* bigger circle in modal */
   .avatar-medium {
     width: 120px;
     height: 120px;
@@ -179,16 +166,15 @@ button.danger {
   cursor: pointer;
 }
 
-/* ===== profile-settings modal (Bootstrap-safe) ===== */
 
 .ps-backdrop {
   position: fixed !important;
   inset: 0 !important;
   background: rgba(0,0,0,0.55) !important;
-  display: flex !important;               /* force visible */
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  z-index: 2147483646 !important;         /* under the card */
+  z-index: 2147483646 !important;
 }
 
 .ps-modal {
@@ -196,8 +182,8 @@ button.danger {
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  display: block !important;              /* override any global 'display:none' */
-  z-index: 2147483647 !important;         /* above everything */
+  display: block !important;  
+  z-index: 2147483647 !important;
   width: 100% !important;
   max-width: 560px !important;
   background: #121212 !important;
@@ -241,7 +227,6 @@ button.danger {
 }
 .ps-modal-actions .spacer { flex: 1; }
 
-/* safety: avoid parent stacking traps */
 :host, app-profile-settings, .settings-container {
   transform: none !important;
   filter: none !important;
@@ -249,25 +234,20 @@ button.danger {
   overflow: visible !important;
 }
 
-/* ===== Disabled button visuals ===== */
 
 button.danger:disabled {
-  opacity: 0.5;              /* makes it visibly grayed out */
-  cursor: not-allowed;       /* show blocked cursor */
+  opacity: 0.5;  
+  cursor: not-allowed;
   border-color: rgba(255, 138, 138, 0.15);
-  color: #888;               /* muted text */
-  background: #2a2a2a;       /* subtle gray background */
-  pointer-events: none;      /* no hover effect */
+  color: #888;
+  background: #2a2a2a;
+  pointer-events: none;
 }
 
-/* optional: smooth fade if you like */
 button.danger {
   transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
-/* ===== safety overrides: avoid parent stacking/overflow traps ===== */
-/* If any parent uses transform/filter/opacity/overflow, it can trap the modal.
-   These keep the modal visible without you having to hunt those down. */
 :host, app-profile-settings, .settings-container {
   transform: none !important;
   filter: none !important;

@@ -54,12 +54,10 @@
   position: relative;
   animation: fadeInScale 0.15s ease-out;
 
-  /* 👇 makes it wrap content instead of stretching */
   height: auto;
   max-height: 90vh;
   overflow-y: auto;
 
-  /* optional slight centering offset for tall screens */
   align-items: stretch;
 
   h3 {

@@ -2,7 +2,6 @@
     <p *ngIf="profile">{{ profile.name }}</p>
 </div>
 
-<!-- ===== Statistics section ===== -->
 <section class="profile-stats">
     <div class="stats-header">
         <h2>Training statistics</h2>
@@ -77,7 +76,7 @@
     </ng-template>
 </section>
 
-<!-- ===== Calendar section ===== -->
+<!--  Calendar section  -->
 <section class="profile-calendar" *ngIf="calendarWeeks?.length">
     <div class="calendar-header">
         <button type="button" class="month-nav" (click)="changeMonth(-1)">&lt;</button>
@@ -102,16 +101,14 @@
     </table>
 </section>
 
-<!-- ===== Activities list (existing) ===== -->
+<!--  Activities list  -->
 <div class="activities-list">
     <app-activity-card *ngFor="let activity of activities" [activity]="activity">
     </app-activity-card>
 </div>
 
-<!-- Infinite-scroll sentinel -->
 <div #sentinel class="sentinel" aria-hidden="true"></div>
 
-<!-- UI states -->
 <div *ngIf="loading" class="loading">Loading…</div>
 <div *ngIf="!loading && !hasMore && activities.length === 0" class="empty">
     No activities to show.

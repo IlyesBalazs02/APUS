@@ -78,7 +78,6 @@ export class GroupService {
     }
 
     deletePost(postId: number) {
-        // matches DELETE api/groups/posts/{postId}
         return this.http.delete<void>(`${this.base}/posts/${postId}`);
     }
     //#endregion

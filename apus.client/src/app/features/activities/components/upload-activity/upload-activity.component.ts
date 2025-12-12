@@ -21,17 +21,14 @@ export class UploadActivityComponent {
   selectedFile: File | null = null;
   form = new FormGroup({});
 
-  // Drag & Drop state
   isDragOver = false;
   files: File[] = [];
   previewUrls: string[] = [];
 
-  // loading flags + message
   isUploadingTrack = false;
   isUploadingImages = false;
   uploadMessage = '';
 
-  // ---- NEW: activity type selection ----
   activityTypes = [
     { value: 'MainActivity', label: 'Activity' },
     { value: 'Running', label: 'Running' },
@@ -40,7 +37,6 @@ export class UploadActivityComponent {
     { value: 'GpsRelatedActivity', label: 'Gps-related' },
   ];
 
-  // default – adjust if you prefer another default
   selectedActivityType = 'GpsRelatedActivity';
 
   constructor(
@@ -56,13 +52,11 @@ export class UploadActivityComponent {
     }
   }
 
-  // NEW: activity type change handler
   onActivityTypeChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     this.selectedActivityType = select.value;
   }
 
-  // Drag & Drop handlers
   onDragOver(event: DragEvent) {
     event.preventDefault();
     this.isDragOver = true;
@@ -91,19 +85,16 @@ export class UploadActivityComponent {
   private async handleFiles(files: File[]) {
     const images = files.filter(f => f.type.startsWith('image/'));
 
-    // --- extract EXIF for all incoming images using the shared service ---
     const exifMap = await this.exifService.extractMany(images);
 
     for (const file of images) {
       this.files.push(file);
 
-      // If service found EXIF, store it in the shared map
       const meta = exifMap.get(file.name);
       if (meta?.dateTaken) {
         this.exifDataMap.set(file.name, meta);
       }
 
-      // Preview generation stays the same
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -121,14 +112,12 @@ export class UploadActivityComponent {
 
   submit(): void {
     if (!this.selectedFile) {
-      // No track selected;
       return;
     }
 
     const formData = new FormData();
     formData.append('trackFile', this.selectedFile, this.selectedFile.name);
 
-    // ---- NEW: send selected activity type ----
     formData.append('activityType', this.selectedActivityType);
 
     this.isUploadingTrack = true;

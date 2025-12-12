@@ -36,7 +36,7 @@ export class SearchBarComponent implements OnDestroy {
   private keydownHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.stopPropagation();   // <- block MatSelect's default "select first item"
+      e.stopPropagation();
       this.go();
     }
   };
@@ -69,7 +69,6 @@ export class SearchBarComponent implements OnDestroy {
   }
 
   onClosed() {
-    // detach listener & reset state
     this.inputEl?.removeEventListener('keydown', this.keydownHandler, { capture: true } as any);
     this.inputEl = undefined;
 
@@ -86,12 +85,9 @@ export class SearchBarComponent implements OnDestroy {
     this.onClosed();
   }
 
-  /** Navigate to the tabbed results page using the current query */
   go() {
     const q = (this.filterCtrl.value || '').trim();
-    // always navigate to SearchComponent with default 'users' tab
     this.router.navigate(['/search'], { queryParams: { q, tab: 'users' } });
-    // close panel if open
     this.select?.close();
   }
 
@@ -100,8 +96,6 @@ export class SearchBarComponent implements OnDestroy {
     event.stopPropagation?.();
     this.go();
   }
-
-
 
   ngOnDestroy() {
     this.sub.unsubscribe();

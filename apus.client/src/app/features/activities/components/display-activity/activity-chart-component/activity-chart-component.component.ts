@@ -13,7 +13,6 @@ export class ActivityChartComponentComponent implements OnChanges {
   @Input() trackpoints: Trackpoint[] = [];
 
   //if it has coordinates, show the elevation profile
-  //TODO if the coordinates doesnt have elevation assigned, send a request to the server
   hasCoordinates: boolean = false;
 
   hasHeartRate: boolean = false;
@@ -30,7 +29,6 @@ export class ActivityChartComponentComponent implements OnChanges {
 
   private buildElevationChart(): void {
 
-    // Filter & map alt to elevation
     const pts = this.trackpoints
       .filter(p => p.lat != null && p.lon != null && p.alt != null)
       .map(p => ({ lat: p.lat!, lon: p.lon!, elevation: p.alt! }));
@@ -75,10 +73,8 @@ export class ActivityChartComponentComponent implements OnChanges {
       return;
     }
 
-    // turn ISO strings into millisecond timestamps
     const timestamps = pts.map(p => new Date(p.time).getTime());
 
-    // max time gap between trackpoints, to filter out the time between pauses
     const MAX_GAP_MS = 2000;
 
     const elapsedMs: number[] = [];
@@ -88,7 +84,6 @@ export class ActivityChartComponentComponent implements OnChanges {
         elapsedMs.push(0);
       } else {
         const delta = timestamps[i] - timestamps[i - 1];
-        // only accept if its lower than the max_gap
         if (delta <= MAX_GAP_MS) {
           elapsedTotal += delta;
         }
@@ -96,10 +91,8 @@ export class ActivityChartComponentComponent implements OnChanges {
       }
     }
 
-    // 4) convert to whole seconds
     const elapsedSecs = elapsedMs.map(ms => Math.floor(ms / 1000));
 
-    // 5) format hh:mm:ss
     function formatHMS(totalSecs: number): string {
       const h = Math.floor(totalSecs / 3600);
       const m = Math.floor((totalSecs % 3600) / 60);
@@ -170,7 +163,6 @@ export class ActivityChartComponentComponent implements OnChanges {
     }
   };
 
-  //TODO Check if this can be deleted, the distance between two coordinates is so small, that this may be not needed
   private toRad(deg: number): number {
     return deg * Math.PI / 180;
   }
@@ -179,7 +171,7 @@ export class ActivityChartComponentComponent implements OnChanges {
     a: { lat: number; lon: number },
     b: { lat: number; lon: number }
   ): number {
-    const R = 6371; // km
+    const R = 6371;
     const dLat = this.toRad(b.lat - a.lat);
     const dLon = this.toRad(b.lon - a.lon);
     const lat1 = this.toRad(a.lat);

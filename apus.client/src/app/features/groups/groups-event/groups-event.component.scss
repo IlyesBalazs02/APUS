@@ -248,12 +248,11 @@
   }
 }
 
-/* Participants modal tweaks */
+/* Participants modal */
 
-/* BACKDROP covering the whole screen */
 .group-modal-backdrop {
   position: fixed;
-  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  inset: 0;
   background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
@@ -261,7 +260,6 @@
   z-index: 1000;
 }
 
-/* MODAL content box */
 .group-modal {
   background: #fff;
   border-radius: 10px;
@@ -286,12 +284,10 @@
   }
 }
 
-/* narrower variant we already used */
 .group-modal--narrow {
   max-width: 420px;
 }
 
-/* participant list styling */
 .participants-list {
   list-style: none;
   margin: 0.5rem 0 0;

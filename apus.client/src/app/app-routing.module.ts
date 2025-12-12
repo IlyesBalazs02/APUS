@@ -11,17 +11,14 @@ import { UserProfileComponent } from './features/user-features/user-profile/user
 import { DisplayUsersComponent } from './features/user-features/display-users/display-users.component';
 
 const routes: Routes = [
-  // Public auth routes
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
-  // Non-lazy feature routes (if you really want them non-lazy)
   { path: 'createRoute', component: CreateRouteComponent, canActivate: [AuthGuard] },
   { path: 'userprofile', component: UserProfileComponent, canActivate: [AuthGuard] },
   { path: 'displayUser', component: DisplayUsersComponent, canActivate: [AuthGuard] },
   { path: 'profile/:id', component: UserProfileComponent, canActivate: [AuthGuard] },
 
-  // Lazy-loaded feature modules (protected where needed)
   {
     path: 'activities',
     canActivate: [AuthGuard],
@@ -51,10 +48,8 @@ const routes: Routes = [
         .then(m => m.GroupsModule)
   },
 
-  // Root: redirect to activities (no guard here!)
   { path: '', redirectTo: '/activities', pathMatch: 'full' },
 
-  // Wildcard: also send to activities (or to 404 page if you add one later)
   { path: '**', redirectTo: '/activities' },
 ];
 

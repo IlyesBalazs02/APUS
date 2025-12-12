@@ -1,18 +1,17 @@
 <div class="card">
-    <!-- Header -->
     <div class="card-header">
-        <!-- Title + description left -->
+        <!-- Title + description -->
         <div class="left-section">
             <h5 class="card-title clickable-heading" [routerLink]="['/activities', activity.id]">
                 {{ activity.title }}
             </h5>
 
-            <!-- Date under the title -->
+            <!-- Date -->
             <small class="text-muted d-block">
                 {{ activity.date | date:'yyyy.MM.dd HH:mm' }}
             </small>
 
-            <!-- Type under the date -->
+            <!-- Type -->
             <small class="text-muted d-block">
                 {{ activity.activityType }}
             </small>
@@ -23,14 +22,14 @@
             </p>
         </div>
 
-        <!-- User info top-right -->
+        <!-- User info -->
         <div class="user-info">
             <img [src]="activity.avatarUrl || '/Perm/DefaultProfile.png'" alt="User avatar" />
             <div class="username">{{ activity.userFullName }}</div>
         </div>
     </div>
 
-    <!-- Middle metrics -->
+    <!-- metrics -->
     <div class="card-body text-center">
         <div class="row justify-content-center">
             <ng-container *ngFor="let p of displayProps">
@@ -47,7 +46,7 @@
         </div>
     </div>
 
-    <!-- Track map -->
+    <!-- map -->
     <div class="image-map-container" *ngIf="trackImage">
         <img [src]="trackImage" alt="Activity track map" class="track-image" />
     </div>
@@ -79,7 +78,6 @@
 </app-comments-modal>
 
 
-<!-- Lightbox (unchanged) -->
 <div class="lightbox-overlay" *ngIf="selectedIndex !== null" (click)="closeViewer()">
     <button type="button" class="lightbox-btn prev" (click)="prevImage($event)">‹</button>
     <img class="lightbox-img" [src]="images[selectedIndex!]" alt="full-size image" (click)="$event.stopPropagation()" />

@@ -1,16 +1,14 @@
-/* Grid: 1 column by default, max 2 columns on >=640px */
 .cards {
   display: grid;
-  grid-template-columns: 1fr;      /* single column on small screens */
+  grid-template-columns: 1fr; 
   gap: 16px;
 }
 @media (min-width: 640px) {
   .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* never exceed 2 columns */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Card look */
 .user-card {
   display: flex;
   align-items: center;
@@ -27,9 +25,8 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Smaller, round avatar */
 .user-avatar {
-  width: 40px;   /* smaller */
+  width: 40px; 
   height: 40px;
   border-radius: 50%;
   object-fit: cover;

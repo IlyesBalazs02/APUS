@@ -34,18 +34,16 @@ interface CalendarCell {
 export class UserProfileComponent implements OnInit, OnDestroy {
   profile?: profiledto;
 
-  // Paged activities + state
   activities: ActivityDto[] = [];
   loading = false;
   hasMore = true;
 
-  // Paging controls
   private pageSize = 10;
   private skip = 0;
   private requestToken = 0;
   private observer?: IntersectionObserver;
   private sub = new Subscription();
-  private userId?: string;   // if undefined => "me" profile
+  private userId?: string;
 
   // Statistics & calendar
   trainingSummary?: TrainingTimeSummaryDto;
@@ -62,7 +60,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   calendarYear!: number;
-  calendarMonthNumber!: number; // 1-12
+  calendarMonthNumber!: number;
 
   @ViewChild('sentinel', { static: true }) sentinelRef!: ElementRef<HTMLDivElement>;
 
@@ -75,32 +73,26 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.sub.add(
       this.route.paramMap.subscribe(params => {
-        // Determine whose profile we are on
         this.userId = params.get('id') ?? undefined;
 
-        // Reset paging when route changes
         this.activities = [];
         this.loading = false;
         this.hasMore = true;
         this.skip = 0;
 
-        // Init calendar month/year to current
         const now = new Date();
         this.calendarYear = now.getFullYear();
         this.calendarMonthNumber = now.getMonth() + 1;
 
-        // Load profile header
         const profileUrl = this.userId ? `/api/userprofile/${this.userId}` : `/api/userprofile/me`;
         this.http.get<profiledto>(profileUrl).subscribe({
           next: data => (this.profile = data),
           error: err => console.error('Failed to load profile', err)
         });
 
-        // Load statistics & calendar
         this.loadStatistics();
         this.loadCalendar();
 
-        // Start infinite scrolling
         this.setupObserver();
         this.loadMore();
       })
@@ -112,10 +104,8 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
   }
 
-  // ---------- Infinite scroll ----------
-
   private setupObserver(): void {
-    this.observer?.disconnect(); // in case of route changes
+    this.observer?.disconnect();
     if (!this.sentinelRef) {
       return;
     }
@@ -136,7 +126,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.sub.add(
       req$.subscribe({
         next: res => {
-          if (token !== this.requestToken) return; // drop stale responses
+          if (token !== this.requestToken) return;
           this.activities.push(...res.items);
           this.hasMore = res.hasMore;
           this.skip += res.items.length;
@@ -162,7 +152,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     return this.trainingSummary.sports.reduce((sum, s) => sum + s.totalHours, 0);
   }
 
-  // convert decimal hours → "H:MM:SS"
   formatHoursToHms(hours: number | null | undefined): string {
     if (hours == null || isNaN(hours as number)) {
       return '0:00:00';
@@ -222,7 +211,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     const cy = 50;
     const r = 45;
 
-    let startAngle = 0; // radians, from +X axis, counter-clockwise
+    let startAngle = 0;
 
     for (const sport of this.trainingSummary.sports) {
       const value = sport.totalHours;
@@ -292,11 +281,10 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     }
 
     const year = calendar.year;
-    const month = calendar.month; // 1-12
+    const month = calendar.month;
 
     const firstOfMonth = new Date(Date.UTC(year, month - 1, 1));
-    // JS: Sunday = 0, Monday = 1, ...; we want Monday as first column
-    let firstWeekday = firstOfMonth.getUTCDay(); // 0-6
+    let firstWeekday = firstOfMonth.getUTCDay();
     if (firstWeekday === 0) {
       firstWeekday = 7;
     }
@@ -317,7 +305,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     const weeks: CalendarCell[][] = [];
     let week: CalendarCell[] = [];
 
-    // leading empty cells
     for (let i = 1; i < firstWeekday; i++) {
       week.push({ day: undefined, hasActivity: false, isToday: false });
     }
@@ -334,7 +321,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       }
     }
 
-    // trailing empty cells
     if (week.length > 0) {
       while (week.length < 7) {
         week.push({ day: undefined, hasActivity: false, isToday: false });
@@ -345,7 +331,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.calendarWeeks = weeks;
   }
 
-  // navigate months (delta = -1 for previous, +1 for next)
   changeMonth(delta: number): void {
     let year = this.calendarYear;
     let month = this.calendarMonthNumber + delta;

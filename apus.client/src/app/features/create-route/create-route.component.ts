@@ -55,7 +55,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   snappedPoints: { lat: number; lon: number }[] = [];
 
-  // Drag state for moving existing points
   private dragPointIndex: number | null = null;
   private dragOriginalCoords: { lat: number; lon: number } | null = null;
 
@@ -71,8 +70,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   predictedSeconds: number | null = null;
   isPredicting = false;
 
-  startDateInput: string | null = null;   // yyyy-MM-dd
-  startTimeInput: string | null = null;   // HH:mm
+  startDateInput: string | null = null;
+  startTimeInput: string | null = null;
   daylightInfo: DaylightResponseDto | null = null;
 
   private sunriseMarker: mapboxgl.Marker | null = null;
@@ -143,8 +142,8 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     const now = new Date();
-    this.startDateInput = now.toISOString().substring(0, 10); // yyyy-MM-dd
-    this.startTimeInput = now.toTimeString().substring(0, 5); // HH:mm
+    this.startDateInput = now.toISOString().substring(0, 10);
+    this.startTimeInput = now.toTimeString().substring(0, 5);
 
     this.initMap();
     this.setupSearch();
@@ -169,10 +168,10 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       this.addEmptyPointsSourceAndLayer();
     });
 
-    // click on map background → add new snapped point + route section
+    // click on map background -> add new snapped point + route section
     this.map.on('click', (e) => this.onMapClick(e));
 
-    // interactions with node circles → make them draggable
+    // interactions with node circles -> make them draggable
     this.map.on('mousedown', this.pointsLayerId, (e: mapboxgl.MapLayerMouseEvent) => this.onPointMouseDown(e));
 
     this.map.on('mouseenter', this.pointsLayerId, () => {
@@ -337,7 +336,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   private onMapClick(e: mapboxgl.MapMouseEvent): void {
     const { lng, lat } = e.lngLat;
 
-    // temp local point (will be replaced by snapped coords)
     this.snappedPoints.push({ lat, lon: lng });
 
     const params = new HttpParams()
@@ -350,14 +348,12 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       next: (snap) => {
         console.log(snap);
 
-        // update last snapped point to the server-snapped position
         this.snappedPoints[this.snappedPoints.length - 1] = {
           lat: snap.lat,
           lon: snap.lon
         };
         this.updatePointsSource();
 
-        // First point = add-point action
         if (this.snappedPoints.length === 1) {
           this.undoService.pushAddPoint();
         }
@@ -411,7 +407,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
         });
         this.rebuildRouteFromSegments();
 
-        // New forward segment = add-point action
         this.undoService.pushAddPoint();
       },
       error: (err) => {
@@ -421,7 +416,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  // Rebuild the whole route geometry for the current snapped points.
   private recalculateRouteForAllPoints(): void {
     this.predictedSeconds = null;
 
@@ -679,7 +673,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       if (diff > 0) {
         ascent += diff;
       } else if (diff < 0) {
-        descent -= diff; // diff is negative
+        descent -= diff;
       }
     }
 
@@ -780,21 +774,14 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.clearDaylightMarkers();
   }
 
-
-  /**
-   * Apply a route geometry (lat/lon array) to the map and make it editable.
-   * Used by both GPX import and loading saved tracks.
-   */
   private applyRouteFromCoords(coords: { lat: number; lon: number }[]): void {
     if (!coords || coords.length < 2) {
       alert('The route does not contain enough points.');
       return;
     }
 
-    // Clear current route
     this.clearAll();
 
-    // Use coords as the route geometry
     this.fullRouteCoords = coords.map(c => ({
       lat: c.lat,
       lon: c.lon
@@ -807,7 +794,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       }
     ];
 
-    // Start/end editable points
     const start = this.fullRouteCoords[0];
     const end = this.fullRouteCoords[this.fullRouteCoords.length - 1];
 
@@ -822,7 +808,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     this.recomputeDistanceProfile();
     this.fetchElevationProfile();
 
-    // Fit map to route
     if (this.map && this.fullRouteCoords.length > 0) {
       let minLat = this.fullRouteCoords[0].lat;
       let maxLat = this.fullRouteCoords[0].lat;
@@ -854,7 +839,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
 
     const file = input.files[0];
 
-    // allow re-selecting same file later
     input.value = '';
 
     this.gpxImportService.parseGpx(file)
@@ -899,8 +883,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
         }
       });
   }
-
-
 
   formatPredictedTime(): string {
     if (this.predictedSeconds == null) {
@@ -1176,7 +1158,7 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
   openDeleteTrackModal(event: MouseEvent, name: string): void {
     event.stopPropagation();
 
-    this.trackMenuOpenFor = null;      // close the dropdown
+    this.trackMenuOpenFor = null;
     this.trackToDelete = name;
     this.trackDeleteError = null;
     this.showDeleteTrackModal = true;
@@ -1201,7 +1183,6 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
       next: () => {
         this.isDeletingTrack = false;
 
-        // Remove from list
         this.trackNames = this.trackNames.filter(n => n !== name);
         if (this.selectedTrackName === name) {
           this.selectedTrackName = null;
@@ -1247,26 +1228,22 @@ export class CreateRouteComponent implements AfterViewInit, OnDestroy {
     const scrollX = window.scrollX || document.documentElement.scrollLeft;
     const scrollY = window.scrollY || document.documentElement.scrollTop;
 
-    // Approximate popover size (should match your CSS)
     const POPOVER_WIDTH = 240;
     const POPOVER_HEIGHT = 120;
 
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
 
-    // We want: popover top-right = button bottom-left
-    let x = rect.left + scrollX - POPOVER_WIDTH;     // move left by popover width
-    let y = rect.bottom + scrollY + 4;               // a little below the button
+    let x = rect.left + scrollX - POPOVER_WIDTH;
+    let y = rect.bottom + scrollY + 4;
 
-    // Clamp horizontally so it stays on screen
     const minX = scrollX + 8;
     const maxX = scrollX + viewportWidth - POPOVER_WIDTH - 8;
     if (x < minX) x = minX;
     if (x > maxX) x = maxX;
 
-    // Clamp vertically: if it would go below screen, flip above the button
     if (y + POPOVER_HEIGHT > scrollY + viewportHeight - 8) {
-      y = rect.top + scrollY - POPOVER_HEIGHT - 4;   // above the button
+      y = rect.top + scrollY - POPOVER_HEIGHT - 4;
     }
     if (y < scrollY + 8) {
       y = scrollY + 8;

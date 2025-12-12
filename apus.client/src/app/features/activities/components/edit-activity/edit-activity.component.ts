@@ -17,7 +17,7 @@ export class EditActivityComponent {
 
   // Existing images from server (these are the ones you can delete)
   images: string[] = [];
-  // Filenames of images to delete (NOT full URLs)
+  // Filenames of images to delete
   imagesMarkedForDelete = new Set<string>();
 
   // Newly added images
@@ -94,7 +94,6 @@ export class EditActivityComponent {
       });
   }
 
-  // User clicks "X" on an existing image and that marks that file for deletion
   markImageForDeletion(index: number) {
     const url = this.images[index];
     if (!url) return;
@@ -107,18 +106,16 @@ export class EditActivityComponent {
 
   private extractFileName(url: string): string {
     try {
-      // Absolute URL
       const u = new URL(url);
       const last = u.pathname.split('/').pop();
       return last ?? url;
     } catch {
-      // Relative path
       const last = url.split('/').pop();
       return last ?? url;
     }
   }
 
-  // --------- New images (upload-like editor) ---------
+  // --------- New images ---------
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -153,7 +150,6 @@ export class EditActivityComponent {
       this.newFiles.push(file);
       this.exifDataMap.set(file.name, exifMap.get(file.name) ?? {});
 
-      // Preview logic stays the same:
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
@@ -175,7 +171,7 @@ export class EditActivityComponent {
     this.newPreviewUrls.splice(index, 1);
   }
 
-  // --------- Submit: save activity + sync images ---------
+  // --------- Submit ---------
 
   submit(form: any) {
     if (form.invalid) {

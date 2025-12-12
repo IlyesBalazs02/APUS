@@ -1,28 +1,22 @@
-/*  basics  */
-
-.clickable-heading {           /* make the title clickable */
+.clickable-heading {
   cursor: pointer;
 }
 
-/* Center the card. On phones it's full-width; from ~tablet up it's 50vw. */
 .card {
   margin: 1rem auto;
   width: 100%;
-  max-width: 100vw;           /* never overflow viewport */
+  max-width: 100vw;
   background: #1e1e1e;
   border-radius: 10px;
   color: #fff;
   padding: 1.5rem;
 }
 
-/* “Phone vs larger” switch: 50% of screen unless too small */
-@media (min-width: 640px) {    /* ~sm breakpoint */
+@media (min-width: 640px) {
   .card {
-    width: 50vw;               /* half of the viewport width */
+    width: 50vw;
   }
 }
-
-/*  header / description  */
 
 .card-header {
   text-align: left;
@@ -35,13 +29,9 @@
   color: #aaa;
 }
 
-/*  metrics block  */
-
 .card-body {
   margin-bottom: 1rem;
 }
-
-/*  track image  */
 
 .image-map-container {
   display: flex;
@@ -55,15 +45,13 @@
   object-fit: cover;
 }
 
-/*   gallery  */
-
 .images-container {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
   margin-top: 1rem;
-  flex-wrap: wrap;             /* 1–3 image per row depending on space */
+  flex-wrap: wrap;
 }
 
 .thumb {
@@ -98,44 +86,39 @@
   font-weight: 600;
 }
 
-/*  like (below pictures, left-aligned)  */
 
 .like-icon {
-  display: inline-flex;      /* acts like text (respects text-align), but we’ll anchor it ourselves */
+  display: inline-flex; 
   align-items: center;
   gap: 6px;
 
-  /* make it hug the left edge regardless of parent text-align/centering */
-  width: max-content;        /* shrink to content width */
+  width: max-content;
   margin-top: 0.75rem;
   margin-left: 0;
-  margin-right: auto;        /* if parent is flex/grid row, this pushes it left */
+  margin-right: auto;
   text-align: left;
-  align-self: flex-start;    /* if parent uses align-items:center, this keeps it on the left */
+  align-self: flex-start;
 
   color: #ccc;
   font-size: 1rem;
 }
 
-/* Force the like row to be a full-width, left-aligned block */
 .card > .like-icon {
   display: flex !important;
-  justify-content: flex-start !important;  /* left on the row */
+  justify-content: flex-start !important;
   align-items: center;
   width: 100% !important;
   text-align: left !important;
   margin: 0.75rem 0 0 0 !important;
 }
 
-/* The inline content inside the like row */
 .card > .like-icon > * {
   vertical-align: middle;
   margin-right: 6px;
 }
 
-/* (Optional) if a flex parent is centering children vertically */
 .card {
-  align-items: stretch !important;   /* in case the card was a flex column */
+  align-items: stretch !important;
 }
 
 .like-icon i {
@@ -145,9 +128,6 @@
 .like-icon i:hover {
   color: #1e90ff;
 }
-
-
-/*  lightbox  */
 
 .lightbox-overlay {
   position: fixed;
@@ -184,7 +164,6 @@
 .lightbox-btn.next { right: 3%; }
 
 
-/* ---------- user info (top right) ---------- */
 .card-header {
   display: flex;
   justify-content: space-between;

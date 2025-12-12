@@ -14,8 +14,6 @@
   overflow: hidden;
 }
 
-/* HEADER */
-
 .activity-header {
   display: flex;
   align-items: center;
@@ -58,13 +56,9 @@
   background: rgba(15, 23, 42, 0.28);
 }
 
-/* BODY */
-
 .activity-body {
   padding: 1.5rem;
 }
-
-/* DESCRIPTION */
 
 .activity-description {
   margin-bottom: 1.25rem;
@@ -84,8 +78,6 @@
   line-height: 1.5;
   color: #374151;
 }
-
-/* SUMMARY GRID */
 
 .summary-section {
   margin-bottom: 1.5rem;
@@ -119,8 +111,6 @@
   color: #9ca3af;
 }
 
-/* MAIN LAYOUT */
-
 .activity-main-layout {
   display: flex;
   flex-direction: column;
@@ -148,8 +138,6 @@
   }
 }
 
-/* SECTION HEADERS */
-
 .section-header {
   display: flex;
   align-items: baseline;
@@ -169,8 +157,6 @@
   color: #9ca3af;
 }
 
-/* MAP + CHARTS CARDS */
-
 .map-card,
 .charts-card {
   border-radius: 14px;
@@ -179,12 +165,9 @@
   overflow: hidden;
 }
 
-/* style the map host element so it fills the card */
 app-activity-map {
   display: block;
 }
-
-/* PHOTOS GRID */
 
 .images-container {
   display: grid;
@@ -219,8 +202,6 @@ app-activity-map {
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.23);
   filter: brightness(1.04);
 }
-
-/* LIGHTBOX */
 
 .lightbox-overlay {
   position: fixed;
@@ -265,8 +246,6 @@ app-activity-map {
 .lightbox-btn.next {
   right: 2%;
 }
-
-/* MOBILE TWEAKS */
 
 @media (max-width: 576px) {
   .activity-header {

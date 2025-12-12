@@ -1,11 +1,9 @@
 <header class="top-nav">
     <div class="nav-inner">
-        <!-- Brand / Logo -->
         <a class="nav-brand" routerLink="/activities">
             APUS
         </a>
 
-        <!-- CENTER: links + search (only when logged in) -->
         <div class="nav-center" *ngIf="(loggedIn$ | async)">
             <nav class="nav-links">
                 <a routerLink="/activities" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -26,9 +24,7 @@
             </div>
         </div>
 
-        <!-- RIGHT: auth / profile -->
         <div class="nav-right">
-            <!-- When NOT logged in: Login / Register -->
             <ng-container *ngIf="!(loggedIn$ | async)">
                 <a routerLink="/login" class="nav-auth-link">
                     Login
@@ -38,7 +34,6 @@
                 </a>
             </ng-container>
 
-            <!-- When logged in: profile / settings / logout -->
             <ng-container *ngIf="(loggedIn$ | async)">
                 <a routerLink="/userprofile" routerLinkActive="active" class="nav-secondary-link">
                     Profile

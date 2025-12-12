@@ -42,7 +42,6 @@ export class GroupsPostComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly maxTextLength = 2000;
   readonly maxPreviewLength = 300;
 
-  // delete popup
   deleteTargetId: number | null = null;
 
   commentsOpenPostId: number | null = null;

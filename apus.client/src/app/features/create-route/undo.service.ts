@@ -54,13 +54,11 @@ export class UndoService {
                 ctx.updatePointsSource();
 
                 if (ctx.snappedPoints.length < 2) {
-                    // No route possible anymore
                     ctx.routeSegments.splice(0, ctx.routeSegments.length);
                     ctx.fullRouteCoords.splice(0, ctx.fullRouteCoords.length);
                     ctx.updateRouteSourceEmpty();
                     ctx.clearProfiles();
                 } else {
-                    // Remove last forward segment (ignore Out & Back if present)
                     if (ctx.routeSegments.length > 0) {
                         const lastIdx = ctx.routeSegments.length - 1;
                         const last = ctx.routeSegments[lastIdx];
@@ -68,9 +66,8 @@ export class UndoService {
                         if (!last.isOutAndBack) {
                             ctx.routeSegments.pop();
                         } else if (ctx.routeSegments.length > 1) {
-                            // If last is Out & Back, drop it and the previous forward segment
-                            ctx.routeSegments.pop(); // Out & Back
-                            ctx.routeSegments.pop(); // previous forward
+                            ctx.routeSegments.pop();
+                            ctx.routeSegments.pop();
                         }
                     }
 
@@ -87,11 +84,9 @@ export class UndoService {
                     return;
                 }
 
-                // Move point back
                 ctx.snappedPoints[index] = { ...from };
                 ctx.updatePointsSource();
 
-                // Recalculate route geometry based on current points
                 ctx.recalculateRouteForAllPoints();
                 break;
             }

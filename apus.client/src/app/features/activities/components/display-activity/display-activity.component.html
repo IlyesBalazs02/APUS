@@ -33,22 +33,22 @@
                         <div class="summary-value">
                             <ng-container [ngSwitch]="field">
 
-                                <!-- pace: m/s -> mm:ss /km -->
+                                <!-- pace -->
                                 <span *ngSwitchCase="'pace'">
                                     {{ formatPace(activity[field]) }}
                                 </span>
 
-                                <!-- distance: 2 decimals + km -->
+                                <!-- distance -->
                                 <span *ngSwitchCase="'distanceKm'">
                                     {{ activity[field] | number:'1.2-2' }} km
                                 </span>
 
-                                <!-- elevation: 2 decimals + m (or 0 decimals if you prefer) -->
+                                <!-- elevation -->
                                 <span *ngSwitchCase="'elevationGain'">
                                     {{ activity[field] | number:'1.2-2' }} m
                                 </span>
 
-                                <!-- everything else exactly as before -->
+                                <!-- everything else -->
                                 <span *ngSwitchDefault>
                                     {{ activity[field] }}
                                 </span>
@@ -103,7 +103,7 @@
                 </aside>
             </div>
 
-            <!-- CHARTS (FULL WIDTH) -->
+            <!-- CHARTS -->
             <section class="charts-section" *ngIf="trackpoints && trackpoints.length">
                 <div class="section-header">
                     <h6 class="section-title">Charts</h6>
@@ -119,7 +119,6 @@
         </div>
     </div>
 
-    <!-- LIGHTBOX OVERLAY -->
     <div class="lightbox-overlay" *ngIf="selectedIndex !== null" (click)="closeViewer()">
         <button type="button" class="lightbox-btn prev" (click)="prevImage($event)">
             ‹
